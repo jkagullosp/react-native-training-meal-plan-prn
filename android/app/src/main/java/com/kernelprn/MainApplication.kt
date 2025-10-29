@@ -15,8 +15,8 @@ class MainApplication : Application(), ReactApplication {
     getDefaultReactHost(
       context = this,
       packageList = PackageList(this).packages,
-      isHermesEnabled = true,            // 👈 Added to disambiguate overloads
-      useDevSupport = BuildConfig.DEBUG, // 👈 Always include this too
+      isHermesEnabled = true,
+      useDevSupport = BuildConfig.DEBUG,
     )
   }
 
