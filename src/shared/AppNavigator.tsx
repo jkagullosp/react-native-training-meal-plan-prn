@@ -23,7 +23,7 @@ export default function AppNavigator() {
         tabBarIcon: ({ color, size }) => {
           if (Platform.OS === "ios") {
             let iconName = "home";
-            if (route.name === "Discover") iconName = "magnify";
+            if (route.name === "Discover") <Search color={color} size={size} />
             if (route.name === "Meal Plan") iconName = "calendar";
             if (route.name === "Community") iconName = "account-group-outline";
             if (route.name === "Shopping List") iconName = "cart-outline";
