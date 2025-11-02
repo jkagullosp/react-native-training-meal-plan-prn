@@ -9,6 +9,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Image,
+  Modal,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -18,6 +21,7 @@ import Button from "../../../shared/components/Button";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { profile_settings_texts } from "../../../constants/constants";
 import { MoveLeft } from "lucide-react-native";
+import { pickImageFromDevice, uploadImageToSupabase } from "../../community-recipes/utils/ImageHelper";
 
 export default function ProfileSettingsScreen({ navigation }: any) {
   const signOut = useAuthStore((state) => state.signOut);
@@ -42,6 +46,11 @@ export default function ProfileSettingsScreen({ navigation }: any) {
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Modal state for image selection
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [previewImage, setPreviewImage] = useState<string>("");
+
   useEffect(() => {
     if (authUser?.id) {
       fetchProfile(authUser.id);
@@ -54,6 +63,7 @@ export default function ProfileSettingsScreen({ navigation }: any) {
       setDisplayName(user.display_name || "");
       setUsername(user.username || "");
       setBio(user.bio || "");
+      setPreviewImage(user.profile_image || "");
     }
   }, [user]);
 
@@ -95,6 +105,38 @@ export default function ProfileSettingsScreen({ navigation }: any) {
     if (success) setNewPassword("");
   };
 
+  // Modal handlers
+  const openImageModal = () => setModalVisible(true);
+  const closeImageModal = () => setModalVisible(false);
+
+  const handlePreviewUrl = () => {
+    setPreviewImage(imageUrlInput);
+  };
+
+  const handleUseImageUrl = () => {
+    setProfileImage(imageUrlInput);
+    setPreviewImage(imageUrlInput);
+    setImageUrlInput("");
+    closeImageModal();
+  };
+
+  const handleAddImageFromDevice = async (fromCamera: boolean) => {
+    const asset = await pickImageFromDevice(fromCamera);
+    closeImageModal();
+
+    if (asset && asset.base64 && asset.uri && authUser?.id) {
+      const url = await uploadImageToSupabase(authUser.id, {
+        base64: asset.base64,
+      });
+      if (url) {
+        setProfileImage(url);
+        setPreviewImage(url);
+      } else {
+        Alert.alert("Upload failed", "Could not upload image to Supabase.");
+      }
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeAreaView} edges={["top"]}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingViewStyle}>
@@ -127,14 +169,44 @@ export default function ProfileSettingsScreen({ navigation }: any) {
             <ActivityIndicator size="large" color="#9f9f9fff" />
           ) : (
             <>
-              {/* Profile Image */}
-              <Text style={styles.label}>Profile Image URL</Text>
-              <TextInput
-                style={styles.input}
-                value={profileImage}
-                onChangeText={setProfileImage}
-                placeholder="Paste image URL or use camera/photo library"
-              />
+              {/* Profile Image Preview & Modal Trigger */}
+              <Text style={styles.label}>Profile Image</Text>
+              <TouchableOpacity onPress={openImageModal}>
+                {previewImage ? (
+                  <Image
+                    source={{ uri: previewImage }}
+                    style={{
+                      width: 120,
+                      height: 120,
+                      borderRadius: 60,
+                      marginBottom: 8,
+                      alignSelf: "center",
+                    }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 120,
+                      height: 120,
+                      borderRadius: 60,
+                      backgroundColor: "#eee",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginBottom: 8,
+                      alignSelf: "center",
+                    }}
+                  >
+                    <Text>No Image</Text>
+                  </View>
+                )}
+                <TextInput
+                  style={styles.input}
+                  value={profileImage}
+                  editable={false}
+                  placeholder="Tap to change profile image"
+                />
+              </TouchableOpacity>
 
               {/* Display Name */}
               <Text style={styles.label}>Display Name</Text>
@@ -190,6 +262,54 @@ export default function ProfileSettingsScreen({ navigation }: any) {
             </>
           )}
         </ScrollView>
+        {/* Modal for profile image selection */}
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={closeImageModal}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={{ fontWeight: "bold", marginBottom: 8 }}>
+                Change Profile Image
+              </Text>
+              <TextInput
+                placeholder="Paste image URL"
+                value={imageUrlInput}
+                onChangeText={setImageUrlInput}
+                style={styles.input}
+              />
+              <Button title="Preview URL" onPress={handlePreviewUrl} />
+              <Button title="Use Image URL" onPress={handleUseImageUrl} />
+              <View style={{ height: 8 }} />
+              <Button
+                title="Choose from Library"
+                onPress={() => handleAddImageFromDevice(false)}
+              />
+              <View style={{ height: 8 }} />
+              <Button
+                title="Take Photo"
+                onPress={() => handleAddImageFromDevice(true)}
+              />
+              <View style={{ height: 8 }} />
+              <Button title="Cancel" onPress={closeImageModal} />
+              {previewImage ? (
+                <Image
+                  source={{ uri: previewImage }}
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: 60,
+                    marginTop: 12,
+                    alignSelf: "center",
+                  }}
+                  resizeMode="cover"
+                />
+              ) : null}
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -201,6 +321,7 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidingViewStyle: {
     backgroundColor: "#F7F7F7",
+    flex: 1,
   },
   container: {
     flexDirection: "column",
@@ -246,5 +367,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 6,
     marginBottom: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    width: "80%",
+    alignItems: "stretch",
   },
 });
