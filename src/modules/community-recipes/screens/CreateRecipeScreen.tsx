@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,20 +11,20 @@ import {
   TextInput,
   ScrollView,
   Modal,
-} from "react-native";
-import { Platform } from "react-native";
-import Input from "../../../shared/components/Input";
-import { SafeAreaView } from "react-native-safe-area-context";
-import CreateRecipeHeader from "../components/CreateRecipeHeader";
-import { useCommunityStore } from "../store/useCommunityStore";
-import { useAuthStore } from "../../auth/store/useAuthStore";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Picker } from "@react-native-picker/picker";
+} from 'react-native';
+import { Platform } from 'react-native';
+import Input from '../../../shared/components/Input';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import CreateRecipeHeader from '../components/CreateRecipeHeader';
+import { useCommunityStore } from '../store/useCommunityStore';
+import { useAuthStore } from '../../auth/store/useAuthStore';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Picker } from '@react-native-picker/picker';
 import {
   pickImageFromDevice,
   uploadImageToSupabase,
-} from "../utils/ImageHelper";
-import { useDiscoverStore } from "../../discover/store/useDiscoverStore";
+} from '../utils/ImageHelper';
+import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
 import { ImagePlus, CircleX } from 'lucide-react-native';
 
 export default function CreateRecipeScreen({ navigation }: any) {
@@ -35,24 +35,24 @@ export default function CreateRecipeScreen({ navigation }: any) {
   const [imageLoading, setImageLoading] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [imageUrlInput, setImageUrlInput] = useState("");
+  const [imageUrlInput, setImageUrlInput] = useState('');
 
   const openImageModal = () => setModalVisible(true);
   const closeImageModal = () => setModalVisible(false);
 
-  const [title, setTitle] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [difficulty, setDifficulty] = useState<string>("easy");
-  const [totalTime, setTotalTime] = useState<string>("");
-  const [servings, setServings] = useState<string>("");
-  const [calories, setCalories] = useState<string>("");
-  const [fats, setFats] = useState<string>("");
-  const [protein, setProtein] = useState<string>("");
-  const [carbs, setCarbs] = useState<string>("");
+  const [title, setTitle] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [difficulty, setDifficulty] = useState<string>('easy');
+  const [totalTime, setTotalTime] = useState<string>('');
+  const [servings, setServings] = useState<string>('');
+  const [calories, setCalories] = useState<string>('');
+  const [fats, setFats] = useState<string>('');
+  const [protein, setProtein] = useState<string>('');
+  const [carbs, setCarbs] = useState<string>('');
   const [ingredients, setIngredients] = useState([
-    { name: "", quantity_value: "", unit: "" },
+    { name: '', quantity_value: '', unit: '' },
   ]);
-  const [steps, setSteps] = useState([{ instruction: "" }]);
+  const [steps, setSteps] = useState([{ instruction: '' }]);
   const [images, setImages] = useState<
     {
       local_uri?: string;
@@ -62,24 +62,24 @@ export default function CreateRecipeScreen({ navigation }: any) {
     }[]
   >([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
+  const [tagInput, setTagInput] = useState('');
 
   const handleAddIngredient = () => {
     setIngredients([
       ...ingredients,
-      { name: "", quantity_value: "", unit: "" },
+      { name: '', quantity_value: '', unit: '' },
     ]);
   };
 
   const handleIngredientChange = (
     idx: number,
-    field: "name" | "quantity_value" | "unit",
-    value: string
+    field: 'name' | 'quantity_value' | 'unit',
+    value: string,
   ) => {
     setIngredients(
       ingredients.map((ing, i) =>
-        i === idx ? { ...ing, [field]: value } : ing
-      )
+        i === idx ? { ...ing, [field]: value } : ing,
+      ),
     );
   };
 
@@ -88,12 +88,12 @@ export default function CreateRecipeScreen({ navigation }: any) {
   };
 
   const handleAddStep = () => {
-    setSteps([...steps, { instruction: "" }]);
+    setSteps([...steps, { instruction: '' }]);
   };
 
   const handleStepChange = (idx: number, value: string) => {
     setSteps(
-      steps.map((step, i) => (i === idx ? { instruction: value } : step))
+      steps.map((step, i) => (i === idx ? { instruction: value } : step)),
     );
   };
 
@@ -103,94 +103,92 @@ export default function CreateRecipeScreen({ navigation }: any) {
 
   const handleAddImageUrl = () => {
     if (!imageUrlInput) return;
-    setImages((prev) => [
+    setImages(prev => [
       ...prev,
       { image_url: imageUrlInput, is_primary: false },
     ]);
-    setImageUrlInput("");
+    setImageUrlInput('');
     closeImageModal();
   };
 
   const handleAddImageFromDevice = async (fromCamera: boolean) => {
     if (images.length >= 5) {
-      Alert.alert("Limit reached", "You can only upload up to 5 images.");
-      closeImageModal();
+      Alert.alert('Limit reached', 'You can only upload up to 5 images.');
       return;
     }
+
     const asset = await pickImageFromDevice(fromCamera);
+    closeImageModal(); // move here after picker action completes
+
     if (asset && asset.base64 && asset.uri && user?.id) {
-      setImages((prev) => [
-        ...prev,
-        { local_uri: asset.uri, is_primary: false },
-      ]);
-      closeImageModal();
+      setImages(prev => [...prev, { local_uri: asset.uri, is_primary: false }]);
+
       const url = await uploadImageToSupabase(user.id, {
         base64: asset.base64,
       });
+
       if (url) {
-        setImages((prev) =>
+        setImages(prev =>
           prev.map((img, idx) =>
             idx === prev.length - 1 && img.local_uri === asset.uri
               ? { ...img, image_url: url }
-              : img
-          )
+              : img,
+          ),
         );
       }
-    } else {
-      closeImageModal();
     }
   };
 
   const setPrimaryImage = (idx: number) => {
-    setImages((prev) =>
+    setImages(prev =>
       prev.map((img, i) => ({
         ...img,
         is_primary: i === idx,
-      }))
+      })),
     );
   };
 
   const validateFields = () => {
-    if (!title.trim()) return "Recipe title is required.";
-    if (!description.trim()) return "Recipe description is required.";
-    if (!difficulty.trim()) return "Difficulty is required.";
+    if (!title.trim()) return 'Recipe title is required.';
+    if (!description.trim()) return 'Recipe description is required.';
+    if (!difficulty.trim()) return 'Difficulty is required.';
     if (!totalTime.trim() || isNaN(Number(totalTime)))
-      return "Total time is required and must be a number.";
+      return 'Total time is required and must be a number.';
     if (!servings.trim() || isNaN(Number(servings)))
-      return "Servings is required and must be a number.";
+      return 'Servings is required and must be a number.';
     if (!calories.trim() || isNaN(Number(calories)))
-      return "Calories is required and must be a number.";
+      return 'Calories is required and must be a number.';
     if (!fats.trim() || isNaN(Number(fats)))
-      return "Fats is required and must be a number.";
+      return 'Fats is required and must be a number.';
     if (!protein.trim() || isNaN(Number(protein)))
-      return "Protein is required and must be a number.";
+      return 'Protein is required and must be a number.';
     if (!carbs.trim() || isNaN(Number(carbs)))
-      return "Carbs is required and must be a number.";
+      return 'Carbs is required and must be a number.';
     if (
       ingredients.length === 0 ||
-      ingredients.some((i) => !i.name.trim() || !i.quantity_value.trim())
+      ingredients.some(i => !i.name.trim() || !i.quantity_value.trim())
     )
-      return "All ingredients must have a name and quantity.";
-    if (steps.length === 0 || steps.some((s) => !s.instruction.trim()))
-      return "All steps must have instructions.";
+      return 'All ingredients must have a name and quantity.';
+    if (steps.length === 0 || steps.some(s => !s.instruction.trim()))
+      return 'All steps must have instructions.';
     if (
       images.length === 0 ||
-      !images.some((img) => img.image_url || img.local_uri)
+      !images.some(img => img.image_url || img.local_uri)
     )
-      return "At least one image is required.";
-    if (tags.length === 0) return "At least one tag is required.";
+      return 'At least one image is required.';
+    if (tags.length === 0) return 'At least one tag is required.';
     return null;
   };
 
   const handleCreate = async () => {
     if (!user) {
-      Alert.alert("Error", "You must be logged in to create a recipe.");
+      Alert.alert('Error', 'You must be logged in to create a recipe.');
       return;
     }
 
     const validationError = validateFields();
     if (validationError) {
-      Alert.alert("Missing Fields", validationError);
+      Alert.alert('Missing Fields', validationError);
       return;
     }
 
@@ -199,18 +197,18 @@ export default function CreateRecipeScreen({ navigation }: any) {
         title,
         description,
         ingredients: ingredients
-          .filter((i) => i.name)
-          .map((i) => ({
+          .filter(i => i.name)
+          .map(i => ({
             name: i.name,
             quantity_value: Number(i.quantity_value) || 1,
-            unit: i.unit || "",
+            unit: i.unit || '',
           })),
         steps: steps
-          .filter((s) => s.instruction)
+          .filter(s => s.instruction)
           .map((s, idx) => ({ ...s, step_number: idx + 1 })),
-        tags: tags.filter((t) => t),
+        tags: tags.filter(t => t),
         images: images.map((img, idx) => ({
-          image_url: img.image_url ?? img.local_uri ?? "",
+          image_url: img.image_url ?? img.local_uri ?? '',
           is_primary: img.is_primary,
           position: idx + 1,
         })),
@@ -222,26 +220,26 @@ export default function CreateRecipeScreen({ navigation }: any) {
         protein: Number(protein) || null || undefined,
         carbs: Number(carbs) || null || undefined,
       });
-      Alert.alert("Success", "Recipe created!");
+      Alert.alert('Success', 'Recipe created!');
       await fetchRecipes();
       navigation.goBack();
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to create recipe");
+      Alert.alert('Error', err.message || 'Failed to create recipe');
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingViewStyle}>
         <ScrollView contentContainerStyle={styles.container}>
           <CreateRecipeHeader navigation={navigation} />
           <View style={{ marginTop: 16 }}>
             {images.length === 0 && (
               <View style={styles.noImage}>
-                {Platform.OS === "ios" ? (
-                  <Icon name="image" size={45} color={"#cdcacaff"} />
+                {Platform.OS === 'ios' ? (
+                  <Icon name="image" size={45} color={'#cdcacaff'} />
                 ) : (
-                  <ImagePlus size={45} color={"#cdcacaff"} />
+                  <ImagePlus size={45} color={'#cdcacaff'} />
                 )}
               </View>
             )}
@@ -256,16 +254,16 @@ export default function CreateRecipeScreen({ navigation }: any) {
                     height: 100,
                     borderRadius: 8,
                     borderWidth: img.is_primary ? 2 : 0,
-                    borderColor: img.is_primary ? "#E16235" : "transparent",
+                    borderColor: img.is_primary ? '#E16235' : 'transparent',
                   }}
                   resizeMode="cover"
                 />
                 {img.is_primary && (
                   <Text
                     style={{
-                      color: "#E16235",
+                      color: '#E16235',
                       fontSize: 12,
-                      textAlign: "center",
+                      textAlign: 'center',
                     }}
                   >
                     Primary
@@ -297,7 +295,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
               multiline={true}
             />
             <View style={styles.inputRow}>
-              <View style={{ flexDirection: "column", gap: 3, flex: 1 }}>
+              <View style={{ flexDirection: 'column', gap: 3, flex: 1 }}>
                 <Text style={{ fontSize: 12 }}>Cooking time</Text>
                 <TextInput
                   placeholder="in minutes"
@@ -307,7 +305,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
                   keyboardType="numeric"
                 />
               </View>
-              <View style={{ flexDirection: "column", gap: 3, flex: 1 }}>
+              <View style={{ flexDirection: 'column', gap: 3, flex: 1 }}>
                 <Text style={{ fontSize: 12 }}>Difficulty</Text>
                 <TextInput
                   placeholder="easy, medium, or hard"
@@ -318,7 +316,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
                   autoCorrect={false}
                 />
               </View>
-              <View style={{ flexDirection: "column", gap: 3, flex: 1 }}>
+              <View style={{ flexDirection: 'column', gap: 3, flex: 1 }}>
                 <Text style={{ fontSize: 12 }}>Servings</Text>
                 <TextInput
                   placeholder="e.g. 4"
@@ -331,7 +329,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
             </View>
 
             <View style={styles.inputRow}>
-              <View style={{ flexDirection: "column", gap: 3, flex: 1 }}>
+              <View style={{ flexDirection: 'column', gap: 3, flex: 1 }}>
                 <Text style={{ fontSize: 12 }}>Calories</Text>
                 <TextInput
                   placeholder="Kcal"
@@ -341,7 +339,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
                   keyboardType="numeric"
                 />
               </View>
-              <View style={{ flexDirection: "column", gap: 3, flex: 1 }}>
+              <View style={{ flexDirection: 'column', gap: 3, flex: 1 }}>
                 <Text style={{ fontSize: 12 }}>Fats</Text>
                 <TextInput
                   placeholder="g"
@@ -351,7 +349,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
                   keyboardType="numeric"
                 />
               </View>
-              <View style={{ flexDirection: "column", gap: 3, flex: 1 }}>
+              <View style={{ flexDirection: 'column', gap: 3, flex: 1 }}>
                 <Text style={{ fontSize: 12 }}>Protein</Text>
                 <TextInput
                   placeholder="g"
@@ -361,7 +359,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
                   keyboardType="numeric"
                 />
               </View>
-              <View style={{ flexDirection: "column", gap: 3, flex: 1 }}>
+              <View style={{ flexDirection: 'column', gap: 3, flex: 1 }}>
                 <Text style={{ fontSize: 12 }}>Carbs</Text>
                 <TextInput
                   placeholder="g"
@@ -375,33 +373,33 @@ export default function CreateRecipeScreen({ navigation }: any) {
           </View>
 
           {/* Ingredients Section */}
-          <View style={{ flexDirection: "column", gap: 8 }}>
+          <View style={{ flexDirection: 'column', gap: 8 }}>
             <Text style={{ fontSize: 12 }}>Ingredients</Text>
             {ingredients.map((ingredient, idx) => (
               <View
                 key={idx}
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
+                  flexDirection: 'row',
+                  alignItems: 'center',
                   marginBottom: 8,
                 }}
               >
                 <TextInput
                   placeholder="Name"
                   value={ingredient.name}
-                  onChangeText={(text) =>
-                    handleIngredientChange(idx, "name", text)
+                  onChangeText={text =>
+                    handleIngredientChange(idx, 'name', text)
                   }
                   style={[styles.input, { flex: 2, marginRight: 8 }]}
                 />
                 <TextInput
                   placeholder="Qty"
                   value={ingredient.quantity_value}
-                  onChangeText={(text) =>
+                  onChangeText={text =>
                     handleIngredientChange(
                       idx,
-                      "quantity_value",
-                      text.replace(/[^0-9.]/g, "")
+                      'quantity_value',
+                      text.replace(/[^0-9.]/g, ''),
                     )
                   }
                   style={[styles.input, { flex: 1, marginRight: 8 }]}
@@ -410,13 +408,13 @@ export default function CreateRecipeScreen({ navigation }: any) {
                 <TextInput
                   placeholder="Unit"
                   value={ingredient.unit}
-                  onChangeText={(text) =>
-                    handleIngredientChange(idx, "unit", text)
+                  onChangeText={text =>
+                    handleIngredientChange(idx, 'unit', text)
                   }
                   style={[styles.input, { flex: 1, marginRight: 8 }]}
                 />
                 <TouchableOpacity onPress={() => handleRemoveIngredient(idx)}>
-                  {Platform.OS === "ios" ? (
+                  {Platform.OS === 'ios' ? (
                     <Icon name="close" size={22} color="#E16235" />
                   ) : (
                     <CircleX size={22} color="#E16235" />
@@ -433,14 +431,14 @@ export default function CreateRecipeScreen({ navigation }: any) {
           </View>
 
           {/* Steps Section */}
-          <View style={{ flexDirection: "column", gap: 8 }}>
+          <View style={{ flexDirection: 'column', gap: 8 }}>
             <Text style={{ fontSize: 12 }}>Steps</Text>
             {steps.map((step, idx) => (
               <View
                 key={idx}
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
+                  flexDirection: 'row',
+                  alignItems: 'center',
                   marginBottom: 8,
                 }}
               >
@@ -448,11 +446,11 @@ export default function CreateRecipeScreen({ navigation }: any) {
                 <TextInput
                   placeholder={`Step ${idx + 1} instruction`}
                   value={step.instruction}
-                  onChangeText={(text) => handleStepChange(idx, text)}
+                  onChangeText={text => handleStepChange(idx, text)}
                   style={[styles.input, { flex: 1, marginRight: 8 }]}
                 />
                 <TouchableOpacity onPress={() => handleRemoveStep(idx)}>
-                  {Platform.OS === "ios" ? (
+                  {Platform.OS === 'ios' ? (
                     <Icon name="close" size={22} color="#E16235" />
                   ) : (
                     <CircleX size={22} color="#E16235" />
@@ -469,12 +467,12 @@ export default function CreateRecipeScreen({ navigation }: any) {
           </View>
 
           {/* Tags Section */}
-          <View style={{ flexDirection: "column", gap: 8, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'column', gap: 8, marginBottom: 16 }}>
             <Text style={{ fontSize: 12 }}>Tags</Text>
             <View
               style={{
-                flexDirection: "row",
-                alignItems: "center",
+                flexDirection: 'row',
+                alignItems: 'center',
                 marginBottom: 8,
               }}
             >
@@ -491,26 +489,26 @@ export default function CreateRecipeScreen({ navigation }: any) {
                   if (trimmed && !tags.includes(trimmed)) {
                     setTags([...tags, trimmed]);
                   }
-                  setTagInput("");
+                  setTagInput('');
                 }}
                 style={{
-                  backgroundColor: "#E16235",
+                  backgroundColor: '#E16235',
                   borderRadius: 8,
                   paddingHorizontal: 12,
                   paddingVertical: 6,
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>Add</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Add</Text>
               </TouchableOpacity>
             </View>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {tags.map((tag, idx) => (
                 <View
                   key={idx}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: "#eee",
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: '#eee',
                     borderRadius: 16,
                     paddingHorizontal: 12,
                     paddingVertical: 4,
@@ -523,11 +521,11 @@ export default function CreateRecipeScreen({ navigation }: any) {
                     onPress={() => setTags(tags.filter((_, i) => i !== idx))}
                     style={{ marginLeft: 6 }}
                   >
-                    {Platform.OS === "ios" ? (
-                    <Icon name="close" size={22} color="#E16235" />
-                  ) : (
-                    <CircleX size={18} color="#E16235" />
-                  )}
+                    {Platform.OS === 'ios' ? (
+                      <Icon name="close" size={22} color="#E16235" />
+                    ) : (
+                      <CircleX size={18} color="#E16235" />
+                    )}
                   </TouchableOpacity>
                 </View>
               ))}
@@ -542,7 +540,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
           >
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
-                <Text style={{ fontWeight: "bold", marginBottom: 8 }}>
+                <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
                   Add Image
                 </Text>
                 <TextInput
@@ -582,77 +580,77 @@ export default function CreateRecipeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   keyboardAvoidingViewStyle: {
     flex: 1,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
   },
   container: {
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 12,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     padding: 16,
   },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     fontSize: 12,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
-    width: "80%",
-    alignItems: "stretch",
+    width: '80%',
+    alignItems: 'stretch',
   },
   noImage: {
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   addImageButton: {
     paddingVertical: 8,
     paddingHorizontal: 26,
     borderRadius: 8,
-    backgroundColor: "#E16235",
-    color: "#fff",
-    fontWeight: "600",
+    backgroundColor: '#E16235',
+    color: '#fff',
+    fontWeight: '600',
     fontSize: 14,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   inputsContainer: {
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 12,
   },
   inputRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
   },
   pickerContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     height: 44,
-    justifyContent: "center",
-    overflow: "hidden",
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   picker: {
     height: 44,
-    width: "100%",
-    color: "#333",
+    width: '100%',
+    color: '#333',
     fontSize: 13,
-    marginTop: Platform.OS === "ios" ? -4 : 0,
+    marginTop: Platform.OS === 'ios' ? -4 : 0,
   },
 });

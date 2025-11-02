@@ -142,9 +142,9 @@ export default function ProfileScreenHeader({ navigation }: any) {
       </View>
       <View style={styles.bioContainer}>
         <Text style={styles.bio}>{user?.bio}</Text>
-        <Text style={styles.locationText}>
+        {/* <Text style={styles.locationText}>
           {location ? `📍 ${location}` : "Fetching location..."}
-        </Text>
+        </Text> */}
       </View>
       <View style={styles.divider} />
       <View style={styles.detailsRow}>
