@@ -1,23 +1,15 @@
 import React from "react";
-import { useState, useEffect } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   TextInput,
   KeyboardAvoidingView,
-  ActivityIndicator,
-  Modal,
   Platform,
 } from "react-native";
-import Input from "../../../shared/components/Input";
-import { useDiscoverStore } from "../store/useDiscoverStore";
-import { discover_texts } from "../../../constants/constants";
 import { searchTypes } from "../types/searchtypes";
 import { Funnel } from "lucide-react-native";
-import Icon from "@react-native-vector-icons/material-design-icons";
+//import Icon from "@react-native-vector-icons/material-design-icons";
 
 export default function SearchAndFilter({
   search,
@@ -43,7 +35,7 @@ export default function SearchAndFilter({
               style={styles.filterButton}
             >
               {Platform.OS === "ios" ? (
-                <Icon name="filter-outline" size={20} color={"#E16235"} />
+                <Funnel size={20} color={"#E16235"} />
               ) : (
                 <Funnel size={20} color={"#E16235"} />
               )}

@@ -7,12 +7,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   RefreshControl,
-  Modal,
   ActivityIndicator,
-  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
 import CommunityHeader from "../components/CommunityHeader";
 import { useCommunityStore } from "../store/useCommunityStore";
 import CommunityRecipeCards from "../components/CommunityRecipeCards";
@@ -37,7 +34,7 @@ export default function CommunityRecipesScreen({ navigation }: any) {
   useEffect(() => {
     fetchCommunityRecipes();
     fetchTags();
-  }, []);
+  }, [fetchCommunityRecipes, fetchTags]);
 
   const onRefresh = async () => {
     setRefreshing(true);

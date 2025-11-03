@@ -8,7 +8,6 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { FullRecipe } from "../types/recipeTypes";
 import { RecipeTag } from "../types/recipeTypes";
 import { Star } from "lucide-react-native";

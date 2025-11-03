@@ -50,7 +50,7 @@ export default function MyRecipesScreen({navigation}: any) {
               screen: "RecipeDetail",
               params: {
                 recipeId: recipe.id,
-                title: recipe.title,
+                recipe: recipe,
               },
             })
           }

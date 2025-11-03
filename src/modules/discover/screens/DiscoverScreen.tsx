@@ -5,8 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Modal,
-  TouchableOpacity,
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,9 +18,7 @@ import FilterModal from "../components/FilterModal";
 export default function DiscoverScreen({ navigation }: any) {
   const recipes = useDiscoverStore((s) => s.recipes);
   const loading = useDiscoverStore((s) => s.loading);
-  const recipesError = useDiscoverStore((s) => s.recipesError);
   const availableTags = useDiscoverStore((s) => s.availableTags);
-  const tagsError = useDiscoverStore((s) => s.tagsError);
   const fetchRecipes = useDiscoverStore((s) => s.fetchRecipes);
   const fetchTags = useDiscoverStore((s) => s.fetchTags);
 
@@ -38,7 +34,7 @@ export default function DiscoverScreen({ navigation }: any) {
   useEffect(() => {
     fetchRecipes();
     fetchTags();
-  }, []);
+  }, [fetchRecipes, fetchTags]);
 
   const onRefresh = async () => {
     setRefreshing(true);

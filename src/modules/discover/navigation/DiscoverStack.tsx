@@ -1,6 +1,4 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { createStackNavigator } from "@react-navigation/stack";
 import DiscoverScreen from "../screens/DiscoverScreen";
 import RecipeDetailScreen from "../screens/RecipeDetailScreen";

@@ -5,11 +5,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  TextInput,
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useDiscoverStore } from "../store/useDiscoverStore";
 import { discover_texts } from "../../../constants/constants";
 

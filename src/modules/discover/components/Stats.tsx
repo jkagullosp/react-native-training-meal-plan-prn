@@ -1,11 +1,9 @@
 import React from "react";
-import { useState, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Image } from "react-native";
-import Icon from "@react-native-vector-icons/material-design-icons";
+import { View, StyleSheet, Text } from "react-native";
 import { useDiscoverStore } from "../store/useDiscoverStore";
 import { Timer, Users, ChefHat } from 'lucide-react-native';
 
-export default function Stats({ navigation, route }: any) {
+export default function Stats({ route }: any) {
   const { recipeId } = route.params;
   const { recipes, loading } = useDiscoverStore();
 

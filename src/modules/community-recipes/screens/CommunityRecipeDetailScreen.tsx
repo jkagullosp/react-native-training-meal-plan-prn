@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,17 @@ import {
   ActivityIndicator,
   Image,
   Modal,
-} from "react-native";
-import { useDiscoverStore } from "../../discover/store/useDiscoverStore";
-import Stats from "../../discover/components/Stats";
-import Nutrition from "../../discover/components/Nutrition";
-import Ingredients from "../../discover/components/Ingredients";
-import Instructions from "../../discover/components/Instructions";
-import Author from "../../discover/components/Author";
-import AddMealModal from "../../meal-plan/components/AddMealModal";
-import { useMealPlanStore } from "../../meal-plan/store/useMealPlanStore";
-import { useShoppingListStore } from "../../shopping-list/store/useShoppingListStore";
+} from 'react-native';
+import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
+import Stats from '../../discover/components/Stats';
+import Nutrition from '../../discover/components/Nutrition';
+import Ingredients from '../../discover/components/Ingredients';
+import Instructions from '../../discover/components/Instructions';
+import Author from '../../discover/components/Author';
+import AddMealModal from '../../meal-plan/components/AddMealModal';
+import { useMealPlanStore } from '../../meal-plan/store/useMealPlanStore';
+import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
+import Toast from 'react-native-toast-message';
 
 export default function CommunityRecipeDetailScreen({
   navigation,
@@ -31,7 +32,7 @@ export default function CommunityRecipeDetailScreen({
   const { fetchMealPlans } = useMealPlanStore();
   const [addingMeal] = useState(false);
 
-  const recipe = recipes.find((r) => r.id === recipeId);
+  const recipe = recipes.find(r => r.id === recipeId);
 
   if (loading) {
     return (
@@ -105,6 +106,11 @@ export default function CommunityRecipeDetailScreen({
             await fetchMealPlans(user.id);
             await fetchRecipes();
           }
+          Toast.show({
+            type: 'success',
+            text1: 'Meal Plan Added',
+            text2: 'Check your meal plans for details',
+          });
         }}
       />
       {addingMeal && (
@@ -122,7 +128,7 @@ export default function CommunityRecipeDetailScreen({
 const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
   },
   container: {
     flex: 1,
@@ -131,76 +137,76 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   scrollView: {
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     flex: 1,
     marginBottom: 12,
   },
   imageContainer: {
-    width: "100%",
+    width: '100%',
     height: 200,
   },
   image: {
-    width: "100%",
+    width: '100%',
     height: 200,
   },
   emptyText: {
-    textAlign: "center",
-    color: "#888",
+    textAlign: 'center',
+    color: '#888',
     fontSize: 16,
     marginTop: 40,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 40,
   },
   header: {
-    flexDirection: "column",
+    flexDirection: 'column',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    fontWeight: "normal",
+    fontWeight: 'normal',
   },
   nutrition: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   bottomButtonContainer: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 14,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
-    alignItems: "center",
+    borderTopColor: '#eee',
+    alignItems: 'center',
   },
   bottomButton: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 8,
-    alignItems: "center",
-    width: "100%",
+    alignItems: 'center',
+    width: '100%',
   },
   bottomButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 14,
   },
   blurOverlay: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "absolute",
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
@@ -210,6 +216,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#E16235",
+    color: '#E16235',
   },
 });

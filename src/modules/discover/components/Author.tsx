@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, Image } from "react-native";
 import { useDiscoverStore } from "../store/useDiscoverStore";
 import { Star, BadgeCheck } from "lucide-react-native";
 
-export default function Author({ navigation, route }: any) {
+export default function Author({ route }: any) {
   const { recipeId } = route.params;
   const { recipes, loading, authors, fetchAuthor } = useDiscoverStore();
 

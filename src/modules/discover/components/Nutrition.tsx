@@ -1,9 +1,8 @@
 import React from "react";
-import { useState, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Image } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { useDiscoverStore } from "../store/useDiscoverStore";
 
-export default function Nutrition({ navigation, route }: any) {
+export default function Nutrition({ route }: any) {
   const { recipeId } = route.params;
   const { recipes, loading } = useDiscoverStore();
 
