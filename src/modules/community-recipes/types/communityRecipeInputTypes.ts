@@ -1,9 +1,6 @@
 import {
-  FullRecipe,
   RecipeIngredient,
   RecipeStep,
-  RecipeTag,
-  RecipeImage,
 } from "../../discover/types/recipeTypes";
 
 export type CreateRecipeInput = {

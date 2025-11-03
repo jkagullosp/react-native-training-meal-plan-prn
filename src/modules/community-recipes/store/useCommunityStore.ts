@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "../../utils/supabase";
 import { Profile } from "../../auth/types/authTypes";
-import { FullRecipe, Recipe, Tag } from "../../discover/types/recipeTypes";
+import { FullRecipe, Tag } from "../../discover/types/recipeTypes";
 import { RecipeLike } from "../../discover/types/recipeTypes";
 import { CreateRecipeInput } from "../types/communityRecipeInputTypes";
 

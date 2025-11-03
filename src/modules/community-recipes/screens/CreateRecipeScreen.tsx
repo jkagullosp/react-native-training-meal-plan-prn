@@ -19,7 +19,6 @@ import CreateRecipeHeader from '../components/CreateRecipeHeader';
 import { useCommunityStore } from '../store/useCommunityStore';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Picker } from '@react-native-picker/picker';
 import {
   pickImageFromDevice,
   uploadImageToSupabase,
@@ -29,10 +28,8 @@ import { ImagePlus, CircleX } from 'lucide-react-native';
 
 export default function CreateRecipeScreen({ navigation }: any) {
   const { user } = useAuthStore();
-  const { createCommunityRecipe, loading } = useCommunityStore();
+  const { createCommunityRecipe } = useCommunityStore();
   const { fetchRecipes } = useDiscoverStore();
-
-  const [imageLoading, setImageLoading] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState('');
