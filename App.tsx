@@ -18,6 +18,7 @@ import {
   initNotificationChannel,
   requestAndSaveFcmToken,
   requestNotificationPermission,
+  registerForegroundMessageHandler
 } from './src/utils/notificationChannel';
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
     initNotificationChannel().catch(e =>
       console.error('Notification channel init error: ', e),
     );
+    registerForegroundMessageHandler();
   }, []);
 
   useEffect(() => {
