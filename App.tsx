@@ -20,6 +20,7 @@ import {
   requestNotificationPermission,
   registerForegroundMessageHandler
 } from './src/utils/notificationChannel';
+import messaging from '@react-native-firebase/messaging';
 
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
@@ -53,7 +54,24 @@ export default function App() {
     initNotificationChannel().catch(e =>
       console.error('Notification channel init error: ', e),
     );
+
+    // 🆕 Register foreground message handler
     registerForegroundMessageHandler();
+
+    // 🆕 Handle background/quit state notifications
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log('📬 Background message:', remoteMessage);
+      // Notification is automatically displayed by FCM
+    });
+
+    // 🆕 Handle notification when app is opened from quit state
+    messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        if (remoteMessage) {
+          console.log('📬 Notification caused app to open:', remoteMessage);
+        }
+      });
   }, []);
 
   useEffect(() => {

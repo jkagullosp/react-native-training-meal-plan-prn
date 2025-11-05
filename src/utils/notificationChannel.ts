@@ -278,11 +278,36 @@ export async function getScheduledNotifications() {
 }
 
 export function registerForegroundMessageHandler() {
-  messaging().onMessage(async remoteMessage => {
-    await notifee.displayNotification({
-      title: remoteMessage.notification?.title ?? 'Notification',
-      body: remoteMessage.notification?.body ?? '',
-      android: { channelId: 'default', smallIcon: 'ic_notification' },
-    });
+  const unsubscribe = messaging().onMessage(async remoteMessage => {
+    console.log('🔔 RAW FCM MESSAGE RECEIVED!');
+    console.log('📱 App state: FOREGROUND');
+    console.log('📦 Full message:', JSON.stringify(remoteMessage, null, 2));
+    
+    try {
+      const notification = {
+        title: remoteMessage.notification?.title ?? 'Meal Reminder',
+        body: remoteMessage.notification?.body ?? '',
+        android: { 
+          channelId: 'default',
+          //smallIcon: 'ic_notification',
+          pressAction: { id: 'default' },
+        },
+        ios: {
+          sound: 'default',
+        },
+        data: remoteMessage.data,
+      };
+      
+      console.log('📨 Displaying notification:', notification.title);
+      
+      await notifee.displayNotification(notification);
+      
+      console.log('✅ Notifee successfully displayed notification');
+    } catch (error) {
+      console.error('❌ Notifee display error:', error);
+    }
   });
+  
+  console.log('✅ Foreground message handler registered');
+  return unsubscribe;
 }

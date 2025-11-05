@@ -23,6 +23,7 @@ import { useShoppingListStore } from '../../shopping-list/store/useShoppingListS
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Circle, CircleCheck, Trash2 } from 'lucide-react-native';
 import { scheduleHybridMealNotification } from '../../../utils/notificationChannel';
+import { supabase } from '../../utils/supabase';
 
 const mealTypes = [
   { label: 'Breakfast', value: 'breakfast', emoji: '🌅' },
@@ -75,21 +76,55 @@ export default function MealPlanScreen({ navigation }: any) {
 
   useEffect(() => {
     const testNotification = async () => {
-      if (user?.id) {
-        const testDate = new Date(Date.now() + 1 * 60 * 1000); // 2 min from now
+      if (!user?.id) return;
 
-        await scheduleHybridMealNotification({
-          userId: user.id,
-          mealPlanId: uuidv4(),
-          mealDate: testDate.toISOString(),
-          mealType: 'lunch',
-          recipeTitle: 'Test Chicken Adobo',
-          notificationHoursBefore: 0, // Fire immediately at mealDate
-        });
+      // Check if we already have a pending test notification
+      const { data: existing } = await supabase
+        .from('scheduled_meal_notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('sent', false)
+        .gte('notification_time', new Date().toISOString());
 
-        console.log('Test notification scheduled for:', testDate);
+      if (existing && existing.length > 0) {
+        console.log('⏳ Already have pending notification, skipping');
+        console.log(
+          '   Scheduled for:',
+          new Date(existing[0].notification_time).toLocaleTimeString(),
+        );
+        return;
       }
+
+      // Schedule for EXACTLY 2 minutes from now (gives more time to see it)
+      const testDate = new Date(Date.now() + 2 * 60 * 1000);
+
+      console.log('🧪 Creating test notification');
+      console.log('   Current time:', new Date().toLocaleTimeString());
+      console.log('   Notification time:', testDate.toLocaleTimeString());
+
+      const result = await scheduleHybridMealNotification({
+        userId: user.id,
+        mealPlanId: uuidv4(),
+        mealDate: testDate.toISOString(),
+        mealType: 'lunch',
+        recipeTitle: 'Test Chicken Adobo 🍗',
+        notificationHoursBefore: 0,
+      });
+
+      console.log('✅ Result:', result);
+
+      // Verify it was created
+      const { data } = await supabase
+        .from('scheduled_meal_notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      console.log('📋 Created in DB:', data?.[0]);
     };
+
+    // Run the test
     testNotification();
   }, [user]);
 
