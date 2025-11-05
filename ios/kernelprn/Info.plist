@@ -34,7 +34,9 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>We need your location to provide personalized meal recommendations.</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>This app needs notification access to remind you about your meal plans.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
