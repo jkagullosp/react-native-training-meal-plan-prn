@@ -3,6 +3,10 @@ import { supabase } from "../../utils/supabase";
 import { FullMealPlan } from "../types/mealPlanTypes";
 import { MealHistory } from "../types/historyTypes";
 import { useShoppingListStore } from "../../shopping-list/store/useShoppingListStore";
+import { 
+  scheduleHybridMealNotification, 
+  cancelHybridNotification 
+} from "../../../utils/notificationChannel";
 
 type MealPlanState = {
   mealPlans: FullMealPlan[];
@@ -15,7 +19,7 @@ type MealPlanState = {
     mealDate: string,
     mealType: string
   ) => Promise<void>;
-  removeMealPlan: (mealPlanId: string) => Promise<void>;
+  removeMealPlan: (mealPlanId: string, userId: string) => Promise<void>;
   fetchMealHistory: (userId: string) => Promise<void>;
   markMealDone: (
     userId: string,
@@ -57,23 +61,59 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
       set({ mealPlans: [], loading: false });
     }
   },
+
   addMealPlan: async (
     userId: string,
     recipeId: string,
     mealDate: string,
     mealType: string
   ) => {
-    await supabase.from("meal_plans").insert([
-      {
-        user_id: userId,
-        recipe_id: recipeId,
-        meal_date: mealDate,
-        meal_type: mealType,
-      },
-    ]);
+    // Insert the meal plan
+    const { data, error } = await supabase
+      .from("meal_plans")
+      .insert([
+        {
+          user_id: userId,
+          recipe_id: recipeId,
+          meal_date: mealDate,
+          meal_type: mealType,
+        },
+      ])
+      .select(`
+        *,
+        recipe:recipes(title)
+      `)
+      .single();
+
+    if (error) {
+      console.error('Error adding meal plan:', error);
+      return;
+    }
+
+    if (data) {
+      // Schedule hybrid notification
+      const result = await scheduleHybridMealNotification({
+        userId,
+        mealPlanId: data.id,
+        mealDate,
+        mealType,
+        recipeTitle: data.recipe?.title || 'Your meal',
+        notificationHoursBefore: 2, // Customize as needed
+      });
+
+      if (result.success) {
+        console.log('✅ Notification scheduled:', result.scheduledFor);
+      } else {
+        console.log('⚠️ Notification scheduling failed:', result.reason || result.error);
+      }
+    }
   },
 
-  removeMealPlan: async (mealPlanId: string) => {
+  removeMealPlan: async (mealPlanId: string, userId: string) => {
+    // Cancel notifications before removing
+    await cancelHybridNotification(mealPlanId, userId);
+    
+    // Remove the meal plan
     await supabase.from("meal_plans").delete().eq("id", mealPlanId);
   },
 
@@ -98,6 +138,7 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
       set({ mealHistory: [] });
     }
   },
+
   markMealDone: async (
     userId: string,
     recipeId: string,
@@ -116,6 +157,7 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
       .getState()
       .deductIngredientsForRecipe(userId, recipeId);
   },
+
   removeIngredientsForRecipe: async (userId: string, recipeId: string) => {
     const { data: ingredients, error: ingError } = await supabase
       .from("ingredients")
