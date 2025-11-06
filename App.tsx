@@ -6,7 +6,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import OnboardingNavigation from './src/modules/onboarding/navigation/OnboardingNavigation';
 import AuthNavigator from './src/modules/auth/navigation/AuthNavigation';
 import AppNavigator from './src/shared/AppNavigator';
-import { checkConnection } from './src/modules/utils/supabase';
 import {
   useOnboardingStore,
   loadOnboardingState,
@@ -34,10 +33,6 @@ export default function App() {
 
   const user = useAuthStore(s => s.user);
 
-  const [supabaseConnected, setSupabaseConnected] = React.useState<
-    boolean | null
-  >(null);
-
   useEffect(() => {
     const load = async () => {
       const onboarded = await loadOnboardingState();
@@ -55,16 +50,12 @@ export default function App() {
       console.error('Notification channel init error: ', e),
     );
 
-    // 🆕 Register foreground message handler
     registerForegroundMessageHandler();
 
-    // 🆕 Handle background/quit state notifications
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       console.log('📬 Background message:', remoteMessage);
-      // Notification is automatically displayed by FCM
     });
 
-    // 🆕 Handle notification when app is opened from quit state
     messaging()
       .getInitialNotification()
       .then(remoteMessage => {
@@ -76,7 +67,6 @@ export default function App() {
 
   useEffect(() => {
     if (user?.id) {
-      // request permission, get token and save to Supabase for this user
       requestAndSaveFcmToken(user.id).catch(e =>
         console.error('save token err:', e),
       );
