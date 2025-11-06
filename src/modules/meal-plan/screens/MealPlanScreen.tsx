@@ -306,6 +306,7 @@ export default function MealPlanScreen({ navigation }: any) {
                                   params: {
                                     recipeId: plan.recipe_id,
                                     title: plan.recipe?.title,
+                                    recipe: plan.recipe,
                                   },
                                 })
                               }
