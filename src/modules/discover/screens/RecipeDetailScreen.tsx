@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,18 +9,18 @@ import {
   Image,
   Modal,
   Dimensions,
-} from "react-native";
-import { useDiscoverStore } from "../store/useDiscoverStore";
-import Stats from "../components/Stats";
-import Nutrition from "../components/Nutrition";
-import Instructions from "../components/Instructions";
-import Author from "../components/Author";
-import AddMealModal from "../../meal-plan/components/AddMealModal";
-import { useMealPlanStore } from "../../meal-plan/store/useMealPlanStore";
-import { useShoppingListStore } from "../../shopping-list/store/useShoppingListStore";
-import { supabase } from "../../utils/supabase";
-import Toast from "react-native-toast-message";
-import { FullRecipe } from "../types/recipeTypes";
+} from 'react-native';
+import { useDiscoverStore } from '../store/useDiscoverStore';
+import Stats from '../components/Stats';
+import Nutrition from '../components/Nutrition';
+import Instructions from '../components/Instructions';
+import Author from '../components/Author';
+import AddMealModal from '../../meal-plan/components/AddMealModal';
+import { useMealPlanStore } from '../../meal-plan/store/useMealPlanStore';
+import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
+import { supabase } from '../../../client/supabase';
+import Toast from 'react-native-toast-message';
+import { FullRecipe } from '../types/recipeTypes';
 
 export default function RecipeDetailScreen({ navigation, route }: any) {
   const { loading, user, fetchRecipes } = useDiscoverStore();
@@ -32,8 +32,8 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
   const recipe: FullRecipe = route.params.recipe;
 
   const isAuthor = user?.id === recipe?.author_id;
-  
-  const userRating = recipe?.ratings?.find((r) => r.user_id === user?.id);
+
+  const userRating = recipe?.ratings?.find(r => r.user_id === user?.id);
   const [rating, setRating] = useState<number>(userRating?.rating || 0);
   const [submitting, setSubmitting] = useState(false);
 
@@ -43,7 +43,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
 
   useEffect(() => {
     navigation.setOptions({
-      title: recipe.title || "Recipe Detail",
+      title: recipe.title || 'Recipe Detail',
     });
   }, [navigation, recipe.title]);
 
@@ -62,14 +62,14 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
   const sortedImages =
     recipe.images?.length > 0
       ? [
-          ...recipe.images.filter((img) => img.is_primary),
+          ...recipe.images.filter(img => img.is_primary),
           ...recipe.images
-            .filter((img) => !img.is_primary)
+            .filter(img => !img.is_primary)
             .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
         ]
       : [];
 
-  const screenWidth = Dimensions.get("window").width;
+  const screenWidth = Dimensions.get('window').width;
 
   const handleSubmitRating = async () => {
     if (!user?.id || !recipe?.id || rating < 1 || rating > 5) return;
@@ -77,11 +77,11 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
 
     try {
       const { error: upsertError } = await supabase
-        .from("recipe_ratings")
+        .from('recipe_ratings')
         .upsert([
           {
             user_id: user.id,
-          recipe_id: recipe.id,
+            recipe_id: recipe.id,
             rating,
           },
         ]);
@@ -89,9 +89,9 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
       if (upsertError) throw upsertError;
 
       const { data: ratings, error: ratingsError } = await supabase
-        .from("recipe_ratings")
-        .select("rating")
-        .eq("recipe_id", recipe.id);
+        .from('recipe_ratings')
+        .select('rating')
+        .eq('recipe_id', recipe.id);
 
       if (ratingsError) throw ratingsError;
 
@@ -100,18 +100,18 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
         count > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / count : 0;
 
       const { error: updateError } = await supabase
-        .from("recipes")
+        .from('recipes')
         .update({
           avg_rating: Math.round(avg * 10) / 10,
           rating_count: count,
         })
-        .eq("id", recipe.id);
+        .eq('id', recipe.id);
 
       if (updateError) throw updateError;
 
       await fetchRecipes();
     } catch (err) {
-      console.error("Error handling rating:", err);
+      console.error('Error handling rating:', err);
     } finally {
       setSubmitting(false);
     }
@@ -163,7 +163,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
               ))
             ) : (
               <Image
-                source={require("../../../../assets/images/onboardImage1.jpg")}
+                source={require('../../../../assets/images/onboardImage1.jpg')}
                 style={[styles.image, { width: screenWidth, height: 200 }]}
                 resizeMode="cover"
               />
@@ -200,32 +200,34 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
                 <View
                   key={ingredient.id || idx}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
+                    flexDirection: 'row',
+                    alignItems: 'center',
                     marginBottom: 6,
                   }}
                 >
                   <Text
                     style={{
                       fontSize: 16,
-                      color: "#E16235",
+                      color: '#E16235',
                       marginRight: 8,
                     }}
                   >
                     •
                   </Text>
-                  <Text style={{ fontSize: 16, color: "#222" }}>
+                  <Text style={{ fontSize: 16, color: '#222' }}>
                     {ingredient.name}
                     {ingredient.quantity_value
-                      ? ` (${ingredient.quantity_value}${ingredient.unit ? ` ${ingredient.unit}` : ""})`
-                      : ""}
+                      ? ` (${ingredient.quantity_value}${
+                          ingredient.unit ? ` ${ingredient.unit}` : ''
+                        })`
+                      : ''}
                   </Text>
                 </View>
               ))
             ) : (
               <Text
                 style={{
-                  color: "#888",
+                  color: '#888',
                   fontSize: 15,
                   marginTop: 8,
                 }}
@@ -244,7 +246,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
             <View style={styles.ratingSection}>
               <Text style={styles.nutrition}>Rate this Recipe!</Text>
               <View style={styles.ratingStarsRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5].map(star => (
                   <TouchableOpacity
                     key={star}
                     onPress={() => setRating(star)}
@@ -253,7 +255,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
                     <Text
                       style={{
                         fontSize: 32,
-                        color: star <= rating ? "#E16235" : "#ccc",
+                        color: star <= rating ? '#E16235' : '#ccc',
                       }}
                     >
                       ★
@@ -262,7 +264,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
                 ))}
               </View>
               {userRating ? (
-                <Text style={{ color: "#888", marginTop: 4 }}>
+                <Text style={{ color: '#888', marginTop: 4 }}>
                   You rated this recipe {userRating.rating} stars.
                 </Text>
               ) : (
@@ -272,7 +274,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
                   disabled={submitting || rating === 0}
                 >
                   <Text style={styles.rateButtonText}>
-                    {submitting ? "Submitting..." : "Submit Rating"}
+                    {submitting ? 'Submitting...' : 'Submit Rating'}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -302,9 +304,9 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
           setAddingMeal(false);
           setModalVisible(false);
           Toast.show({
-            type: "success",
-            text1: "Meal Plan Added",
-            text2: "Check your meal plans for details",
+            type: 'success',
+            text1: 'Meal Plan Added',
+            text2: 'Check your meal plans for details',
           });
         }}
       />
@@ -323,7 +325,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
   },
   container: {
     flex: 1,
@@ -332,102 +334,102 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   scrollView: {
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     flex: 1,
     marginBottom: 12,
   },
   imageContainer: {
-    width: "100%",
+    width: '100%',
     height: 200,
   },
   image: {
-    width: "100%",
+    width: '100%',
     height: 200,
   },
   emptyText: {
-    textAlign: "center",
-    color: "#888",
+    textAlign: 'center',
+    color: '#888',
     fontSize: 16,
     marginTop: 40,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 40,
   },
   header: {
-    flexDirection: "column",
+    flexDirection: 'column',
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    fontWeight: "normal",
+    fontWeight: 'normal',
   },
   nutrition: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   ingredients: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 8,
   },
   bottomButtonContainer: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 14,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
-    alignItems: "center",
+    borderTopColor: '#eee',
+    alignItems: 'center',
   },
   bottomButton: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 8,
-    alignItems: "center",
-    width: "100%",
+    alignItems: 'center',
+    width: '100%',
   },
   bottomButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 14,
   },
   ratingSection: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   ratingStarsRow: {
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginVertical: 8,
   },
   rateButton: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     paddingVertical: 10,
     paddingHorizontal: 32,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 8,
   },
   rateButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 16,
   },
   blurOverlay: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "absolute",
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
@@ -437,13 +439,13 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#E16235",
+    color: '#E16235',
   },
   sliderIndicatorContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "absolute",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
     bottom: 12,
     left: 0,
     right: 0,
@@ -453,12 +455,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#ccc",
+    backgroundColor: '#ccc',
     marginHorizontal: 4,
     opacity: 0.7,
   },
   sliderDotActive: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     opacity: 1,
   },
 });

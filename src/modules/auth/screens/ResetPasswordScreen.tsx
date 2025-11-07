@@ -1,30 +1,30 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
-import Input from "../../../shared/components/Input";
-import Button from "../../../shared/components/Button";
-import { supabase } from "../../utils/supabase";
-import Toast from "react-native-toast-message";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import Input from '../../../shared/components/Input';
+import Button from '../../../shared/components/Button';
+import { supabase } from '../../../client/supabase';
+import Toast from 'react-native-toast-message';
 
 export default function ResetPasswordScreen({ navigation }: any) {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const updatePassword = async () => {
     if (newPassword.length < 6) {
       Toast.show({
-        type: "error",
-        text1: "Password too short",
-        text2: "Password must be at least 6 characters.",
+        type: 'error',
+        text1: 'Password too short',
+        text2: 'Password must be at least 6 characters.',
       });
       return;
     }
 
     if (newPassword !== confirmPassword) {
       Toast.show({
-        type: "error",
+        type: 'error',
         text1: "Passwords don't match",
-        text2: "Please make sure both passwords are the same.",
+        text2: 'Please make sure both passwords are the same.',
       });
       return;
     }
@@ -36,17 +36,17 @@ export default function ResetPasswordScreen({ navigation }: any) {
     setLoading(false);
 
     if (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert('Error', error.message);
     } else {
       Alert.alert(
-        "Success",
-        "Password updated! You can now sign in with your new password.",
+        'Success',
+        'Password updated! You can now sign in with your new password.',
         [
           {
-            text: "OK",
-            onPress: () => navigation.replace("SignIn"),
+            text: 'OK',
+            onPress: () => navigation.replace('SignIn'),
           },
-        ]
+        ],
       );
     }
   };
@@ -100,18 +100,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    justifyContent: "center",
-    backgroundColor: "#F7F7F7",
+    justifyContent: 'center',
+    backgroundColor: '#F7F7F7',
   },
   title: {
     fontSize: 24,
     marginBottom: 8,
-    fontWeight: "bold",
-    color: "#000000",
+    fontWeight: 'bold',
+    color: '#000000',
   },
   subtitle: {
     fontSize: 14,
-    color: "#777777",
+    color: '#777777',
     marginBottom: 24,
     lineHeight: 20,
   },

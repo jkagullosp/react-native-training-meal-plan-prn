@@ -1,13 +1,13 @@
-import { create } from "zustand";
-import { supabase } from "../../utils/supabase";
-import { addDays, format } from "date-fns";
+import { create } from 'zustand';
+import { supabase } from '../../../client/supabase';
+import { addDays, format } from 'date-fns';
 import {
   ShoppingListItem,
   ShoppingListStore,
   PantryItem,
   MealPlan,
   Recipe,
-} from "../types/shoppingListTypes";
+} from '../types/shoppingListTypes';
 
 interface Ingredient {
   id: string;
@@ -30,7 +30,7 @@ type MealPlanState = ShoppingListStore & {
   addToPantry: (userId: string) => Promise<void>;
   deductIngredientsForRecipe: (
     userId: string,
-    recipeId: string
+    recipeId: string,
   ) => Promise<void>;
 };
 
@@ -44,18 +44,18 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
   fetchMealPlansAndRecipes: async (userId: string) => {
     const today = new Date();
     const weekDates = Array.from({ length: 7 }, (_, i) =>
-      format(addDays(today, i), "yyyy-MM-dd")
+      format(addDays(today, i), 'yyyy-MM-dd'),
     );
 
     const { data: mealPlans } = await supabase
-      .from("meal_plans")
-      .select("id, recipe_id, meal_date, meal_type")
-      .eq("user_id", userId)
-      .in("meal_date", weekDates);
+      .from('meal_plans')
+      .select('id, recipe_id, meal_date, meal_type')
+      .eq('user_id', userId)
+      .in('meal_date', weekDates);
 
     const mealPlanMap: Record<string, MealPlan> = {};
     const recipeIds = new Set<string>();
-    (mealPlans || []).forEach((plan) => {
+    (mealPlans || []).forEach(plan => {
       mealPlanMap[plan.id] = plan;
       if (plan.recipe_id) recipeIds.add(plan.recipe_id);
     });
@@ -63,10 +63,10 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
     let recipeMap: Record<string, Recipe> = {};
     if (recipeIds.size > 0) {
       const { data: recipes } = await supabase
-        .from("recipes")
-        .select("id, title")
-        .in("id", Array.from(recipeIds));
-      (recipes || []).forEach((r) => {
+        .from('recipes')
+        .select('id, title')
+        .in('id', Array.from(recipeIds));
+      (recipes || []).forEach(r => {
         recipeMap[r.id] = r;
       });
     }
@@ -79,21 +79,21 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
 
     const today = new Date();
     const weekDates = Array.from({ length: 7 }, (_, i) =>
-      format(addDays(today, i), "yyyy-MM-dd")
+      format(addDays(today, i), 'yyyy-MM-dd'),
     );
 
     const { data: mealPlans, error: mealPlansError } = await supabase
-      .from("meal_plans")
-      .select("id, recipe_id, meal_date")
-      .eq("user_id", userId)
-      .in("meal_date", weekDates);
+      .from('meal_plans')
+      .select('id, recipe_id, meal_date')
+      .eq('user_id', userId)
+      .in('meal_date', weekDates);
 
     if (mealPlansError || !mealPlans) {
       set({ shoppingList: [], loading: false });
       return;
     }
 
-    const recipeIds = mealPlans.map((plan) => plan.recipe_id).filter(Boolean);
+    const recipeIds = mealPlans.map(plan => plan.recipe_id).filter(Boolean);
 
     if (recipeIds.length === 0) {
       set({ shoppingList: [], loading: false });
@@ -101,11 +101,11 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
     }
 
     const { data } = await supabase
-      .from("shopping_list")
-      .select("*")
-      .eq("user_id", userId)
-      .in("recipe_id", recipeIds)
-      .order("created_at", { ascending: false });
+      .from('shopping_list')
+      .select('*')
+      .eq('user_id', userId)
+      .in('recipe_id', recipeIds)
+      .order('created_at', { ascending: false });
 
     set({ shoppingList: data as ShoppingListItem[], loading: false });
     await get().fetchMealPlansAndRecipes(userId);
@@ -114,36 +114,38 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
   addMissingIngredients: async (userId: string) => {
     const today = new Date();
     const weekDates = Array.from({ length: 7 }, (_, i) =>
-      format(addDays(today, i), "yyyy-MM-dd")
+      format(addDays(today, i), 'yyyy-MM-dd'),
     );
 
     await get().fetchPantry(userId);
 
     const { data: mealPlans } = await supabase
-      .from("meal_plans")
-      .select("id, recipe_id")
-      .eq("user_id", userId)
-      .in("meal_date", weekDates);
+      .from('meal_plans')
+      .select('id, recipe_id')
+      .eq('user_id', userId)
+      .in('meal_date', weekDates);
 
     if (!mealPlans) return;
 
-    const recipeIds = mealPlans.map((plan) => plan.recipe_id).filter(Boolean);
+    const recipeIds = mealPlans.map(plan => plan.recipe_id).filter(Boolean);
     if (recipeIds.length === 0) return;
 
     const { data: ingredients } = await supabase
-      .from("ingredients")
-      .select("*")
-      .in("recipe_id", recipeIds);
+      .from('ingredients')
+      .select('*')
+      .in('recipe_id', recipeIds);
 
     const { data: shoppingList } = await supabase
-      .from("shopping_list")
-      .select("*")
-      .eq("user_id", userId);
+      .from('shopping_list')
+      .select('*')
+      .eq('user_id', userId);
 
     const ingredientTotals: { [key: string]: number } = {};
-    mealPlans.forEach((plan) => {
+    mealPlans.forEach(plan => {
       (ingredients ?? [])
-        .filter((ingredient: Ingredient) => ingredient.recipe_id === plan.recipe_id)
+        .filter(
+          (ingredient: Ingredient) => ingredient.recipe_id === plan.recipe_id,
+        )
         .forEach((ingredient: Ingredient) => {
           const key = ingredient.name.toLowerCase();
           const qty = Number(ingredient.quantity) || 1;
@@ -164,7 +166,10 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
       const toBuy = Math.max(neededQty - inPantry, 0);
 
       const alreadyInShoppingList = (shoppingList ?? [])
-        .filter((item: ShoppingListItem) => item.ingredient_name.toLowerCase() === key)
+        .filter(
+          (item: ShoppingListItem) =>
+            item.ingredient_name.toLowerCase() === key,
+        )
         .map((item: ShoppingListItem) => item.meal_plan_id);
 
       let added = 0;
@@ -172,7 +177,8 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
         if (added < toBuy) {
           const ingredient = (ingredients ?? []).find(
             (ing: Ingredient) =>
-              ing.recipe_id === plan.recipe_id && ing.name.toLowerCase() === key
+              ing.recipe_id === plan.recipe_id &&
+              ing.name.toLowerCase() === key,
           );
           if (ingredient && !alreadyInShoppingList.includes(plan.id)) {
             newIngredients.push({
@@ -182,7 +188,7 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
               ingredient_name: ingredient.name,
               is_checked: false,
               quantity: Number(ingredient.quantity) || 1,
-              unit: ingredient.unit || "",
+              unit: ingredient.unit || '',
             });
             added += Number(ingredient.quantity) || 1;
           }
@@ -191,21 +197,21 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
     });
 
     if (newIngredients.length > 0) {
-      await supabase.from("shopping_list").insert(newIngredients);
+      await supabase.from('shopping_list').insert(newIngredients);
     }
 
-    const validMealPlanIds = new Set(mealPlans.map((plan) => plan.id));
+    const validMealPlanIds = new Set(mealPlans.map(plan => plan.id));
     const outdatedItems = (shoppingList ?? []).filter(
-      (item: ShoppingListItem) => !validMealPlanIds.has(item.meal_plan_id)
+      (item: ShoppingListItem) => !validMealPlanIds.has(item.meal_plan_id),
     );
 
     if (outdatedItems.length > 0) {
       await supabase
-        .from("shopping_list")
+        .from('shopping_list')
         .delete()
         .in(
-          "id",
-          outdatedItems.map((item: ShoppingListItem) => item.id)
+          'id',
+          outdatedItems.map((item: ShoppingListItem) => item.id),
         );
     }
 
@@ -214,21 +220,21 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
 
   markAsChecked: async (item: ShoppingListItem, checked: boolean) => {
     await supabase
-      .from("shopping_list")
+      .from('shopping_list')
       .update({ is_checked: checked })
-      .eq("id", item.id);
+      .eq('id', item.id);
 
     if (checked) {
       const { data: pantry } = await supabase
-        .from("user_pantry")
-        .select("*")
-        .eq("user_id", item.user_id)
-        .eq("ingredient_name", item.ingredient_name);
+        .from('user_pantry')
+        .select('*')
+        .eq('user_id', item.user_id)
+        .eq('ingredient_name', item.ingredient_name);
 
       const addQty = item.quantity ? Number(item.quantity) : 1;
 
       if (!pantry || pantry.length === 0) {
-        await supabase.from("user_pantry").insert([
+        await supabase.from('user_pantry').insert([
           {
             user_id: item.user_id,
             ingredient_name: item.ingredient_name,
@@ -237,11 +243,11 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
         ]);
       } else {
         await supabase
-          .from("user_pantry")
+          .from('user_pantry')
           .update({ quantity: pantry[0].quantity + addQty })
-          .eq("id", pantry[0].id);
+          .eq('id', pantry[0].id);
       }
-      await supabase.from("shopping_list").delete().eq("id", item.id);
+      await supabase.from('shopping_list').delete().eq('id', item.id);
       await get().fetchPantry(item.user_id);
     }
 
@@ -251,40 +257,40 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
   fetchPantry: async (userId: string) => {
     set({ loading: true });
     const { data } = await supabase
-      .from("user_pantry")
-      .select("*")
-      .eq("user_id", userId);
+      .from('user_pantry')
+      .select('*')
+      .eq('user_id', userId);
     set({ pantry: data || [], loading: false });
   },
 
   deductIngredientsForRecipe: async (userId: string, recipeId: string) => {
     const { data: ingredients } = await supabase
-      .from("ingredients")
-      .select("name, quantity")
-      .eq("recipe_id", recipeId);
+      .from('ingredients')
+      .select('name, quantity')
+      .eq('recipe_id', recipeId);
 
     if (!ingredients) return;
 
     for (const ingredient of ingredients) {
       const { data: pantryItem } = await supabase
-        .from("user_pantry")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("ingredient_name", ingredient.name);
+        .from('user_pantry')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('ingredient_name', ingredient.name);
 
       if (pantryItem && pantryItem.length > 0) {
         const deductQty = Number(ingredient.quantity) || 1;
         const newQty = pantryItem[0].quantity - deductQty;
         if (newQty > 0) {
           await supabase
-            .from("user_pantry")
+            .from('user_pantry')
             .update({ quantity: newQty })
-            .eq("id", pantryItem[0].id);
+            .eq('id', pantryItem[0].id);
         } else {
           await supabase
-            .from("user_pantry")
+            .from('user_pantry')
             .delete()
-            .eq("id", pantryItem[0].id);
+            .eq('id', pantryItem[0].id);
         }
       }
     }
@@ -292,6 +298,6 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
   },
 
   addToPantry: async (userId: string) => {
-    console.log("user id", userId);
+    console.log('user id', userId);
   },
 }));

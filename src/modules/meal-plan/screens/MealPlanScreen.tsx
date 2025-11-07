@@ -23,7 +23,7 @@ import { useShoppingListStore } from '../../shopping-list/store/useShoppingListS
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Circle, CircleCheck, Trash2 } from 'lucide-react-native';
 import { scheduleHybridMealNotification } from '../../../utils/notificationChannel';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../client/supabase';
 
 const mealTypes = [
   { label: 'Breakfast', value: 'breakfast', emoji: '🌅' },

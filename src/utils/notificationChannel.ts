@@ -1,14 +1,14 @@
 // ...existing code...
-import { Platform, PermissionsAndroid } from "react-native";
-import messaging from "@react-native-firebase/messaging";
-import notifee, { TimestampTrigger, TriggerType } from "@notifee/react-native";
-import { supabase } from "../modules/utils/supabase"; // <--- use this path to your supabase client
+import { Platform, PermissionsAndroid } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
+import notifee, { TimestampTrigger, TriggerType } from '@notifee/react-native';
+import { supabase } from '../client/supabase'; // <--- use this path to your supabase client
 
 export async function initNotificationChannel() {
-  if (Platform.OS === "android") {
+  if (Platform.OS === 'android') {
     await notifee.createChannel({
-      id: "default",
-      name: "Default",
+      id: 'default',
+      name: 'Default',
       importance: 4,
     });
   }
@@ -16,17 +16,17 @@ export async function initNotificationChannel() {
 
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
-    if (Platform.OS === "android") {
+    if (Platform.OS === 'android') {
       // Android 13+ requires runtime POST_NOTIFICATIONS
       if (Platform.Version >= 33) {
         const result = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
           {
-            title: "Notifications permission",
-            message: "Allow the app to send you meal reminder notifications.",
-            buttonPositive: "Allow",
-            buttonNegative: "Deny",
-          }
+            title: 'Notifications permission',
+            message: 'Allow the app to send you meal reminder notifications.',
+            buttonPositive: 'Allow',
+            buttonNegative: 'Deny',
+          },
         );
         return result === PermissionsAndroid.RESULTS.GRANTED;
       }
@@ -41,7 +41,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
       return enabled;
     }
   } catch (err) {
-    console.error("requestNotificationPermission error:", err);
+    console.error('requestNotificationPermission error:', err);
     return false;
   }
 }
@@ -55,39 +55,41 @@ export async function requestAndSaveFcmToken(userId?: string | null) {
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (!enabled) {
-      console.log("FCM permission not granted");
+      console.log('FCM permission not granted');
       return null;
     }
 
     const token = await messaging().getToken();
-    console.log("FCM token:", token);
+    console.log('FCM token:', token);
 
     if (token && userId) {
       // upsert token into push_tokens table
-      await supabase.from("push_tokens").upsert(
+      await supabase.from('push_tokens').upsert(
         {
           user_id: userId,
           token,
           platform: Platform.OS,
         },
-        { onConflict: "token" }
+        { onConflict: 'token' },
       );
-      console.log("Saved token to Supabase");
+      console.log('Saved token to Supabase');
     }
 
-    messaging().onTokenRefresh(async (newToken) => {
-      console.log("FCM token refreshed:", newToken);
+    messaging().onTokenRefresh(async newToken => {
+      console.log('FCM token refreshed:', newToken);
       if (newToken && userId) {
-        await supabase.from("push_tokens").upsert(
-          { user_id: userId, token: newToken, platform: Platform.OS },
-          { onConflict: "token" }
-        );
+        await supabase
+          .from('push_tokens')
+          .upsert(
+            { user_id: userId, token: newToken, platform: Platform.OS },
+            { onConflict: 'token' },
+          );
       }
     });
 
     return token;
   } catch (err) {
-    console.error("requestAndSaveFcmToken error:", err);
+    console.error('requestAndSaveFcmToken error:', err);
     return null;
   }
 }
@@ -121,12 +123,12 @@ export async function scheduleHybridMealNotification({
 }: ScheduleNotificationParams) {
   try {
     const mealDateTime = new Date(mealDate);
-    
+
     // Calculate notification time
     // For breakfast: notify at 10PM the day before
     // For lunch/dinner: notify 2 hours before
     let notificationTime = new Date(mealDateTime);
-    
+
     if (mealType === 'breakfast') {
       // Notify at 10PM the day before
       notificationTime.setDate(notificationTime.getDate() - 1);
@@ -134,17 +136,20 @@ export async function scheduleHybridMealNotification({
     } else {
       // Notify X hours before the meal
       notificationTime.setHours(
-        notificationTime.getHours() - notificationHoursBefore
+        notificationTime.getHours() - notificationHoursBefore,
       );
     }
-    
+
     // Skip if notification time is in the past
     if (notificationTime.getTime() < Date.now()) {
       console.log('Notification time is in the past, skipping');
       return { success: false, reason: 'past_time' };
     }
 
-    console.log(`Scheduling notification for ${mealType}:`, notificationTime.toISOString());
+    console.log(
+      `Scheduling notification for ${mealType}:`,
+      notificationTime.toISOString(),
+    );
 
     // 1. FALLBACK: Schedule local notification with Notifee
     const localNotificationId = await scheduleLocalNotification({
@@ -206,17 +211,20 @@ async function scheduleLocalNotification({
     timestamp: notificationTime.getTime(),
   };
 
-  const mealEmoji = {
-    breakfast: '🌅',
-    lunch: '🌞',
-    dinner: '🌙',
-    snack: '🍪',
-  }[mealType] || '🍽️';
+  const mealEmoji =
+    {
+      breakfast: '🌅',
+      lunch: '🌞',
+      dinner: '🌙',
+      snack: '🍪',
+    }[mealType] || '🍽️';
 
   const notificationId = await notifee.createTriggerNotification(
     {
       id: `meal-${mealPlanId}`,
-      title: `${mealEmoji} Upcoming ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}`,
+      title: `${mealEmoji} Upcoming ${
+        mealType.charAt(0).toUpperCase() + mealType.slice(1)
+      }`,
       body: `Don't forget: ${recipeTitle}`,
       android: {
         channelId: 'default',
@@ -234,7 +242,7 @@ async function scheduleLocalNotification({
         type: 'meal_reminder',
       },
     },
-    trigger
+    trigger,
   );
 
   console.log('Local notification scheduled:', notificationId);
@@ -246,7 +254,7 @@ async function scheduleLocalNotification({
  */
 export async function cancelHybridNotification(
   mealPlanId: string,
-  userId: string
+  userId: string,
 ) {
   try {
     // 1. Cancel local notification
@@ -282,12 +290,12 @@ export function registerForegroundMessageHandler() {
     console.log('🔔 RAW FCM MESSAGE RECEIVED!');
     console.log('📱 App state: FOREGROUND');
     console.log('📦 Full message:', JSON.stringify(remoteMessage, null, 2));
-    
+
     try {
       const notification = {
         title: remoteMessage.notification?.title ?? 'Meal Reminder',
         body: remoteMessage.notification?.body ?? '',
-        android: { 
+        android: {
           channelId: 'default',
           //smallIcon: 'ic_notification',
           pressAction: { id: 'default' },
@@ -297,17 +305,17 @@ export function registerForegroundMessageHandler() {
         },
         data: remoteMessage.data,
       };
-      
+
       console.log('📨 Displaying notification:', notification.title);
-      
+
       await notifee.displayNotification(notification);
-      
+
       console.log('✅ Notifee successfully displayed notification');
     } catch (error) {
       console.error('❌ Notifee display error:', error);
     }
   });
-  
+
   console.log('✅ Foreground message handler registered');
   return unsubscribe;
 }

@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { supabase } from "../../utils/supabase";
-import { Profile } from "../../auth/types/authTypes";
-import { FullRecipe, Tag } from "../types/recipeTypes";
+import { create } from 'zustand';
+import { supabase } from '../../../client/supabase';
+import { Profile } from '../../../types/auth';
+import { FullRecipe, Tag } from '../types/recipeTypes';
 
 type DiscoverState = {
   user: Profile | null;
@@ -41,7 +41,7 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
     const { data: sessionData, error: sessionError } =
       await supabase.auth.getSession();
     if (sessionError || !sessionData.session) {
-      console.log("No Supabase session found");
+      console.log('No Supabase session found');
       set({
         user: null,
         loading: false,
@@ -51,7 +51,7 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
 
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) {
-      console.log("No authenticated user found");
+      console.log('No authenticated user found');
       set({
         user: null,
         loading: false,
@@ -60,9 +60,9 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
     }
 
     const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userData.user.id)
+      .from('profiles')
+      .select('*')
+      .eq('id', userData.user.id)
       .maybeSingle();
 
     if (!profileError && profile) {
@@ -81,7 +81,7 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
   fetchRecipes: async () => {
     set({ loading: true });
 
-    const { data: recipes, error } = await supabase.from("recipes").select(
+    const { data: recipes, error } = await supabase.from('recipes').select(
       `*,
         images:recipe_images(*),
         steps:recipe_steps(*),
@@ -90,42 +90,54 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
           tag: tags(*)
         ),
         ratings:recipe_ratings(*)
-      `
+      `,
     );
 
     console.log(
-      "(Discover) Fetched recipes: ",
+      '(Discover) Fetched recipes: ',
       JSON.stringify(recipes, null, 2),
-      error
+      error,
     );
 
     if (!error && recipes) {
-      set({ recipes: recipes as FullRecipe[], loading: false, recipesError: null });
+      set({
+        recipes: recipes as FullRecipe[],
+        loading: false,
+        recipesError: null,
+      });
     } else {
-      console.log("(Discover) Error fetching recipes: ", error);
-      set({ recipes: [], loading: false, recipesError: "Failed to fetch recipes"});
+      console.log('(Discover) Error fetching recipes: ', error);
+      set({
+        recipes: [],
+        loading: false,
+        recipesError: 'Failed to fetch recipes',
+      });
     }
   },
 
   fetchTags: async () => {
-  set({ loading: true, tagsError: null });
-  const { data, error } = await supabase.from("tags").select("*");
-  if (!error && data) {
-    set({ availableTags: data as Tag[], tagsError: null, loading: false });
-  } else {
-    set({ availableTags: [], tagsError: error?.message || "Failed to fetch tags", loading: false });
-  }
-},
+    set({ loading: true, tagsError: null });
+    const { data, error } = await supabase.from('tags').select('*');
+    if (!error && data) {
+      set({ availableTags: data as Tag[], tagsError: null, loading: false });
+    } else {
+      set({
+        availableTags: [],
+        tagsError: error?.message || 'Failed to fetch tags',
+        loading: false,
+      });
+    }
+  },
 
   fetchAuthor: async (authorId: string) => {
     if (get().authors[authorId]) return;
     const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", authorId)
+      .from('profiles')
+      .select('*')
+      .eq('id', authorId)
       .maybeSingle();
     if (!error && data) {
-      set((state) => ({
+      set(state => ({
         authors: { ...state.authors, [authorId]: data as Profile },
       }));
     }
@@ -135,7 +147,7 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
     set({ loading: true });
 
     const { data: recipes, error } = await supabase
-      .from("recipes")
+      .from('recipes')
       .select(
         `*,
         images:recipe_images(*),
@@ -145,32 +157,32 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
           tag: tags(*)
         ),
         ratings:recipe_ratings(*)
-      `
+      `,
       )
-      .eq("author_id", userId);
+      .eq('author_id', userId);
 
     if (!error && recipes) {
       set({ userRecipes: recipes as FullRecipe[], loading: false });
     } else {
       set({ userRecipes: [], loading: false });
-      console.log("(Discover) Error fetching user recipes: ", error);
+      console.log('(Discover) Error fetching user recipes: ', error);
     }
   },
 
   fetchUserTotalLikes: async (userId: string) => {
     const { data: recipes, error: recipesError } = await supabase
-      .from("recipes")
-      .select("id")
-      .eq("author_id", userId);
+      .from('recipes')
+      .select('id')
+      .eq('author_id', userId);
 
     if (recipesError || !recipes || recipes.length === 0) return 0;
 
-    const recipeIds = recipes.map((r) => r.id);
-    
+    const recipeIds = recipes.map(r => r.id);
+
     const { count, error: likesError } = await supabase
-      .from("recipe_likes")
-      .select("id", { count: "exact", head: true })
-      .in("recipe_id", recipeIds);
+      .from('recipe_likes')
+      .select('id', { count: 'exact', head: true })
+      .in('recipe_id', recipeIds);
 
     if (likesError) return 0;
     return count || 0;
@@ -178,38 +190,38 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
 
   fetchUserFavorites: async (userId: string) => {
     const { data, error } = await supabase
-      .from("recipe_favorites")
-      .select("recipe_id")
-      .eq("user_id", userId);
+      .from('recipe_favorites')
+      .select('recipe_id')
+      .eq('user_id', userId);
 
     if (!error && data) {
-      set({ userFavorites: data.map((fav) => fav.recipe_id) });
+      set({ userFavorites: data.map(fav => fav.recipe_id) });
     } else {
       set({ userFavorites: [] });
     }
   },
 
   fetchFavoriteRecipes: async () => {
-  const recipeIds = get().userFavorites;
-  if (!recipeIds.length) return [];
-  const { data, error } = await supabase
-    .from("recipes")
-    .select(
-      `*,
+    const recipeIds = get().userFavorites;
+    if (!recipeIds.length) return [];
+    const { data, error } = await supabase
+      .from('recipes')
+      .select(
+        `*,
         images:recipe_images(*),
         steps:recipe_steps(*),
         ingredients(*),
         tags:recipe_tags(tag:tags(*)),
-        ratings:recipe_ratings(*)`
-    )
-    .in("id", recipeIds);
+        ratings:recipe_ratings(*)`,
+      )
+      .in('id', recipeIds);
 
-  return data || [];
-},
+    return data || [];
+  },
 
   addFavorite: async (userId: string, recipeId: string) => {
     const { error } = await supabase
-      .from("recipe_favorites")
+      .from('recipe_favorites')
       .insert([{ user_id: userId, recipe_id: recipeId }]);
     if (!error) {
       get().fetchUserFavorites(userId);
@@ -218,10 +230,10 @@ export const useDiscoverStore = create<DiscoverState>((set, get) => ({
 
   removeFavorite: async (userId: string, recipeId: string) => {
     const { error } = await supabase
-      .from("recipe_favorites")
+      .from('recipe_favorites')
       .delete()
-      .eq("user_id", userId)
-      .eq("recipe_id", recipeId);
+      .eq('user_id', userId)
+      .eq('recipe_id', recipeId);
     if (!error) {
       get().fetchUserFavorites(userId);
     }

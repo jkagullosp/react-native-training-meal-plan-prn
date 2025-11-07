@@ -9,51 +9,38 @@ import {
 } from "react-native";
 import Input from "../../../shared/components/Input";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from '../../../stores/auth.store';
 import Toast from "react-native-toast-message";
 import { auth_texts } from "../../../constants/constants";
 import Button from "../../../shared/components/Button";
+import { authService } from '../../../services/authService';
 
 export default function SignInScreen({ navigation }: any) {
-  // Proper Zustand usage: use selectors for each field
-  const signIn = useAuthStore((state) => state.signIn);
-  const loading = useAuthStore((state) => state.loading);
+  const { signIn, loading } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Centralized validation
-  const isValidEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isFormValid = authService.isValidEmail(email) && password.length > 0;
 
   const handleSignIn = async () => {
     setError(null);
-    if (!isValidEmail(email)) {
-      setError("Please enter a valid email address.");
-      Toast.show({
-        type: "error",
-        text1: "Invalid Email",
-        text2: "Please enter a valid email address.",
-      });
-      return;
-    }
-    if (!password) {
-      setError("Password is required.");
-      Toast.show({
-        type: "error",
-        text1: "Missing Password",
-        text2: "Please enter your password.",
-      });
-      return;
-    }
+
     const { error: signInError } = await signIn(email, password);
+
     if (signInError) {
       setError(signInError);
-      Toast.show({ type: "error", text1: "Sign In Error", text2: signInError });
+      Toast.show({
+        type: "error",
+        text1: "Sign In Error",
+        text2: signInError,
+      });
     } else {
-      setError(null);
-      Toast.show({ type: "success", text1: "Welcome back!" });
+      Toast.show({
+        type: "success",
+        text1: "Welcome back!",
+      });
     }
   };
 
@@ -118,7 +105,7 @@ export default function SignInScreen({ navigation }: any) {
               title="Sign In"
               onPress={handleSignIn}
               loading={loading}
-              disabled={!password || !isValidEmail(email) || loading}
+              disabled={!isFormValid || loading}
             />
             <View style={styles.toSignIn}>
               <Text style={styles.toSignInText}>Don't have an account?</Text>

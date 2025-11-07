@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,11 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-} from "react-native";
-import { useAuthStore } from "../../auth/store/useAuthStore";
-import { useShoppingListStore } from "../store/useShoppingListStore";
-import { supabase } from "../../utils/supabase";
-import Toast from "react-native-toast-message";
+} from 'react-native';
+import { useAuthStore } from '../../auth/store/useAuthStore';
+import { useShoppingListStore } from '../store/useShoppingListStore';
+import { supabase } from '../../../client/supabase';
+import Toast from 'react-native-toast-message';
 
 export default function PantryScreen() {
   const { user } = useAuthStore();
@@ -28,9 +28,9 @@ export default function PantryScreen() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newIngredient, setNewIngredient] = useState({
-    name: "",
-    quantity: "",
-    unit: "",
+    name: '',
+    quantity: '',
+    unit: '',
   });
 
   const [deleteModal, setDeleteModal] = useState<{
@@ -55,84 +55,83 @@ export default function PantryScreen() {
     setRefreshing(false);
   };
 
-  const deductFromShoppingList = useCallback(async (
-    ingredientName: string,
-    addQty: number,
-    _unit: string
-  ) => {
-    if (!user?.id) return;
-    const { data: shoppingItems } = await supabase
-      .from("shopping_list")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("ingredient_name", ingredientName)
-      .order("created_at", { ascending: true });
+  const deductFromShoppingList = useCallback(
+    async (ingredientName: string, addQty: number, _unit: string) => {
+      if (!user?.id) return;
+      const { data: shoppingItems } = await supabase
+        .from('shopping_list')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ingredient_name', ingredientName)
+        .order('created_at', { ascending: true });
 
-    let remaining = addQty;
-    for (const item of shoppingItems || []) {
-      if (remaining <= 0) break;
-      const itemQty = Number(item.quantity) || 1;
-      if (itemQty <= remaining) {
-        await supabase.from("shopping_list").delete().eq("id", item.id);
-        remaining -= itemQty;
-      } else {
-        await supabase
-          .from("shopping_list")
-          .update({ quantity: itemQty - remaining })
-          .eq("id", item.id);
-        remaining = 0;
+      let remaining = addQty;
+      for (const item of shoppingItems || []) {
+        if (remaining <= 0) break;
+        const itemQty = Number(item.quantity) || 1;
+        if (itemQty <= remaining) {
+          await supabase.from('shopping_list').delete().eq('id', item.id);
+          remaining -= itemQty;
+        } else {
+          await supabase
+            .from('shopping_list')
+            .update({ quantity: itemQty - remaining })
+            .eq('id', item.id);
+          remaining = 0;
+        }
       }
-    }
-    await fetchShoppingList(user.id);
-  }, [user?.id, fetchShoppingList]);
+      await fetchShoppingList(user.id);
+    },
+    [user?.id, fetchShoppingList],
+  );
 
   const handleAddPantry = async () => {
     if (!user?.id || !newIngredient.name) return;
     await fetchPantry(user.id);
     const exists = pantry.find(
-      (item) =>
+      item =>
         item.ingredient_name.toLowerCase() ===
-        newIngredient.name.trim().toLowerCase()
+        newIngredient.name.trim().toLowerCase(),
     );
     const addQty = Number(newIngredient.quantity) || 1;
     if (exists) {
       await supabase
-        .from("user_pantry")
+        .from('user_pantry')
         .update({
           quantity: exists.quantity + addQty,
           unit: newIngredient.unit || exists.unit,
         })
-        .eq("id", exists.id);
+        .eq('id', exists.id);
     } else {
-      await supabase.from("user_pantry").insert([
+      await supabase.from('user_pantry').insert([
         {
           user_id: user.id,
           ingredient_name: newIngredient.name.trim(),
           quantity: addQty,
-          unit: newIngredient.unit || "",
+          unit: newIngredient.unit || '',
         },
       ]);
     }
     await deductFromShoppingList(
       newIngredient.name.trim(),
       addQty,
-      newIngredient.unit || ""
+      newIngredient.unit || '',
     );
     setShowAddModal(false);
     Toast.show({
-      type: "success",
-      text1: "Added to Pantry",
+      type: 'success',
+      text1: 'Added to Pantry',
       text2: `${newIngredient.name.trim()} was added into pantry`,
     });
-    setNewIngredient({ name: "", quantity: "", unit: "" });
+    setNewIngredient({ name: '', quantity: '', unit: '' });
     await fetchPantry(user.id);
   };
 
   const handleDeletePantry = async (itemId: string) => {
     if (!user?.id) return;
-    const item = pantry.find((i) => i.id === itemId);
+    const item = pantry.find(i => i.id === itemId);
     if (!item) return;
-    await supabase.from("user_pantry").delete().eq("id", itemId);
+    await supabase.from('user_pantry').delete().eq('id', itemId);
     await fetchPantry(user.id);
     await addMissingIngredients(user.id);
     setDeleteModal({ show: false, itemId: undefined });
@@ -152,7 +151,7 @@ export default function PantryScreen() {
             style={styles.button}
             onPress={() => setShowAddModal(true)}
           >
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>
               Add Ingredient
             </Text>
           </TouchableOpacity>
@@ -164,25 +163,25 @@ export default function PantryScreen() {
               style={styles.button}
               onPress={() => setShowAddModal(true)}
             >
-              <Text style={{ color: "#fff" }}>Add items to pantry</Text>
+              <Text style={{ color: '#fff' }}>Add items to pantry</Text>
             </TouchableOpacity>
           </View>
         )}
-        {pantry.map((item) => (
+        {pantry.map(item => (
           <View key={item.id} style={styles.itemRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.ingredientText}>
                 {item.ingredient_name}
                 {item.quantity
-                  ? ` (${item.quantity}${item.unit ? ` ${item.unit}` : ""})`
-                  : ""}
+                  ? ` (${item.quantity}${item.unit ? ` ${item.unit}` : ''})`
+                  : ''}
               </Text>
             </View>
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => setDeleteModal({ show: true, itemId: item.id })}
             >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>Delete</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Delete</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -200,18 +199,18 @@ export default function PantryScreen() {
               <TextInput
                 placeholder="Ingredient Name"
                 value={newIngredient.name}
-                onChangeText={(text) =>
-                  setNewIngredient((prev) => ({ ...prev, name: text }))
+                onChangeText={text =>
+                  setNewIngredient(prev => ({ ...prev, name: text }))
                 }
                 style={styles.input}
               />
               <TextInput
                 placeholder="Quantity"
                 value={newIngredient.quantity}
-                onChangeText={(text) =>
-                  setNewIngredient((prev) => ({
+                onChangeText={text =>
+                  setNewIngredient(prev => ({
                     ...prev,
-                    quantity: text.replace(/[^0-9.]/g, ""),
+                    quantity: text.replace(/[^0-9.]/g, ''),
                   }))
                 }
                 style={styles.input}
@@ -220,25 +219,25 @@ export default function PantryScreen() {
               <TextInput
                 placeholder="Unit"
                 value={newIngredient.unit}
-                onChangeText={(text) =>
-                  setNewIngredient((prev) => ({ ...prev, unit: text }))
+                onChangeText={text =>
+                  setNewIngredient(prev => ({ ...prev, unit: text }))
                 }
                 style={styles.input}
               />
-              <View style={{ flexDirection: "row", gap: 12, marginTop: 12 }}>
+              <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
                 <TouchableOpacity
                   style={[styles.button, { flex: 1 }]}
                   onPress={handleAddPantry}
                 >
-                  <Text style={{ color: "#fff", textAlign: "center" }}>
+                  <Text style={{ color: '#fff', textAlign: 'center' }}>
                     Save
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.button, { flex: 1, backgroundColor: "#888" }]}
+                  style={[styles.button, { flex: 1, backgroundColor: '#888' }]}
                   onPress={() => setShowAddModal(false)}
                 >
-                  <Text style={{ color: "#fff", textAlign: "center" }}>
+                  <Text style={{ color: '#fff', textAlign: 'center' }}>
                     Cancel
                   </Text>
                 </TouchableOpacity>
@@ -263,28 +262,28 @@ export default function PantryScreen() {
                 Are you sure you want to delete this ingredient from your
                 pantry?
               </Text>
-              <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
                 <TouchableOpacity
                   style={[
                     styles.button,
-                    { flex: 1, backgroundColor: "#E16235" },
+                    { flex: 1, backgroundColor: '#E16235' },
                   ]}
                   onPress={() => {
                     if (deleteModal.itemId)
                       handleDeletePantry(deleteModal.itemId);
                   }}
                 >
-                  <Text style={{ color: "#fff", textAlign: "center" }}>
+                  <Text style={{ color: '#fff', textAlign: 'center' }}>
                     Delete
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.button, { flex: 1, backgroundColor: "#888" }]}
+                  style={[styles.button, { flex: 1, backgroundColor: '#888' }]}
                   onPress={() =>
                     setDeleteModal({ show: false, itemId: undefined })
                   }
                 >
-                  <Text style={{ color: "#fff", textAlign: "center" }}>
+                  <Text style={{ color: '#fff', textAlign: 'center' }}>
                     Cancel
                   </Text>
                 </TouchableOpacity>
@@ -301,47 +300,47 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   container: {
     flex: 1,
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 16,
     padding: 16,
   },
   header: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 12,
   },
   emptyText: {
-    textAlign: "center",
-    color: "#888",
+    textAlign: 'center',
+    color: '#888',
     fontSize: 16,
   },
   itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
-    backgroundColor: "#f7f7f7",
+    backgroundColor: '#f7f7f7',
     borderRadius: 8,
     padding: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
   ingredientText: {
     fontSize: 16,
-    color: "#222",
+    color: '#222',
   },
   deleteButton: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 14,
     marginLeft: 8,
   },
   emptyContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
     flex: 1,
     paddingVertical: 100,
     gap: 12,
@@ -349,43 +348,43 @@ const styles = StyleSheet.create({
   button: {
     fontSize: 12,
     padding: 12,
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     borderRadius: 8,
-    color: "#fff",
+    color: '#fff',
     marginBottom: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
-    width: "85%",
-    shadowColor: "#000",
+    width: '85%',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
   },
   modalTitle: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 16,
-    textAlign: "center",
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
     fontSize: 16,
-    backgroundColor: "#fafafa",
+    backgroundColor: '#fafafa',
   },
 });
