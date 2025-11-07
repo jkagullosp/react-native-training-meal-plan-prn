@@ -21,6 +21,7 @@ import {
 } from './src/utils/notificationChannel';
 import messaging from '@react-native-firebase/messaging';
 import { useAuthStore } from './src/stores/auth.store';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
@@ -33,6 +34,8 @@ export default function App() {
   //const fetchProfile = useAuthStore(state => state.fetchProfile);
 
   const { initialized, initializeAuth, isAuthenticated, user } = useAuthStore();
+
+  const queryClient = new QueryClient();
 
   useEffect(() => {
     initializeAuth();
@@ -102,7 +105,8 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <NavigationContainer>
           {content}
@@ -110,5 +114,6 @@ export default function App() {
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }

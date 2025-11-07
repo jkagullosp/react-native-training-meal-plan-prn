@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,23 +6,24 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import DiscoverHeader from "../components/DiscoverHeader";
-import { useDiscoverStore } from "../store/useDiscoverStore";
-import SearchAndFilter from "../components/SearchAndFilter";
-import RecipeCard from "../components/RecipeCards";
-import { FullRecipe } from "../types/recipeTypes";
-import FilterModal from "../components/FilterModal";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import DiscoverHeader from '../components/DiscoverHeader';
+import { useDiscoverStore } from '../store/useDiscoverStore';
+import { useRecipesQuery } from '../../../hooks/useRecipesQuery';
+import SearchAndFilter from '../components/SearchAndFilter';
+import RecipeCard from '../components/RecipeCards';
+import { FullRecipe } from '../../../types/recipe';
+import FilterModal from '../components/FilterModal';
 
 export default function DiscoverScreen({ navigation }: any) {
-  const recipes = useDiscoverStore((s) => s.recipes);
-  const loading = useDiscoverStore((s) => s.loading);
-  const availableTags = useDiscoverStore((s) => s.availableTags);
-  const fetchRecipes = useDiscoverStore((s) => s.fetchRecipes);
-  const fetchTags = useDiscoverStore((s) => s.fetchTags);
+  const loading = useDiscoverStore(s => s.loading);
+  const availableTags = useDiscoverStore(s => s.availableTags);
+  const fetchRecipes = useDiscoverStore(s => s.fetchRecipes);
+  const fetchTags = useDiscoverStore(s => s.fetchTags);
+  const { data: recipes, isLoading, error } = useRecipesQuery();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -43,27 +44,28 @@ export default function DiscoverScreen({ navigation }: any) {
     setRefreshing(false);
   };
 
-  const filteredRecipes = recipes.filter((recipe) => {
+  // Ensure filteredRecipes is always an array
+  const filteredRecipes = (recipes ?? []).filter(recipe => {
     const matchesSearch =
       recipe.title.toLowerCase().includes(search.toLowerCase()) ||
-      recipe.tags.some((tagObj) =>
-        tagObj.tag.name.toLowerCase().includes(search.toLowerCase())
+      recipe.tags.some(tagObj =>
+        tagObj.tag.name.toLowerCase().includes(search.toLowerCase()),
       );
 
     const matchesTags =
       selectedTagIds.length === 0 ||
-      recipe.tags.some((tagObj) => selectedTagIds.includes(tagObj.tag.id));
+      recipe.tags.some(tagObj => selectedTagIds.includes(tagObj.tag.id));
 
     const matchesServings = servings === null || recipe.servings === servings;
 
     const matchesCookTime =
       !cookTime ||
-      (cookTime === "under30" && recipe.total_time && recipe.total_time < 30) ||
-      (cookTime === "30to60" &&
+      (cookTime === 'under30' && recipe.total_time && recipe.total_time < 30) ||
+      (cookTime === '30to60' &&
         recipe.total_time &&
         recipe.total_time >= 30 &&
         recipe.total_time <= 60) ||
-      (cookTime === "over60" && recipe.total_time && recipe.total_time > 60);
+      (cookTime === 'over60' && recipe.total_time && recipe.total_time > 60);
 
     const matchesRating =
       minRating === null ||
@@ -79,7 +81,7 @@ export default function DiscoverScreen({ navigation }: any) {
   });
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -96,7 +98,7 @@ export default function DiscoverScreen({ navigation }: any) {
             onOpenFilter={() => setFilterModalVisible(true)}
           />
         </View>
-        {loading ? (
+        {(loading || isLoading) ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#9f9f9fff" />
             <Text style={styles.emptyText}>Loading recipes...</Text>
@@ -108,7 +110,7 @@ export default function DiscoverScreen({ navigation }: any) {
                 key={recipe.id}
                 recipe={recipe}
                 onPress={() =>
-                  navigation.navigate("RecipeDetail", {
+                  navigation.navigate('RecipeDetail', {
                     recipeId: recipe.id,
                     recipe,
                   })
@@ -148,63 +150,63 @@ export default function DiscoverScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   headerContainer: {
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     paddingHorizontal: 16,
   },
   headerContainerSearch: {
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     paddingHorizontal: 16,
     marginTop: 12,
   },
   scrollView: {
     flex: 1,
     gap: 12,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
   },
   cardScrollView: {
     paddingHorizontal: 16,
     marginTop: 16,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
   },
   emptyText: {
-    textAlign: "center",
-    color: "#888",
+    textAlign: 'center',
+    color: '#888',
     fontSize: 16,
     marginTop: 40,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 40,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 24,
     borderRadius: 16,
-    width: "80%",
-    alignItems: "center",
+    width: '80%',
+    alignItems: 'center',
   },
   modalTitle: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 16,
   },
   closeButton: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 8,
     marginTop: 8,
   },
   closeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

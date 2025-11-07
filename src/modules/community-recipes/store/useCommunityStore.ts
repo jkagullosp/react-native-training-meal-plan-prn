@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { supabase } from '../../../client/supabase';
 import { Profile } from '../../../types/auth';
-import { FullRecipe, Tag } from '../../discover/types/recipeTypes';
-import { RecipeLike } from '../../discover/types/recipeTypes';
+import { FullRecipe, Tag } from '../../../types/recipe';
+import { RecipeLike } from '../../../types/recipe';
 import { CreateRecipeInput } from '../types/communityRecipeInputTypes';
 
 type CommunityState = {

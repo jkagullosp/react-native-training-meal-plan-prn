@@ -1,5 +1,5 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,20 +8,20 @@ import {
   KeyboardAvoidingView,
   RefreshControl,
   ActivityIndicator,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import CommunityHeader from "../components/CommunityHeader";
-import { useCommunityStore } from "../store/useCommunityStore";
-import CommunityRecipeCards from "../components/CommunityRecipeCards";
-import CommunitySearchAndFilter from "../components/CommunitySearchAndFilter";
-import { FullRecipe } from "../../discover/types/recipeTypes";
-import CommunityFilterModal from "../components/CommunityFilterModal";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import CommunityHeader from '../components/CommunityHeader';
+import { useCommunityStore } from '../store/useCommunityStore';
+import CommunityRecipeCards from '../components/CommunityRecipeCards';
+import CommunitySearchAndFilter from '../components/CommunitySearchAndFilter';
+import { FullRecipe } from '../../../types/recipe';
+import CommunityFilterModal from '../components/CommunityFilterModal';
 
 export default function CommunityRecipesScreen({ navigation }: any) {
   const { recipes, loading, fetchCommunityRecipes, fetchTags, availableTags } =
     useCommunityStore();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -43,27 +43,27 @@ export default function CommunityRecipesScreen({ navigation }: any) {
     setRefreshing(false);
   };
 
-  const filteredRecipes = recipes.filter((recipe) => {
+  const filteredRecipes = recipes.filter(recipe => {
     const matchesSearch =
       recipe.title.toLowerCase().includes(search.toLowerCase()) ||
-      recipe.tags.some((tagObj) =>
-        tagObj.tag.name.toLowerCase().includes(search.toLowerCase())
+      recipe.tags.some(tagObj =>
+        tagObj.tag.name.toLowerCase().includes(search.toLowerCase()),
       );
 
     const matchesTags =
       selectedTagIds.length === 0 ||
-      recipe.tags.some((tagObj) => selectedTagIds.includes(tagObj.tag.id));
+      recipe.tags.some(tagObj => selectedTagIds.includes(tagObj.tag.id));
 
     const matchesServings = servings === null || recipe.servings === servings;
 
     const matchesCookTime =
       !cookTime ||
-      (cookTime === "under30" && recipe.total_time && recipe.total_time < 30) ||
-      (cookTime === "30to60" &&
+      (cookTime === 'under30' && recipe.total_time && recipe.total_time < 30) ||
+      (cookTime === '30to60' &&
         recipe.total_time &&
         recipe.total_time >= 30 &&
         recipe.total_time <= 60) ||
-      (cookTime === "over60" && recipe.total_time && recipe.total_time > 60);
+      (cookTime === 'over60' && recipe.total_time && recipe.total_time > 60);
 
     const matchesRating =
       minRating === null ||
@@ -79,7 +79,7 @@ export default function CommunityRecipesScreen({ navigation }: any) {
   });
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingViewStyle}>
         <ScrollView
           style={styles.scrollView}
@@ -88,7 +88,7 @@ export default function CommunityRecipesScreen({ navigation }: any) {
           }
         >
           <View style={styles.container}>
-            <CommunityHeader navigation={navigation}/>
+            <CommunityHeader navigation={navigation} />
             <CommunitySearchAndFilter
               search={search}
               setSearch={setSearch}
@@ -106,7 +106,7 @@ export default function CommunityRecipesScreen({ navigation }: any) {
                     key={recipe.id}
                     recipe={recipe}
                     onPress={() =>
-                      navigation.navigate("CommunityRecipeDetail", {
+                      navigation.navigate('CommunityRecipeDetail', {
                         recipeId: recipe.id,
                         title: recipe.title,
                       })
@@ -121,24 +121,24 @@ export default function CommunityRecipesScreen({ navigation }: any) {
             )}
 
             <CommunityFilterModal
-                      visible={filterModalVisible}
-                      onClose={() => setFilterModalVisible(false)}
-                      availableTags={availableTags}
-                      selectedTagIds={selectedTagIds}
-                      setSelectedTagIds={setSelectedTagIds}
-                      servings={servings}
-                      setServings={setServings}
-                      cookTime={cookTime}
-                      setCookTime={setCookTime}
-                      minRating={minRating}
-                      setMinRating={setMinRating}
-                      onClear={() => {
-                        setSelectedTagIds([]);
-                        setServings(null);
-                        setCookTime(null);
-                        setMinRating(null);
-                      }}
-                    />
+              visible={filterModalVisible}
+              onClose={() => setFilterModalVisible(false)}
+              availableTags={availableTags}
+              selectedTagIds={selectedTagIds}
+              setSelectedTagIds={setSelectedTagIds}
+              servings={servings}
+              setServings={setServings}
+              cookTime={cookTime}
+              setCookTime={setCookTime}
+              minRating={minRating}
+              setMinRating={setMinRating}
+              onClear={() => {
+                setSelectedTagIds([]);
+                setServings(null);
+                setCookTime(null);
+                setMinRating(null);
+              }}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -149,7 +149,7 @@ export default function CommunityRecipesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     gap: 12,
   },
   keyboardAvoidingViewStyle: {
@@ -157,28 +157,28 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 12,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     padding: 16,
   },
   headerContainer: {
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     paddingHorizontal: 16,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 40,
   },
   emptyText: {
-    textAlign: "center",
-    color: "#888",
+    textAlign: 'center',
+    color: '#888',
     fontSize: 16,
     marginTop: 40,
   },
   cardScrollView: {
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
   },
 });

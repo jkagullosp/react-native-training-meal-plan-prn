@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../../../client/supabase';
 import { Profile } from '../../../types/auth';
-import { FullRecipe, Tag } from '../types/recipeTypes';
+import { FullRecipe, Tag } from '../../../types/recipe';
 
 type DiscoverState = {
   user: Profile | null;

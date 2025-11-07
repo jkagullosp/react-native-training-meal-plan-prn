@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,10 @@ import {
   Modal,
   StyleSheet,
   Platform,
-} from "react-native";
-import { Tag } from "../../discover/types/recipeTypes";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { CircleX, Star } from "lucide-react-native";
+} from 'react-native';
+import { Tag } from '../../../types/recipe';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { CircleX, Star } from 'lucide-react-native';
 
 type FilterModalProps = {
   visible: boolean;
@@ -51,15 +51,15 @@ export default function CommunityFilterModal({
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Filter Recipes</Text>
           <TouchableOpacity style={styles.exitButton} onPress={onClose}>
-            {Platform.OS === "ios" ? (
-              <Icon name="close" size={20} color={"#E16235"} />
+            {Platform.OS === 'ios' ? (
+              <Icon name="close" size={20} color={'#E16235'} />
             ) : (
-              <CircleX size={20} color={"#E16235"} />
+              <CircleX size={20} color={'#E16235'} />
             )}
           </TouchableOpacity>
           <Text style={styles.sectionTitle}>Tags:</Text>
           <View style={styles.tagsContainer}>
-            {availableTags.slice(0, 5).map((tag) => (
+            {availableTags.slice(0, 5).map(tag => (
               <TouchableOpacity
                 key={tag.id}
                 style={[
@@ -67,10 +67,10 @@ export default function CommunityFilterModal({
                   selectedTagIds.includes(tag.id) && styles.tagButtonSelected,
                 ]}
                 onPress={() => {
-                  setSelectedTagIds((prev) =>
+                  setSelectedTagIds(prev =>
                     prev.includes(tag.id)
-                      ? prev.filter((id) => id !== tag.id)
-                      : [...prev, tag.id]
+                      ? prev.filter(id => id !== tag.id)
+                      : [...prev, tag.id],
                   );
                 }}
               >
@@ -89,7 +89,7 @@ export default function CommunityFilterModal({
 
           <Text style={styles.sectionTitle}>Servings:</Text>
           <View style={styles.servingsContainer}>
-            {[1, 2, 3, 4, 5].map((num) => (
+            {[1, 2, 3, 4, 5].map(num => (
               <TouchableOpacity
                 key={num}
                 style={[
@@ -113,10 +113,10 @@ export default function CommunityFilterModal({
           <Text style={styles.sectionTitle}>Cook Time:</Text>
           <View style={styles.cookTimeContainer}>
             {[
-              { label: "Under 30 mins", value: "under30" },
-              { label: "30-60 mins", value: "30to60" },
-              { label: "Over 60 mins", value: "over60" },
-            ].map((option) => (
+              { label: 'Under 30 mins', value: 'under30' },
+              { label: '30-60 mins', value: '30to60' },
+              { label: 'Over 60 mins', value: 'over60' },
+            ].map(option => (
               <TouchableOpacity
                 key={option.value}
                 style={[
@@ -142,7 +142,7 @@ export default function CommunityFilterModal({
 
           <Text style={styles.sectionTitle}>Minimum Rating:</Text>
           <View style={styles.ratingContainer}>
-            {[1, 2, 3, 4, 5].map((num) => (
+            {[1, 2, 3, 4, 5].map(num => (
               <TouchableOpacity
                 key={num}
                 style={[
@@ -160,7 +160,7 @@ export default function CommunityFilterModal({
                   >
                     {num}
                   </Text>
-                  {Platform.OS === "ios" ? (
+                  {Platform.OS === 'ios' ? (
                     <Icon
                       name="star"
                       size={16}
@@ -197,143 +197,143 @@ export default function CommunityFilterModal({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 24,
     borderRadius: 16,
-    width: "80%",
-    alignItems: "center",
-    position: "relative",
+    width: '80%',
+    alignItems: 'center',
+    position: 'relative',
   },
   modalTitle: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 16,
   },
   exitButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 12,
     right: 12,
     zIndex: 10,
     padding: 4,
   },
   sectionTitle: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginTop: 8,
     marginBottom: 4,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginBottom: 8,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   tagButton: {
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 6,
     margin: 4,
   },
   tagButtonSelected: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
   },
   tagButtonText: {
-    color: "#333",
+    color: '#333',
   },
   tagButtonTextSelected: {
-    color: "#fff",
+    color: '#fff',
   },
   servingsContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 8,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   servingButton: {
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 6,
     margin: 4,
   },
   servingButtonSelected: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
   },
   servingButtonText: {
-    color: "#333",
+    color: '#333',
   },
   servingButtonTextSelected: {
-    color: "#fff",
+    color: '#fff',
   },
   cookTimeContainer: {
-    flexDirection: "column",
+    flexDirection: 'column',
     marginBottom: 8,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   cookTimeButton: {
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 6,
     margin: 4,
   },
   cookTimeButtonSelected: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
   },
   cookTimeButtonText: {
-    color: "#333",
+    color: '#333',
   },
   cookTimeButtonTextSelected: {
-    color: "#fff",
+    color: '#fff',
   },
   ratingContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 8,
-    alignSelf: "flex-start",
-    flexWrap: "wrap",
+    alignSelf: 'flex-start',
+    flexWrap: 'wrap',
   },
   ratingButton: {
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 6,
     margin: 4,
   },
   ratingButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 2,
   },
   ratingStarIcon: {
     marginLeft: 2,
   },
   ratingButtonSelected: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
   },
   ratingButtonText: {
-    color: "#333",
+    color: '#333',
   },
   ratingButtonTextSelected: {
-    color: "#fff",
+    color: '#fff',
   },
   closeButton: {
-    backgroundColor: "#E16235",
+    backgroundColor: '#E16235',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 8,
     marginTop: 8,
   },
   clearButton: {
-    backgroundColor: "#888",
+    backgroundColor: '#888',
     marginTop: 8,
   },
   closeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

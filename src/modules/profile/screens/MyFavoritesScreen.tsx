@@ -1,7 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
-import { useDiscoverStore } from "../../discover/store/useDiscoverStore";
-import { FullRecipe } from "../../discover/types/recipeTypes";
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
+import { FullRecipe } from '../../../types/recipe';
 
 export default function MyFavoritesScreen({ navigation }: any) {
   const {
@@ -45,13 +52,13 @@ export default function MyFavoritesScreen({ navigation }: any) {
 
   return (
     <ScrollView style={styles.scrollView}>
-      {favoriteRecipes.map((recipe) => (
+      {favoriteRecipes.map(recipe => (
         <TouchableOpacity
           key={recipe.id}
           style={styles.recipeCard}
           onPress={() =>
-            navigation.navigate("Discover", {
-              screen: "RecipeDetail",
+            navigation.navigate('Discover', {
+              screen: 'RecipeDetail',
               params: {
                 recipeId: recipe.id,
                 title: recipe.title,
@@ -63,7 +70,7 @@ export default function MyFavoritesScreen({ navigation }: any) {
             source={
               recipe.images && recipe.images.length > 0
                 ? { uri: recipe.images[0].image_url }
-                : require("../../../../assets/images/onboardImage1.jpg")
+                : require('../../../../assets/images/onboardImage1.jpg')
             }
             style={styles.recipeImage}
             resizeMode="cover"
@@ -85,14 +92,14 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   recipeCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 16,
     padding: 10,
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
@@ -102,25 +109,25 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 8,
     marginRight: 12,
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
   },
   recipeInfo: {
     flex: 1,
-    flexDirection: "column",
+    flexDirection: 'column',
   },
   recipeTitle: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 4,
   },
   recipeDesc: {
     fontSize: 13,
-    color: "#888",
+    color: '#888',
   },
   centered: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 32,
   },
 });

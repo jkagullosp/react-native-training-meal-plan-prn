@@ -20,7 +20,7 @@ import { useMealPlanStore } from '../../meal-plan/store/useMealPlanStore';
 import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
 import { supabase } from '../../../client/supabase';
 import Toast from 'react-native-toast-message';
-import { FullRecipe } from '../types/recipeTypes';
+import { FullRecipe } from '../../../types/recipe';
 
 export default function RecipeDetailScreen({ navigation, route }: any) {
   const { loading, user, fetchRecipes } = useDiscoverStore();
