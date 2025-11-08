@@ -10,7 +10,6 @@ import {
   Modal,
   Dimensions,
 } from 'react-native';
-import { useDiscoverStore } from '../modules/discover/store/useDiscoverStore';
 import Stats from '../components/RecipeStats';
 import Nutrition from '@/components/RecipeNutrition';
 import Instructions from '@/components/RecipeInstructions';
@@ -23,25 +22,23 @@ import { supabase } from '../client/supabase';
 import Toast from 'react-native-toast-message';
 import { FullRecipe } from '../types/recipe';
 import { useRecipesQuery } from '../hooks/useRecipesQuery';
+import { useAuthStore } from '@/stores/auth.store';
 
 export default function RecipeDetailScreen({ navigation, route }: any) {
-  const { loading, user } = useDiscoverStore();
-  const [modalVisible, setModalVisible] = useState(false);
+  const { loading, user } = useAuthStore();
   const { addMealPlan } = useMealPlanStore();
   const { addMissingIngredients } = useShoppingListStore();
   const { fetchMealPlans } = useMealPlanStore();
   const { refetch: refetchRecipes } = useRecipesQuery();
 
   const recipe: FullRecipe = route.params.recipe;
-
   const isAuthor = user?.id === recipe?.author_id;
-
   const userRating = recipe?.ratings?.find(r => r.user_id === user?.id);
+
+  const [modalVisible, setModalVisible] = useState(false);
   const [rating, setRating] = useState<number>(userRating?.rating || 0);
   const [submitting, setSubmitting] = useState(false);
-
   const [addingMeal, setAddingMeal] = useState(false);
-
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {

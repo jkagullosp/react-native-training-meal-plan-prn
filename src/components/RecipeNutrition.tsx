@@ -1,20 +1,8 @@
 import React from "react";
 import { View, StyleSheet, Text } from "react-native";
-import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
 
 export default function Nutrition({ route }: any) {
-  const { recipeId } = route.params;
-  const { recipes, loading } = useDiscoverStore();
-
-  const recipe = recipes.find((r) => r.id === recipeId);
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading nutrition...</Text>
-      </View>
-    );
-  }
+  const { recipe } = route.params;
 
   if (!recipe) {
     return (

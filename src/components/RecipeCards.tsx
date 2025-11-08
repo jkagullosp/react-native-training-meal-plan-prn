@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     color: '#777777',
   },
   servingsRow: {

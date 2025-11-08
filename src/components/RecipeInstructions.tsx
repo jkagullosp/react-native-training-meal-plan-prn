@@ -1,20 +1,9 @@
 import React from "react";
 import { View, StyleSheet, Text } from "react-native";
-import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
+import { RecipeStep } from "@/types/recipe";
 
 export default function Instructions({ route }: any) {
-  const { recipeId } = route.params;
-  const { recipes, loading } = useDiscoverStore();
-
-  const recipe = recipes.find((r) => r.id === recipeId);
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading instructions...</Text>
-      </View>
-    );
-  }
+  const { recipe } = route.params;
 
   if (!recipe) {
     return (
@@ -28,8 +17,8 @@ export default function Instructions({ route }: any) {
     <View style={styles.instructionsWrapper}>
       {recipe.steps && recipe.steps.length > 0 ? (
         recipe.steps
-          .sort((a, b) => a.step_number - b.step_number)
-          .map((instruction, idx) => (
+          .sort((a: RecipeStep, b: RecipeStep) => a.step_number - b.step_number)
+          .map((instruction: RecipeStep, idx: number) => (
             <View key={idx} style={styles.stepContainer}>
               <View style={styles.stepHeader}>
                 <Text style={styles.stepNumber}>{idx + 1}</Text>
