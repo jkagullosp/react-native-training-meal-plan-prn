@@ -1,5 +1,5 @@
 import { useShoppingListStore } from './useShoppingListStore';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../client/supabase';
 
 jest.mock('../../utils/supabase', () => ({
   supabase: {
@@ -8,20 +8,26 @@ jest.mock('../../utils/supabase', () => ({
 }));
 
 beforeEach(() => {
-  useShoppingListStore.setState({
-    shoppingList: [],
-    loading: false,
-    mealPlanMap: {},
-    recipeMap: {},
-    pantry: [],
-    fetchShoppingList: useShoppingListStore.getState().fetchShoppingList,
-    fetchMealPlansAndRecipes: useShoppingListStore.getState().fetchMealPlansAndRecipes,
-    addMissingIngredients: useShoppingListStore.getState().addMissingIngredients,
-    markAsChecked: useShoppingListStore.getState().markAsChecked,
-    fetchPantry: useShoppingListStore.getState().fetchPantry,
-    addToPantry: useShoppingListStore.getState().addToPantry,
-    deductIngredientsForRecipe: useShoppingListStore.getState().deductIngredientsForRecipe,
-  }, true);
+  useShoppingListStore.setState(
+    {
+      shoppingList: [],
+      loading: false,
+      mealPlanMap: {},
+      recipeMap: {},
+      pantry: [],
+      fetchShoppingList: useShoppingListStore.getState().fetchShoppingList,
+      fetchMealPlansAndRecipes:
+        useShoppingListStore.getState().fetchMealPlansAndRecipes,
+      addMissingIngredients:
+        useShoppingListStore.getState().addMissingIngredients,
+      markAsChecked: useShoppingListStore.getState().markAsChecked,
+      fetchPantry: useShoppingListStore.getState().fetchPantry,
+      addToPantry: useShoppingListStore.getState().addToPantry,
+      deductIngredientsForRecipe:
+        useShoppingListStore.getState().deductIngredientsForRecipe,
+    },
+    true,
+  );
   jest.clearAllMocks();
 });
 
@@ -34,7 +40,15 @@ describe('useShoppingListStore', () => {
             in: jest.fn().mockReturnValue({
               order: jest.fn().mockResolvedValue({
                 data: [
-                  { id: 'sl1', user_id: 'u1', recipe_id: 'r1', meal_plan_id: 'mp1', ingredient_name: 'Eggs', is_checked: false, created_at: '2025-11-05' },
+                  {
+                    id: 'sl1',
+                    user_id: 'u1',
+                    recipe_id: 'r1',
+                    meal_plan_id: 'mp1',
+                    ingredient_name: 'Eggs',
+                    is_checked: false,
+                    created_at: '2025-11-05',
+                  },
                 ],
                 error: null,
               }),
@@ -46,9 +60,7 @@ describe('useShoppingListStore', () => {
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             in: jest.fn().mockResolvedValue({
-              data: [
-                { id: 'mp1', recipe_id: 'r1', meal_date: '2025-11-05' },
-              ],
+              data: [{ id: 'mp1', recipe_id: 'r1', meal_date: '2025-11-05' }],
               error: null,
             }),
           }),
@@ -57,9 +69,7 @@ describe('useShoppingListStore', () => {
       .mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           in: jest.fn().mockResolvedValue({
-            data: [
-              { id: 'r1', title: 'Test Recipe' },
-            ],
+            data: [{ id: 'r1', title: 'Test Recipe' }],
             error: null,
           }),
         }),
@@ -67,7 +77,9 @@ describe('useShoppingListStore', () => {
 
     await useShoppingListStore.getState().fetchShoppingList('u1');
     expect(useShoppingListStore.getState().shoppingList.length).toBe(1);
-    expect(useShoppingListStore.getState().shoppingList[0].ingredient_name).toBe('Eggs');
+    expect(
+      useShoppingListStore.getState().shoppingList[0].ingredient_name,
+    ).toBe('Eggs');
     expect(useShoppingListStore.getState().loading).toBe(false);
   });
 
@@ -142,7 +154,13 @@ describe('useShoppingListStore', () => {
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({
           data: [
-            { id: 'p1', user_id: 'u1', ingredient_name: 'Eggs', quantity: 5, created_at: '2025-11-05' },
+            {
+              id: 'p1',
+              user_id: 'u1',
+              ingredient_name: 'Eggs',
+              quantity: 5,
+              created_at: '2025-11-05',
+            },
           ],
           error: null,
         }),
@@ -151,7 +169,9 @@ describe('useShoppingListStore', () => {
 
     await useShoppingListStore.getState().fetchPantry('u1');
     expect(useShoppingListStore.getState().pantry.length).toBe(1);
-    expect(useShoppingListStore.getState().pantry[0].ingredient_name).toBe('Eggs');
+    expect(useShoppingListStore.getState().pantry[0].ingredient_name).toBe(
+      'Eggs',
+    );
     expect(useShoppingListStore.getState().loading).toBe(false);
   });
 
@@ -160,9 +180,7 @@ describe('useShoppingListStore', () => {
       .mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({
-            data: [
-              { name: 'Eggs', quantity: 2 },
-            ],
+            data: [{ name: 'Eggs', quantity: 2 }],
             error: null,
           }),
         }),
@@ -172,7 +190,13 @@ describe('useShoppingListStore', () => {
           eq: jest.fn().mockReturnValue({
             eq: jest.fn().mockResolvedValue({
               data: [
-                { id: 'p1', user_id: 'u1', ingredient_name: 'Eggs', quantity: 5, created_at: '2025-11-05' },
+                {
+                  id: 'p1',
+                  user_id: 'u1',
+                  ingredient_name: 'Eggs',
+                  quantity: 5,
+                  created_at: '2025-11-05',
+                },
               ],
               error: null,
             }),
@@ -193,7 +217,9 @@ describe('useShoppingListStore', () => {
         }),
       });
 
-    await useShoppingListStore.getState().deductIngredientsForRecipe('u1', 'r1');
+    await useShoppingListStore
+      .getState()
+      .deductIngredientsForRecipe('u1', 'r1');
     expect(supabase.from).toHaveBeenCalledWith('ingredients');
     expect(supabase.from).toHaveBeenCalledWith('user_pantry');
   });

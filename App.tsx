@@ -5,12 +5,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import OnboardingNavigation from './src/modules/onboarding/navigation/OnboardingNavigation';
 import AuthNavigator from './src/modules/auth/navigation/AuthNavigation';
-import AppNavigator from './src/shared/AppNavigator';
+import AppNavigator from './src/navigation/AppNavigator';
 import {
   useOnboardingStore,
   loadOnboardingState,
 } from './src/modules/onboarding/store/useOnboardingStore';
-import { useAuthStore } from './src/modules/auth/store/useAuthStore';
+//import { useAuthStore } from './src/modules/auth/store/useAuthStore';
 import Toast from 'react-native-toast-message';
 import { testFirebaseInit } from './src/utils/firebaseHelper';
 import {
@@ -20,6 +20,8 @@ import {
   registerForegroundMessageHandler
 } from './src/utils/notificationChannel';
 import messaging from '@react-native-firebase/messaging';
+import { useAuthStore } from './src/stores/auth.store';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
@@ -27,11 +29,17 @@ export default function App() {
 
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
 
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const initialized = useAuthStore(state => state.initialized);
-  const fetchProfile = useAuthStore(state => state.fetchProfile);
+  // const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  // const initialized = useAuthStore(state => state.initialized);
+  //const fetchProfile = useAuthStore(state => state.fetchProfile);
 
-  const user = useAuthStore(s => s.user);
+  const { initialized, initializeAuth, isAuthenticated, user } = useAuthStore();
+
+  const queryClient = new QueryClient();
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   useEffect(() => {
     const load = async () => {
@@ -83,10 +91,6 @@ export default function App() {
     }
   }, [user?.id]);
 
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
   if (!onboardingLoaded || !initialized) {
     return <ActivityIndicator />;
   }
@@ -101,7 +105,8 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <NavigationContainer>
           {content}
@@ -109,5 +114,6 @@ export default function App() {
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }

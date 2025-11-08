@@ -7,7 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { searchTypes } from "../types/searchtypes";
+import { searchTypes } from "../../../types/search";
 import { Funnel } from "lucide-react-native";
 //import Icon from "@react-native-vector-icons/material-design-icons";
 

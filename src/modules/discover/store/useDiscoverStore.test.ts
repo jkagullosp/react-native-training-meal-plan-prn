@@ -1,5 +1,5 @@
 import { useDiscoverStore } from './useDiscoverStore';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../client/supabase';
 
 jest.mock('../../utils/supabase', () => ({
   supabase: {
@@ -76,31 +76,33 @@ describe('useDiscoverStore', () => {
   it('fetches recipes successfully', async () => {
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockResolvedValue({
-        data: [{
-          id: 'r1',
-          author_id: 'u1',
-          title: 'Test Recipe',
-          is_community: true,
-          images: [],
-          steps: [],
-          ingredients: [],
-          tags: [],
-          ratings: [],
-          likes: [],
-          description: null,
-          total_time: null,
-          servings: null,
-          meal_type: null,
-          difficulty: null,
-          calories: null,
-          protein: null,
-          carbs: null,
-          fat: null,
-          avg_rating: null,
-          rating_count: null,
-          created_at: '',
-          updated_at: '',
-        }],
+        data: [
+          {
+            id: 'r1',
+            author_id: 'u1',
+            title: 'Test Recipe',
+            is_community: true,
+            images: [],
+            steps: [],
+            ingredients: [],
+            tags: [],
+            ratings: [],
+            likes: [],
+            description: null,
+            total_time: null,
+            servings: null,
+            meal_type: null,
+            difficulty: null,
+            calories: null,
+            protein: null,
+            carbs: null,
+            fat: null,
+            avg_rating: null,
+            rating_count: null,
+            created_at: '',
+            updated_at: '',
+          },
+        ],
         error: null,
       }),
     });
@@ -121,7 +123,9 @@ describe('useDiscoverStore', () => {
 
     await useDiscoverStore.getState().fetchRecipes();
     expect(useDiscoverStore.getState().recipes.length).toBe(0);
-    expect(useDiscoverStore.getState().recipesError).toBe('Failed to fetch recipes');
+    expect(useDiscoverStore.getState().recipesError).toBe(
+      'Failed to fetch recipes',
+    );
   });
 
   it('fetches tags successfully', async () => {
@@ -155,7 +159,16 @@ describe('useDiscoverStore', () => {
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
           maybeSingle: jest.fn().mockResolvedValue({
-            data: { id: 'author1', display_name: 'Author One', username: 'author1', email: 'a@a.com', profile_image: null, bio: null, created_at: '', updated_at: '' },
+            data: {
+              id: 'author1',
+              display_name: 'Author One',
+              username: 'author1',
+              email: 'a@a.com',
+              profile_image: null,
+              bio: null,
+              created_at: '',
+              updated_at: '',
+            },
             error: null,
           }),
         }),
@@ -163,38 +176,42 @@ describe('useDiscoverStore', () => {
     });
 
     await useDiscoverStore.getState().fetchAuthor('author1');
-    expect(useDiscoverStore.getState().authors.author1.display_name).toBe('Author One');
+    expect(useDiscoverStore.getState().authors.author1.display_name).toBe(
+      'Author One',
+    );
   });
 
   it('fetches user recipes successfully', async () => {
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({
-          data: [{
-            id: 'r2',
-            author_id: 'u1',
-            title: 'User Recipe',
-            is_community: false,
-            images: [],
-            steps: [],
-            ingredients: [],
-            tags: [],
-            ratings: [],
-            likes: [],
-            description: null,
-            total_time: null,
-            servings: null,
-            meal_type: null,
-            difficulty: null,
-            calories: null,
-            protein: null,
-            carbs: null,
-            fat: null,
-            avg_rating: null,
-            rating_count: null,
-            created_at: '',
-            updated_at: '',
-          }],
+          data: [
+            {
+              id: 'r2',
+              author_id: 'u1',
+              title: 'User Recipe',
+              is_community: false,
+              images: [],
+              steps: [],
+              ingredients: [],
+              tags: [],
+              ratings: [],
+              likes: [],
+              description: null,
+              total_time: null,
+              servings: null,
+              meal_type: null,
+              difficulty: null,
+              calories: null,
+              protein: null,
+              carbs: null,
+              fat: null,
+              avg_rating: null,
+              rating_count: null,
+              created_at: '',
+              updated_at: '',
+            },
+          ],
           error: null,
         }),
       }),
@@ -202,7 +219,9 @@ describe('useDiscoverStore', () => {
 
     await useDiscoverStore.getState().fetchUserRecipes('u1');
     expect(useDiscoverStore.getState().userRecipes.length).toBe(1);
-    expect(useDiscoverStore.getState().userRecipes[0].title).toBe('User Recipe');
+    expect(useDiscoverStore.getState().userRecipes[0].title).toBe(
+      'User Recipe',
+    );
   });
 
   it('fetches user total likes successfully', async () => {
@@ -295,5 +314,4 @@ describe('useDiscoverStore', () => {
     await useDiscoverStore.getState().removeFavorite('u1', 'r1');
     expect(useDiscoverStore.getState().userFavorites).toEqual(['r2']);
   });
-
 });

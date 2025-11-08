@@ -1,5 +1,5 @@
-import React from "react";
-import { useState } from "react";
+import React from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,11 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
-} from "react-native";
-import { FullRecipe } from "../types/recipeTypes";
-import { RecipeTag } from "../types/recipeTypes";
-import { Star } from "lucide-react-native";
-import { Timer, Users } from "lucide-react-native";
+} from 'react-native';
+import { FullRecipe } from '../../../types/recipe';
+import { RecipeTag } from '../../../types/recipe';
+import { Star } from 'lucide-react-native';
+import { Timer, Users } from 'lucide-react-native';
 
 type RecipeCardProps = {
   recipe: FullRecipe;
@@ -20,7 +20,7 @@ type RecipeCardProps = {
 
 const getPrimaryImage = (recipe: FullRecipe) => {
   const images = recipe.images;
-  const primary = images?.find((img) => img.is_primary) || images?.[0];
+  const primary = images?.find(img => img.is_primary) || images?.[0];
   return primary?.image_url;
 };
 
@@ -29,7 +29,7 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
 
   const imageSource = getPrimaryImage(recipe)
     ? { uri: getPrimaryImage(recipe) }
-    : require("../../../../assets/images/onboardImage1.jpg");
+    : require('../../../../assets/images/onboardImage1.jpg');
 
   const ratings = recipe.ratings || [];
   const ratingCount = ratings.length;
@@ -44,7 +44,7 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <View style={{ position: "relative", width: "100%", height: 160 }}>
+      <View style={{ position: 'relative', width: '100%', height: 160 }}>
         <Image
           source={imageSource}
           style={styles.recipeImage}
@@ -70,16 +70,16 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
         <View style={styles.statsRow}>
           <View style={styles.timeAndServingsRow}>
             <View style={styles.timeRow}>
-              <Timer size={14} color={"#777777"} />
+              <Timer size={14} color={'#777777'} />
               <Text style={styles.text}>{recipe.total_time}mins</Text>
             </View>
             <View style={styles.servingsRow}>
-              <Users size={14} color={"#777777"} />
+              <Users size={14} color={'#777777'} />
               <Text style={styles.text}>{recipe.servings}</Text>
             </View>
           </View>
           <View style={styles.ratingRow}>
-            <Star size={14} color={"#FFD700"} />
+            <Star size={14} color={'#FFD700'} />
             <Text style={styles.text}>{avgRating.toFixed(1)}</Text>
             <Text style={styles.text}>({ratingCount})</Text>
           </View>
@@ -90,7 +90,7 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
               <View style={styles.tagsView} key={index}>
                 <Text style={styles.tagText}>
                   {recipeTag.tag?.name}
-                  {index < recipe.tags.length - 1 ? "" : ""}
+                  {index < recipe.tags.length - 1 ? '' : ''}
                 </Text>
               </View>
             ))
@@ -107,10 +107,10 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
 
 const styles = StyleSheet.create({
   recipeCard: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 16,
     marginBottom: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -118,86 +118,86 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   recipeImage: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
     borderBottomRightRadius: 0,
     borderBottomLeftRadius: 0,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    resizeMode: "cover",
+    resizeMode: 'cover',
   },
   recipeDetails: {
     padding: 14,
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 10,
   },
   recipeTitle: {
-    flexDirection: "row",
+    flexDirection: 'row',
   },
   recipeTitleText: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   recipeSubtitleText: {
     fontSize: 12,
-    fontWeight: "normal",
+    fontWeight: 'normal',
   },
   statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   timeAndServingsRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
   timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
-    color: "#777777",
+    color: '#777777',
   },
   servingsRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
   ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 3,
   },
   icon: {
-    color: "#777777",
+    color: '#777777',
   },
   text: {
-    color: "#777777",
+    color: '#777777',
     fontSize: 12,
   },
   starIcon: {
-    color: "#FFD700",
+    color: '#FFD700',
   },
   tagsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginTop: 4,
     gap: 12,
   },
   tagText: {
     fontSize: 12,
-    color: "#777777",
+    color: '#777777',
     padding: 0,
     borderRadius: 8,
   },
   imageLoader: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
-    width: "100%",
+    width: '100%',
     height: 160,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
     opacity: 0.7,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
@@ -206,6 +206,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: "#eeeeeeff",
+    backgroundColor: '#eeeeeeff',
   },
 });

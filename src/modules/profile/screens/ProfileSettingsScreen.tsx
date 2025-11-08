@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { useAuthStore } from "../../auth/store/useAuthStore";
+import { useAuthStore } from '../../../stores/auth.store';
 import { useProfileStore } from "../store/useProfileStore";
 import Button from "../../../shared/components/Button";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

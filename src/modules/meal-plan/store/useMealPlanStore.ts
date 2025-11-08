@@ -1,12 +1,12 @@
-import { create } from "zustand";
-import { supabase } from "../../utils/supabase";
-import { FullMealPlan } from "../types/mealPlanTypes";
-import { MealHistory } from "../types/historyTypes";
-import { useShoppingListStore } from "../../shopping-list/store/useShoppingListStore";
-import { 
-  scheduleHybridMealNotification, 
-  cancelHybridNotification 
-} from "../../../utils/notificationChannel";
+import { create } from 'zustand';
+import { supabase } from '../../../client/supabase';
+import { FullMealPlan } from '../types/mealPlanTypes';
+import { MealHistory } from '../types/historyTypes';
+import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
+import {
+  scheduleHybridMealNotification,
+  cancelHybridNotification,
+} from '../../../utils/notificationChannel';
 
 type MealPlanState = {
   mealPlans: FullMealPlan[];
@@ -17,7 +17,7 @@ type MealPlanState = {
     userId: string,
     recipeId: string,
     mealDate: string,
-    mealType: string
+    mealType: string,
   ) => Promise<void>;
   removeMealPlan: (mealPlanId: string, userId: string) => Promise<void>;
   fetchMealHistory: (userId: string) => Promise<void>;
@@ -25,15 +25,15 @@ type MealPlanState = {
     userId: string,
     recipeId: string,
     mealDate: string,
-    mealType: string
+    mealType: string,
   ) => Promise<void>;
   removeIngredientsForRecipe: (
     userId: string,
-    recipeId: string
+    recipeId: string,
   ) => Promise<void>;
 };
 
-export const useMealPlanStore = create<MealPlanState>((set) => ({
+export const useMealPlanStore = create<MealPlanState>(set => ({
   mealPlans: [],
   loading: false,
   mealHistory: [],
@@ -42,7 +42,7 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
     set({ loading: true });
 
     const { data, error } = await supabase
-      .from("meal_plans")
+      .from('meal_plans')
       .select(
         `
         *,
@@ -50,10 +50,10 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
           *,
           images:recipe_images(*)
         )
-      `
+      `,
       )
-      .eq("user_id", userId)
-      .order("meal_date", { ascending: true });
+      .eq('user_id', userId)
+      .order('meal_date', { ascending: true });
 
     if (!error && data) {
       set({ mealPlans: data as FullMealPlan[], loading: false });
@@ -66,11 +66,11 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
     userId: string,
     recipeId: string,
     mealDate: string,
-    mealType: string
+    mealType: string,
   ) => {
     // Insert the meal plan
     const { data, error } = await supabase
-      .from("meal_plans")
+      .from('meal_plans')
       .insert([
         {
           user_id: userId,
@@ -79,10 +79,12 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
           meal_type: mealType,
         },
       ])
-      .select(`
+      .select(
+        `
         *,
         recipe:recipes(title)
-      `)
+      `,
+      )
       .single();
 
     if (error) {
@@ -104,7 +106,10 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
       if (result.success) {
         console.log('✅ Notification scheduled:', result.scheduledFor);
       } else {
-        console.log('⚠️ Notification scheduling failed:', result.reason || result.error);
+        console.log(
+          '⚠️ Notification scheduling failed:',
+          result.reason || result.error,
+        );
       }
     }
   },
@@ -112,14 +117,14 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
   removeMealPlan: async (mealPlanId: string, userId: string) => {
     // Cancel notifications before removing
     await cancelHybridNotification(mealPlanId, userId);
-    
+
     // Remove the meal plan
-    await supabase.from("meal_plans").delete().eq("id", mealPlanId);
+    await supabase.from('meal_plans').delete().eq('id', mealPlanId);
   },
 
   fetchMealHistory: async (userId: string) => {
     const { data, error } = await supabase
-      .from("meal_history")
+      .from('meal_history')
       .select(
         `
         *,
@@ -127,10 +132,10 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
           *,
           images:recipe_images(*)
         )
-      `
+      `,
       )
-      .eq("user_id", userId)
-      .order("meal_date", { ascending: false });
+      .eq('user_id', userId)
+      .order('meal_date', { ascending: false });
 
     if (!error && data) {
       set({ mealHistory: data as MealHistory[] });
@@ -143,9 +148,9 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
     userId: string,
     recipeId: string,
     mealDate: string,
-    mealType: string
+    mealType: string,
   ) => {
-    await supabase.from("meal_history").insert([
+    await supabase.from('meal_history').insert([
       {
         user_id: userId,
         recipe_id: recipeId,
@@ -160,18 +165,18 @@ export const useMealPlanStore = create<MealPlanState>((set) => ({
 
   removeIngredientsForRecipe: async (userId: string, recipeId: string) => {
     const { data: ingredients, error: ingError } = await supabase
-      .from("ingredients")
-      .select("name")
-      .eq("recipe_id", recipeId);
+      .from('ingredients')
+      .select('name')
+      .eq('recipe_id', recipeId);
 
     if (ingError || !ingredients) return;
 
     for (const ingredient of ingredients) {
       await supabase
-        .from("shopping_list")
+        .from('shopping_list')
         .delete()
-        .eq("user_id", userId)
-        .eq("ingredient_name", ingredient.name);
+        .eq('user_id', userId)
+        .eq('ingredient_name', ingredient.name);
     }
   },
 }));

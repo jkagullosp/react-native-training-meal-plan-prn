@@ -1,5 +1,5 @@
 import { useMealPlanStore } from './useMealPlanStore';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../client/supabase';
 
 jest.mock('../../utils/supabase', () => ({
   supabase: {
@@ -8,7 +8,9 @@ jest.mock('../../utils/supabase', () => ({
 }));
 
 jest.mock('../../../utils/notificationChannel', () => ({
-  scheduleHybridMealNotification: jest.fn().mockResolvedValue({ success: true, scheduledFor: '2025-11-05T08:00:00Z' }),
+  scheduleHybridMealNotification: jest
+    .fn()
+    .mockResolvedValue({ success: true, scheduledFor: '2025-11-05T08:00:00Z' }),
   cancelHybridNotification: jest.fn().mockResolvedValue(undefined),
 }));
 
@@ -21,17 +23,21 @@ jest.mock('../../shopping-list/store/useShoppingListStore', () => ({
 }));
 
 beforeEach(() => {
-  useMealPlanStore.setState({
-    mealPlans: [],
-    loading: false,
-    mealHistory: [],
-    fetchMealPlans: useMealPlanStore.getState().fetchMealPlans,
-    addMealPlan: useMealPlanStore.getState().addMealPlan,
-    removeMealPlan: useMealPlanStore.getState().removeMealPlan,
-    fetchMealHistory: useMealPlanStore.getState().fetchMealHistory,
-    markMealDone: useMealPlanStore.getState().markMealDone,
-    removeIngredientsForRecipe: useMealPlanStore.getState().removeIngredientsForRecipe,
-  }, true);
+  useMealPlanStore.setState(
+    {
+      mealPlans: [],
+      loading: false,
+      mealHistory: [],
+      fetchMealPlans: useMealPlanStore.getState().fetchMealPlans,
+      addMealPlan: useMealPlanStore.getState().addMealPlan,
+      removeMealPlan: useMealPlanStore.getState().removeMealPlan,
+      fetchMealHistory: useMealPlanStore.getState().fetchMealHistory,
+      markMealDone: useMealPlanStore.getState().markMealDone,
+      removeIngredientsForRecipe:
+        useMealPlanStore.getState().removeIngredientsForRecipe,
+    },
+    true,
+  );
 });
 
 describe('useMealPlanStore', () => {
@@ -40,15 +46,17 @@ describe('useMealPlanStore', () => {
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
           order: jest.fn().mockResolvedValue({
-            data: [{
-              id: 'mp1',
-              user_id: 'u1',
-              recipe_id: 'r1',
-              meal_date: '2025-11-05',
-              meal_type: 'breakfast',
-              created_at: '',
-              recipe: { id: 'r1', title: 'Test Recipe' },
-            }],
+            data: [
+              {
+                id: 'mp1',
+                user_id: 'u1',
+                recipe_id: 'r1',
+                meal_date: '2025-11-05',
+                meal_type: 'breakfast',
+                created_at: '',
+                recipe: { id: 'r1', title: 'Test Recipe' },
+              },
+            ],
             error: null,
           }),
         }),
@@ -57,7 +65,9 @@ describe('useMealPlanStore', () => {
 
     await useMealPlanStore.getState().fetchMealPlans('u1');
     expect(useMealPlanStore.getState().mealPlans.length).toBe(1);
-    expect(useMealPlanStore.getState().mealPlans[0].recipe.title).toBe('Test Recipe');
+    expect(useMealPlanStore.getState().mealPlans[0].recipe.title).toBe(
+      'Test Recipe',
+    );
     expect(useMealPlanStore.getState().loading).toBe(false);
   });
 
@@ -96,7 +106,9 @@ describe('useMealPlanStore', () => {
     const { addMealPlan } = useMealPlanStore.getState();
     await addMealPlan('u1', 'r1', '2025-11-05', 'lunch');
     // You can check if notification was scheduled
-    const { scheduleHybridMealNotification } = require('../../../utils/notificationChannel');
+    const {
+      scheduleHybridMealNotification,
+    } = require('../../../utils/notificationChannel');
     expect(scheduleHybridMealNotification).toHaveBeenCalled();
   });
 
@@ -126,7 +138,9 @@ describe('useMealPlanStore', () => {
 
     const { removeMealPlan } = useMealPlanStore.getState();
     await removeMealPlan('mp1', 'u1');
-    const { cancelHybridNotification } = require('../../../utils/notificationChannel');
+    const {
+      cancelHybridNotification,
+    } = require('../../../utils/notificationChannel');
     expect(cancelHybridNotification).toHaveBeenCalledWith('mp1', 'u1');
   });
 
@@ -135,15 +149,17 @@ describe('useMealPlanStore', () => {
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
           order: jest.fn().mockResolvedValue({
-            data: [{
-              id: 'mh1',
-              user_id: 'u1',
-              recipe_id: 'r1',
-              meal_date: '2025-11-05',
-              meal_type: 'lunch',
-              marked_at: '2025-11-05T12:00:00Z',
-              recipe: { id: 'r1', title: 'History Recipe' },
-            }],
+            data: [
+              {
+                id: 'mh1',
+                user_id: 'u1',
+                recipe_id: 'r1',
+                meal_date: '2025-11-05',
+                meal_type: 'lunch',
+                marked_at: '2025-11-05T12:00:00Z',
+                recipe: { id: 'r1', title: 'History Recipe' },
+              },
+            ],
             error: null,
           }),
         }),
@@ -152,7 +168,9 @@ describe('useMealPlanStore', () => {
 
     await useMealPlanStore.getState().fetchMealHistory('u1');
     expect(useMealPlanStore.getState().mealHistory.length).toBe(1);
-    expect(useMealPlanStore.getState().mealHistory[0].recipe?.title).toBe('History Recipe');
+    expect(useMealPlanStore.getState().mealHistory[0].recipe?.title).toBe(
+      'History Recipe',
+    );
   });
 
   it('handles error in fetchMealHistory', async () => {

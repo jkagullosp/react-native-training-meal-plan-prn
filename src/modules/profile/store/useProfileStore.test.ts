@@ -1,5 +1,5 @@
 import { useProfileStore } from './useProfileStore';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../client/supabase';
 
 jest.mock('../../utils/supabase', () => ({
   supabase: {
@@ -11,17 +11,20 @@ jest.mock('../../utils/supabase', () => ({
 }));
 
 beforeEach(() => {
-  useProfileStore.setState({
-    user: null,
-    loading: false,
-    error: null,
-    fetchProfile: useProfileStore.getState().fetchProfile,
-    updateProfileImage: useProfileStore.getState().updateProfileImage,
-    updateDisplayName: useProfileStore.getState().updateDisplayName,
-    updateUsername: useProfileStore.getState().updateUsername,
-    updateBio: useProfileStore.getState().updateBio,
-    changePassword: useProfileStore.getState().changePassword,
-  }, true);
+  useProfileStore.setState(
+    {
+      user: null,
+      loading: false,
+      error: null,
+      fetchProfile: useProfileStore.getState().fetchProfile,
+      updateProfileImage: useProfileStore.getState().updateProfileImage,
+      updateDisplayName: useProfileStore.getState().updateDisplayName,
+      updateUsername: useProfileStore.getState().updateUsername,
+      updateBio: useProfileStore.getState().updateBio,
+      changePassword: useProfileStore.getState().changePassword,
+    },
+    true,
+  );
 });
 
 describe('useProfileStore', () => {
@@ -30,7 +33,16 @@ describe('useProfileStore', () => {
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
           maybeSingle: jest.fn().mockResolvedValue({
-            data: { id: 'u1', display_name: 'Test User', username: 'testuser', email: 'test@example.com', profile_image: null, bio: null, created_at: '', updated_at: '' },
+            data: {
+              id: 'u1',
+              display_name: 'Test User',
+              username: 'testuser',
+              email: 'test@example.com',
+              profile_image: null,
+              bio: null,
+              created_at: '',
+              updated_at: '',
+            },
             error: null,
           }),
         }),
@@ -68,7 +80,9 @@ describe('useProfileStore', () => {
       }),
     });
 
-    const result = await useProfileStore.getState().updateProfileImage('u1', 'img.jpg');
+    const result = await useProfileStore
+      .getState()
+      .updateProfileImage('u1', 'img.jpg');
     expect(result).toBe(true);
     expect(useProfileStore.getState().loading).toBe(false);
     expect(useProfileStore.getState().error).toBeNull();
@@ -81,7 +95,9 @@ describe('useProfileStore', () => {
       }),
     });
 
-    const result = await useProfileStore.getState().updateProfileImage('u1', 'img.jpg');
+    const result = await useProfileStore
+      .getState()
+      .updateProfileImage('u1', 'img.jpg');
     expect(result).toBe(false);
     expect(useProfileStore.getState().error).toBe('Update error');
   });
@@ -93,7 +109,9 @@ describe('useProfileStore', () => {
       }),
     });
 
-    const result = await useProfileStore.getState().updateDisplayName('u1', 'New Name');
+    const result = await useProfileStore
+      .getState()
+      .updateDisplayName('u1', 'New Name');
     expect(result).toBe(true);
     expect(useProfileStore.getState().error).toBeNull();
   });
@@ -101,11 +119,15 @@ describe('useProfileStore', () => {
   it('handles error in updateDisplayName', async () => {
     (supabase.from as jest.Mock).mockReturnValue({
       update: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({ error: { message: 'Display error' } }),
+        eq: jest
+          .fn()
+          .mockResolvedValue({ error: { message: 'Display error' } }),
       }),
     });
 
-    const result = await useProfileStore.getState().updateDisplayName('u1', 'New Name');
+    const result = await useProfileStore
+      .getState()
+      .updateDisplayName('u1', 'New Name');
     expect(result).toBe(false);
     expect(useProfileStore.getState().error).toBe('Display error');
   });
@@ -117,7 +139,9 @@ describe('useProfileStore', () => {
       }),
     });
 
-    const result = await useProfileStore.getState().updateUsername('u1', 'newusername');
+    const result = await useProfileStore
+      .getState()
+      .updateUsername('u1', 'newusername');
     expect(result).toBe(true);
     expect(useProfileStore.getState().error).toBeNull();
   });
@@ -125,11 +149,15 @@ describe('useProfileStore', () => {
   it('handles error in updateUsername', async () => {
     (supabase.from as jest.Mock).mockReturnValue({
       update: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({ error: { message: 'Username error' } }),
+        eq: jest
+          .fn()
+          .mockResolvedValue({ error: { message: 'Username error' } }),
       }),
     });
 
-    const result = await useProfileStore.getState().updateUsername('u1', 'newusername');
+    const result = await useProfileStore
+      .getState()
+      .updateUsername('u1', 'newusername');
     expect(result).toBe(false);
     expect(useProfileStore.getState().error).toBe('Username error');
   });
@@ -161,15 +189,21 @@ describe('useProfileStore', () => {
   it('changes password successfully', async () => {
     (supabase.auth.updateUser as jest.Mock).mockResolvedValue({ error: null });
 
-    const result = await useProfileStore.getState().changePassword('test@example.com', 'newpass');
+    const result = await useProfileStore
+      .getState()
+      .changePassword('test@example.com', 'newpass');
     expect(result).toBe(true);
     expect(useProfileStore.getState().error).toBeNull();
   });
 
   it('handles error in changePassword', async () => {
-    (supabase.auth.updateUser as jest.Mock).mockResolvedValue({ error: { message: 'Password error' } });
+    (supabase.auth.updateUser as jest.Mock).mockResolvedValue({
+      error: { message: 'Password error' },
+    });
 
-    const result = await useProfileStore.getState().changePassword('test@example.com', 'newpass');
+    const result = await useProfileStore
+      .getState()
+      .changePassword('test@example.com', 'newpass');
     expect(result).toBe(false);
     expect(useProfileStore.getState().error).toBe('Password error');
   });

@@ -1,9 +1,9 @@
-import { create } from "zustand";
-import { supabase } from "../../utils/supabase";
-import { Profile } from "../../auth/types/authTypes";
-import { FullRecipe, Tag } from "../../discover/types/recipeTypes";
-import { RecipeLike } from "../../discover/types/recipeTypes";
-import { CreateRecipeInput } from "../types/communityRecipeInputTypes";
+import { create } from 'zustand';
+import { supabase } from '../../../client/supabase';
+import { Profile } from '../../../types/auth';
+import { FullRecipe, Tag } from '../../../types/recipe';
+import { RecipeLike } from '../../../types/recipe';
+import { CreateRecipeInput } from '../types/communityRecipeInputTypes';
 
 type CommunityState = {
   user: Profile | null;
@@ -20,7 +20,7 @@ type CommunityState = {
   fetchRecipeLikes: (recipeId: string) => Promise<void>;
   createCommunityRecipe: (
     userId: string,
-    data: CreateRecipeInput
+    data: CreateRecipeInput,
   ) => Promise<void>;
 };
 
@@ -38,7 +38,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     const { data: sessionData, error: sessionError } =
       await supabase.auth.getSession();
     if (sessionError || !sessionData.session) {
-      console.log("No Supabase session found");
+      console.log('No Supabase session found');
       set({
         user: null,
         loading: false,
@@ -48,7 +48,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) {
-      console.log("No authenticated user found");
+      console.log('No authenticated user found');
       set({
         user: null,
         loading: false,
@@ -57,9 +57,9 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     }
 
     const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userData.user.id)
+      .from('profiles')
+      .select('*')
+      .eq('id', userData.user.id)
       .maybeSingle();
 
     if (!profileError && profile) {
@@ -79,7 +79,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     set({ loading: true });
 
     const { data: recipes, error } = await supabase
-      .from("recipes")
+      .from('recipes')
       .select(
         `*,
       images:recipe_images(*),
@@ -89,15 +89,15 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
         tag: tags(*)
       ),
       ratings:recipe_ratings(*)
-    `
+    `,
       )
-      .eq("is_community", true)
-      .not("author_id", "is", null);
+      .eq('is_community', true)
+      .not('author_id', 'is', null);
 
     console.log(
-      "(Community) Fetched Community Recipes: ",
+      '(Community) Fetched Community Recipes: ',
       JSON.stringify(recipes, null, 2),
-      error
+      error,
     );
 
     if (!error && recipes) {
@@ -108,7 +108,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
   },
 
   fetchTags: async () => {
-    const { data, error } = await supabase.from("tags").select("*");
+    const { data, error } = await supabase.from('tags').select('*');
     if (!error && data) set({ availableTags: data as Tag[] });
     else set({ availableTags: [] });
   },
@@ -116,23 +116,23 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
   fetchAuthor: async (authorId: string) => {
     if (get().authors[authorId]) return;
     const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", authorId)
+      .from('profiles')
+      .select('*')
+      .eq('id', authorId)
       .maybeSingle();
     if (!error && data) {
-      set((state) => ({
+      set(state => ({
         authors: { ...state.authors, [authorId]: data as Profile },
       }));
     }
   },
 
   likeRecipe: async (userId, recipeId) => {
-    set((state) => ({
+    set(state => ({
       recipeLikes: [
         ...state.recipeLikes,
         {
-          id: "optimistic",
+          id: 'optimistic',
           user_id: userId,
           recipe_id: recipeId,
           created_at: new Date().toISOString(),
@@ -140,31 +140,31 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       ],
     }));
     await supabase
-      .from("recipe_likes")
+      .from('recipe_likes')
       .insert([{ user_id: userId, recipe_id: recipeId }]);
 
     await get().fetchRecipeLikes(recipeId);
   },
 
   unlikeRecipe: async (userId, recipeId) => {
-    set((state) => ({
+    set(state => ({
       recipeLikes: state.recipeLikes.filter(
-        (like) => !(like.user_id === userId && like.recipe_id === recipeId)
+        like => !(like.user_id === userId && like.recipe_id === recipeId),
       ),
     }));
     await supabase
-      .from("recipe_likes")
+      .from('recipe_likes')
       .delete()
-      .eq("user_id", userId)
-      .eq("recipe_id", recipeId);
+      .eq('user_id', userId)
+      .eq('recipe_id', recipeId);
     await get().fetchRecipeLikes(recipeId);
   },
 
-  fetchRecipeLikes: async (recipeId) => {
+  fetchRecipeLikes: async recipeId => {
     const { data } = await supabase
-      .from("recipe_likes")
-      .select("*")
-      .eq("recipe_id", recipeId);
+      .from('recipe_likes')
+      .select('*')
+      .eq('recipe_id', recipeId);
     set({ recipeLikes: data || [] });
   },
 
@@ -172,7 +172,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     set({ loading: true });
 
     const { data: recipeData, error: recipeError } = await supabase
-      .from("recipes")
+      .from('recipes')
       .insert([
         {
           author_id: userId,
@@ -193,37 +193,37 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       .single();
 
     if (recipeError || !recipeData)
-      throw recipeError || new Error("Recipe creation failed");
+      throw recipeError || new Error('Recipe creation failed');
 
     const recipeId = recipeData.id;
 
     if (data.ingredients.length > 0) {
-      await supabase.from("ingredients").insert(
-        data.ingredients.map((ingredient) => ({
+      await supabase.from('ingredients').insert(
+        data.ingredients.map(ingredient => ({
           recipe_id: recipeId,
           name: ingredient.name,
           quantity_value: ingredient.quantity_value,
           unit: ingredient.unit,
-        }))
+        })),
       );
     }
 
     if (data.steps.length > 0) {
-      await supabase.from("recipe_steps").insert(
+      await supabase.from('recipe_steps').insert(
         data.steps.map((step, idx) => ({
           recipe_id: recipeId,
           step_number: idx + 1,
           instruction: step.instruction,
-        }))
+        })),
       );
     }
 
     for (const tagName of data.tags) {
       // Try to find the tag by name
       let { data: tagData } = await supabase
-        .from("tags")
-        .select("id")
-        .eq("name", tagName)
+        .from('tags')
+        .select('id')
+        .eq('name', tagName)
         .single();
 
       let tagId: string | undefined = tagData?.id;
@@ -231,9 +231,9 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       // If not found, try to insert
       if (!tagId) {
         const { data: newTag, error: newTagError } = await supabase
-          .from("tags")
+          .from('tags')
           .insert([{ name: tagName }])
-          .select("id")
+          .select('id')
           .single();
 
         if (newTag && newTag.id) {
@@ -241,9 +241,9 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
         } else {
           // If insert failed (e.g. duplicate), fetch again
           const { data: existingTag } = await supabase
-            .from("tags")
-            .select("id")
-            .eq("name", tagName)
+            .from('tags')
+            .select('id')
+            .eq('name', tagName)
             .single();
           tagId = existingTag?.id;
         }
@@ -252,19 +252,19 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
       // Only insert if we have a tagId
       if (tagId) {
         await supabase
-          .from("recipe_tags")
+          .from('recipe_tags')
           .insert([{ recipe_id: recipeId, tag_id: tagId }]);
       }
     }
 
     if (data.images.length > 0) {
-      await supabase.from("recipe_images").insert(
+      await supabase.from('recipe_images').insert(
         data.images.map((img, idx) => ({
           recipe_id: recipeId,
           image_url: img.image_url,
           is_primary: img.is_primary ?? idx === 0,
           position: img.position ?? idx + 1,
-        }))
+        })),
       );
     }
 

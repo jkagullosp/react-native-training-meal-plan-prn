@@ -1,5 +1,5 @@
 import { useAuthStore } from './useAuthStore';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../client/supabase';
 
 jest.mock('../../utils/supabase', () => ({
   supabase: {
@@ -43,18 +43,21 @@ jest.mock('../../utils/supabase', () => ({
 describe('authentication test', () => {
   beforeEach(() => {
     // Reset Zustand store before each test
-    useAuthStore.setState({
-  user: null,
-  isAuthenticated: false,
-  loading: false,
-  initialized: false,
-  signIn: useAuthStore.getState().signIn,
-  signUp: useAuthStore.getState().signUp,
-  signOut: useAuthStore.getState().signOut,
-  fetchProfile: useAuthStore.getState().fetchProfile,
-  forgotPassword: useAuthStore.getState().forgotPassword,
-  resetPassword: useAuthStore.getState().resetPassword,
-}, true);
+    useAuthStore.setState(
+      {
+        user: null,
+        isAuthenticated: false,
+        loading: false,
+        initialized: false,
+        signIn: useAuthStore.getState().signIn,
+        signUp: useAuthStore.getState().signUp,
+        signOut: useAuthStore.getState().signOut,
+        fetchProfile: useAuthStore.getState().fetchProfile,
+        forgotPassword: useAuthStore.getState().forgotPassword,
+        resetPassword: useAuthStore.getState().resetPassword,
+      },
+      true,
+    );
     jest.clearAllMocks();
   });
 
@@ -90,24 +93,34 @@ describe('authentication test', () => {
   describe('signUp', () => {
     it('signs up a user successfully', async () => {
       const { signUp } = useAuthStore.getState();
-      const result = await signUp('new@example.com', 'testing12345', '@testing12345', 'password');
+      const result = await signUp(
+        'new@example.com',
+        'testing12345',
+        '@testing12345',
+        'password',
+      );
 
       expect(result.error).toBeNull();
       expect(supabase.auth.signUp).toHaveBeenCalledWith({
-      email: 'new@example.com',
-      password: 'testing12345',
-      options: {
-      data: {
-       display_name: '@testing12345',
-       username: 'password',
-    },
-  },
-});
+        email: 'new@example.com',
+        password: 'testing12345',
+        options: {
+          data: {
+            display_name: '@testing12345',
+            username: 'password',
+          },
+        },
+      });
     });
 
     it('handles sign-up errors', async () => {
       const { signUp } = useAuthStore.getState();
-      const result = await signUp('new@example.com', 'testing12345', '@testing12345', 'wrongpassword');
+      const result = await signUp(
+        'new@example.com',
+        'testing12345',
+        '@testing12345',
+        'wrongpassword',
+      );
 
       expect(result.error).toBeFalsy();
       expect(useAuthStore.getState().isAuthenticated).toBe(false);
@@ -129,94 +142,93 @@ describe('authentication test', () => {
   });
 
   describe('fetchProfile', () => {
-  it('fetches profile and sets user when session and user exist', async () => {
-    // Mock session and user
-    (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
-      data: { session: { user: { id: '123' } } },
-      error: null,
-    });
-    (supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({
-      data: { user: { id: '123' } },
-      error: null,
-    });
-    (supabase.from as jest.Mock).mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          maybeSingle: jest.fn().mockResolvedValue({
-            data: { id: '123', username: 'testuser' },
-            error: null,
+    it('fetches profile and sets user when session and user exist', async () => {
+      // Mock session and user
+      (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
+        data: { session: { user: { id: '123' } } },
+        error: null,
+      });
+      (supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({
+        data: { user: { id: '123' } },
+        error: null,
+      });
+      (supabase.from as jest.Mock).mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            maybeSingle: jest.fn().mockResolvedValue({
+              data: { id: '123', username: 'testuser' },
+              error: null,
+            }),
           }),
         }),
-      }),
+      });
+
+      const { fetchProfile } = useAuthStore.getState();
+      await fetchProfile();
+
+      expect(useAuthStore.getState().user?.username).toBe('testuser');
+      expect(useAuthStore.getState().isAuthenticated).toBe(true);
+      expect(useAuthStore.getState().initialized).toBe(true);
     });
 
-    const { fetchProfile } = useAuthStore.getState();
-    await fetchProfile();
+    it('handles missing session', async () => {
+      (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
+        data: { session: null },
+        error: null,
+      });
 
-    expect(useAuthStore.getState().user?.username).toBe('testuser');
-    expect(useAuthStore.getState().isAuthenticated).toBe(true);
-    expect(useAuthStore.getState().initialized).toBe(true);
-  });
+      const { fetchProfile } = useAuthStore.getState();
+      await fetchProfile();
 
-  it('handles missing session', async () => {
-    (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
-      data: { session: null },
-      error: null,
+      expect(useAuthStore.getState().user).toBeNull();
+      expect(useAuthStore.getState().isAuthenticated).toBe(false);
+      expect(useAuthStore.getState().initialized).toBe(true);
     });
 
-    const { fetchProfile } = useAuthStore.getState();
-    await fetchProfile();
+    it('handles missing user', async () => {
+      (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
+        data: { session: { user: { id: '123' } } },
+        error: null,
+      });
+      (supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({
+        data: { user: null },
+        error: null,
+      });
 
-    expect(useAuthStore.getState().user).toBeNull();
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    expect(useAuthStore.getState().initialized).toBe(true);
-  });
+      const { fetchProfile } = useAuthStore.getState();
+      await fetchProfile();
 
-  it('handles missing user', async () => {
-    (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
-      data: { session: { user: { id: '123' } } },
-      error: null,
+      expect(useAuthStore.getState().user).toBeNull();
+      expect(useAuthStore.getState().isAuthenticated).toBe(false);
+      expect(useAuthStore.getState().initialized).toBe(true);
     });
-    (supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({
-      data: { user: null },
-      error: null,
-    });
 
-    const { fetchProfile } = useAuthStore.getState();
-    await fetchProfile();
-
-    expect(useAuthStore.getState().user).toBeNull();
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    expect(useAuthStore.getState().initialized).toBe(true);
-  });
-
-  it('handles profile fetch error', async () => {
-    (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
-      data: { session: { user: { id: '123' } } },
-      error: null,
-    });
-    (supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({
-      data: { user: { id: '123' } },
-      error: null,
-    });
-    (supabase.from as jest.Mock).mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          maybeSingle: jest.fn().mockResolvedValue({
-            data: null,
-            error: { message: 'Profile error' },
+    it('handles profile fetch error', async () => {
+      (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
+        data: { session: { user: { id: '123' } } },
+        error: null,
+      });
+      (supabase.auth.getUser as jest.Mock).mockResolvedValueOnce({
+        data: { user: { id: '123' } },
+        error: null,
+      });
+      (supabase.from as jest.Mock).mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            maybeSingle: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'Profile error' },
+            }),
           }),
         }),
-      }),
+      });
+
+      const { fetchProfile } = useAuthStore.getState();
+      await fetchProfile();
+
+      expect(useAuthStore.getState().user).toBeNull();
+      expect(useAuthStore.getState().isAuthenticated).toBe(false);
+      expect(useAuthStore.getState().initialized).toBe(true);
     });
-
-    const { fetchProfile } = useAuthStore.getState();
-    await fetchProfile();
-
-    expect(useAuthStore.getState().user).toBeNull();
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    expect(useAuthStore.getState().initialized).toBe(true);
   });
-});
-
 });

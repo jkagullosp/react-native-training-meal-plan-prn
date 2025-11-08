@@ -1,11 +1,11 @@
-import { FullRecipe } from "../../discover/types/recipeTypes";
+import { FullRecipe } from '../../../types/recipe';
 
 export type MealPlan = {
   id: string;
   user_id: string;
   recipe_id: string;
   meal_date: string;
-  meal_type: "breakfast" | "lunch" | "dinner" | "snack";
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   created_at: string;
 };
 

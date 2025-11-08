@@ -8,15 +8,15 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from '../../../stores/auth.store';
 import Toast from "react-native-toast-message";
 import { auth_texts } from "../../../constants/constants";
 import Button from "../../../shared/components/Button";
 import Input from "../../../shared/components/Input";
+import { authService } from "../../../services/authService";
 
 export default function SignUpScreen({ navigation }: any) {
-  const signUp = useAuthStore((state) => state.signUp);
-  const loading = useAuthStore((state) => state.loading);
+  const { signUp, loading } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,42 +24,30 @@ export default function SignUpScreen({ navigation }: any) {
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const isValidEmail = (value: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-  const isValid =
-    isValidEmail(email) &&
-    password.length >= 6 &&
-    displayName.length >= 4 &&
-    username.length >= 4;
+  const isFormValid =
+    authService.isValidEmail(email) &&
+    authService.isValidPassword(password) &&
+    displayName.trim().length >= 4 &&
+    authService.isValidUsername(username);
 
   const handleSignUp = async () => {
     setError(null);
-    if (!isValid) {
-      setError("Please check your details and try again.");
-      Toast.show({
-        type: "error",
-        text1: "Invalid input",
-        text2: "Please check your details and try again.",
-      });
-      return;
-    }
+
     const { error: signUpError } = await signUp(
       email,
       password,
       displayName,
       username
     );
+
     if (signUpError) {
       setError(signUpError);
       Toast.show({
         type: "error",
         text1: "Sign Up Error",
-        text2:
-          signUpError || "There was an error during Sign Up. Please try again.",
+        text2: signUpError,
       });
     } else {
-      setError(null);
       Toast.show({
         type: "success",
         text1: "Sign Up Successful!",
@@ -137,7 +125,7 @@ export default function SignUpScreen({ navigation }: any) {
               title="Sign Up"
               onPress={handleSignUp}
               loading={loading}
-              disabled={!isValid || loading}
+              disabled={!isFormValid || loading}
             />
             <View style={styles.toSignIn}>
               <Text style={styles.toSignInText}>Already have an account?</Text>

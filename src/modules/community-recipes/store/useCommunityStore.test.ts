@@ -1,6 +1,6 @@
 // src/modules/community/store/useCommunityStore.test.ts
 import { useCommunityStore } from './useCommunityStore';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../client/supabase';
 
 jest.mock('../../utils/supabase', () => ({
   supabase: {
@@ -25,9 +25,7 @@ const mockFrom = (table: string) => {
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnThis(),
           not: jest.fn().mockResolvedValue({
-            data: [
-              { id: 'r1', title: 'Test Recipe', is_community: true },
-            ],
+            data: [{ id: 'r1', title: 'Test Recipe', is_community: true }],
             error: null,
           }),
         }),
@@ -41,26 +39,27 @@ const mockFrom = (table: string) => {
         }),
       };
     case 'tags':
-  return {
-    select: jest.fn().mockReturnValue({
-      // Simulate returning an array of tags
-      then: (cb: any) => cb({ data: [{ id: 't1', name: 'Vegan' }], error: null }),
-      eq: jest.fn().mockReturnValue({
-        single: jest.fn().mockResolvedValue({
-          data: { id: 't1' },
-          error: null,
+      return {
+        select: jest.fn().mockReturnValue({
+          // Simulate returning an array of tags
+          then: (cb: any) =>
+            cb({ data: [{ id: 't1', name: 'Vegan' }], error: null }),
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { id: 't1' },
+              error: null,
+            }),
+          }),
         }),
-      }),
-    }),
-    insert: jest.fn().mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        single: jest.fn().mockResolvedValue({
-          data: { id: 't2' },
-          error: null,
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { id: 't2' },
+              error: null,
+            }),
+          }),
         }),
-      }),
-    }),
-  };
+      };
     case 'profiles':
       return {
         select: jest.fn().mockReturnValue({
@@ -73,19 +72,19 @@ const mockFrom = (table: string) => {
         }),
       };
     case 'recipe_likes':
-  return {
-    select: jest.fn().mockReturnValue({
-      eq: jest.fn().mockResolvedValue({
-        data: [{ id: 'like1', recipe_id: 'r1', user_id: 'u1' }],
-        error: null,
-      }),
-    }),
-    insert: jest.fn().mockResolvedValue({}),
-    delete: jest.fn().mockReturnValue({
-      eq: jest.fn().mockReturnThis(),
-      exec: jest.fn().mockResolvedValue({}),
-    }),
-  };
+      return {
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({
+            data: [{ id: 'like1', recipe_id: 'r1', user_id: 'u1' }],
+            error: null,
+          }),
+        }),
+        insert: jest.fn().mockResolvedValue({}),
+        delete: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnThis(),
+          exec: jest.fn().mockResolvedValue({}),
+        }),
+      };
     case 'ingredients':
     case 'recipe_steps':
     case 'recipe_images':
@@ -130,8 +129,7 @@ describe('useCommunityStore', () => {
   });
 
   it('likes and unlikes a recipe', async () => {
-    const { likeRecipe, unlikeRecipe } =
-      useCommunityStore.getState();
+    const { likeRecipe, unlikeRecipe } = useCommunityStore.getState();
 
     await likeRecipe('u1', 'r1');
     const stateAfterLike = useCommunityStore.getState();

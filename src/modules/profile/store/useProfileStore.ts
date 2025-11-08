@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { Profile } from "../../auth/types/authTypes";
-import { supabase } from "../../utils/supabase";
+import { create } from 'zustand';
+import { Profile } from '../../../types/auth';
+import { supabase } from '../../../client/supabase';
 
 type ProfileSettingsState = {
   user: Profile | null;
@@ -15,7 +15,7 @@ type ProfileSettingsState = {
   changePassword: (email: string, newPassword: string) => Promise<boolean>;
 };
 
-export const useProfileStore = create<ProfileSettingsState>((set) => ({
+export const useProfileStore = create<ProfileSettingsState>(set => ({
   user: null,
   loading: false,
   error: null,
@@ -23,15 +23,15 @@ export const useProfileStore = create<ProfileSettingsState>((set) => ({
   fetchProfile: async (userId: string) => {
     set({ loading: true, error: null });
     const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
       .maybeSingle();
     if (!error && data) {
       set({ user: data as Profile, loading: false });
     } else {
       set({
-        error: error?.message || "Failed to fetch profile",
+        error: error?.message || 'Failed to fetch profile',
         loading: false,
       });
     }
@@ -40,9 +40,9 @@ export const useProfileStore = create<ProfileSettingsState>((set) => ({
   updateProfileImage: async (userId: string, imageUrl: string) => {
     set({ loading: true, error: null });
     const { error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update({ profile_image: imageUrl, updated_at: new Date().toISOString() })
-      .eq("id", userId);
+      .eq('id', userId);
     set({ loading: false });
     if (error) set({ error: error.message });
     return !error;
@@ -51,12 +51,12 @@ export const useProfileStore = create<ProfileSettingsState>((set) => ({
   updateDisplayName: async (userId: string, displayName: string) => {
     set({ loading: true, error: null });
     const { error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update({
         display_name: displayName,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", userId);
+      .eq('id', userId);
     set({ loading: false });
     if (error) set({ error: error.message });
     return !error;
@@ -65,9 +65,9 @@ export const useProfileStore = create<ProfileSettingsState>((set) => ({
   updateUsername: async (userId: string, username: string) => {
     set({ loading: true, error: null });
     const { error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update({ username, updated_at: new Date().toISOString() })
-      .eq("id", userId);
+      .eq('id', userId);
     set({ loading: false });
     if (error) set({ error: error.message });
     return !error;
@@ -76,9 +76,9 @@ export const useProfileStore = create<ProfileSettingsState>((set) => ({
   updateBio: async (userId: string, bio: string) => {
     set({ loading: true, error: null });
     const { error } = await supabase
-      .from("profiles")
+      .from('profiles')
       .update({ bio, updated_at: new Date().toISOString() })
-      .eq("id", userId);
+      .eq('id', userId);
     set({ loading: false });
     if (error) set({ error: error.message });
     return !error;

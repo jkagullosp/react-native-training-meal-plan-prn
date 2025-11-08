@@ -1,7 +1,4 @@
-import {
-  RecipeIngredient,
-  RecipeStep,
-} from "../../discover/types/recipeTypes";
+import { RecipeIngredient, RecipeStep } from '../../../types/recipe';
 
 export type CreateRecipeInput = {
   title: string;
@@ -14,8 +11,8 @@ export type CreateRecipeInput = {
   fat?: number;
   carbs?: number;
   protein?: number;
-  ingredients: Omit<RecipeIngredient, "id" | "recipe_id" | "created_at">[];
-  steps: Omit<RecipeStep, "id" | "recipe_id" | "created_at" | "updated_at">[];
+  ingredients: Omit<RecipeIngredient, 'id' | 'recipe_id' | 'created_at'>[];
+  steps: Omit<RecipeStep, 'id' | 'recipe_id' | 'created_at' | 'updated_at'>[];
   tags: string[];
   images: { image_url: string; is_primary?: boolean; position?: number }[];
 };
