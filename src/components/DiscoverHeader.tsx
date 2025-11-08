@@ -8,16 +8,11 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
-import { useEffect } from "react";
-import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
+import { useAuthStore } from "@/stores/auth.store";
 import { discover_texts } from "@/constants/constants";
 
 export default function DiscoverHeader({navigation} : any) {
-  const { user, loading, fetchProfile } = useDiscoverStore();
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+  const { user, loading } = useAuthStore();
 
   const getInitials = (name: string) => {
     return name

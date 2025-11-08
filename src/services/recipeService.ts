@@ -7,3 +7,7 @@ export async function fetchRecipes() {
 export async function fetchTags() {
   return await recipeApi.fetchTags();
 }
+
+export async function fetchRecipeAuthor(authorId: string) {
+  return await recipeApi.fetchRecipeAuthor(authorId);
+}

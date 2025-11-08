@@ -1,20 +1,9 @@
 import React from "react";
 import { View, StyleSheet, Text } from "react-native";
-import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
+import { RecipeIngredient } from "@/types/recipe";
 
 export default function Ingredients({ route }: any) {
-  const { recipeId } = route.params;
-  const { recipes, loading } = useDiscoverStore();
-
-  const recipe = recipes.find((r) => r.id === recipeId);
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading ingredients...</Text>
-      </View>
-    );
-  }
+  const { recipe } = route.params;
 
   if (!recipe) {
     return (
@@ -27,7 +16,7 @@ export default function Ingredients({ route }: any) {
   return (
     <View style={styles.orderedListContainer}>
       {recipe.ingredients && recipe.ingredients.length > 0 ? (
-        recipe.ingredients.map((ingredient, idx) => (
+        recipe.ingredients.map((ingredient: RecipeIngredient) => (
           <View key={ingredient.id} style={styles.ingredientRow}>
             <Text style={styles.ingredientIndex}>•</Text>
             <Text style={styles.ingredientName}>{ingredient.name}</Text>
@@ -90,7 +79,7 @@ const styles = StyleSheet.create({
   ingredientName: {
     fontSize: 16,
     color: "#333",
-    marginRight: 8,
+    marginRight: 3,
   },
   ingredientQuantity: {
     fontSize: 16,

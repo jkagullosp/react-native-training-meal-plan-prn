@@ -1,37 +1,31 @@
-import React, { useEffect } from "react";
-import { View, StyleSheet, Text, Image } from "react-native";
-import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
-import { Star, BadgeCheck } from "lucide-react-native";
+import { View, StyleSheet, Text, Image } from 'react-native';
+import { Star, BadgeCheck } from 'lucide-react-native';
+import { useAuthorQuery } from '@/hooks/useRecipesQuery';
 
 export default function Author({ route }: any) {
-  const { recipeId } = route.params;
-  const { recipes, loading, authors, fetchAuthor } = useDiscoverStore();
+  const { recipe } = route.params;
+  const {
+    data: authorProfile,
+    isLoading,
+    error,
+  } = useAuthorQuery(recipe.author_id);
 
-  const recipe = recipes.find((r) => r.id === recipeId);
-
-  useEffect(() => {
-    if (recipe && recipe.author_id) {
-      fetchAuthor(recipe.author_id);
-    }
-  }, [recipe, fetchAuthor]);
+  const ratings = recipe.ratings || [];
+  const ratingCount = ratings.length;
+  const avgRating =
+    ratings.length > 0
+      ? ratings.reduce((sum: any, r: { rating: any; }) => sum + r.rating, 0) / ratings.length
+      : 0;
 
   const getInitials = (name: string) => {
     return name
       ? name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
+          .split(' ')
+          .map(n => n[0])
+          .join('')
           .toUpperCase()
-      : "";
+      : '';
   };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading author...</Text>
-      </View>
-    );
-  }
 
   if (!recipe) {
     return (
@@ -45,7 +39,7 @@ export default function Author({ route }: any) {
     return (
       <View style={styles.container}>
         <Image
-          source={require("@assets/logos/logoIcon.png")}
+          source={require('@assets/logos/logoIcon.png')}
           style={styles.image}
         />
         <View style={styles.reviewsContainer}>
@@ -56,10 +50,10 @@ export default function Author({ route }: any) {
             <BadgeCheck size={14} color="#1877F2" />
           </View>
           <View style={styles.ratingRow}>
-            <Star size={16} color={"#e3c100ff"} />
-            <Text style={styles.averageRating}>{recipe.avg_rating}</Text>
+            <Star size={16} color={'#e3c100ff'} />
+            <Text style={styles.averageRating}>{avgRating.toFixed(1)}</Text>
             <Text style={styles.ratingCount}>
-              ({recipe.rating_count} reviews)
+              ({ratingCount} ratings)
             </Text>
           </View>
         </View>
@@ -67,14 +61,21 @@ export default function Author({ route }: any) {
     );
   }
 
-  const authorProfile = authors[recipe.author_id];
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading author...</Text>
+      </View>
+    );
+  }
 
-  const ratings = recipe.ratings || [];
-  const ratingCount = ratings.length;
-  const avgRating =
-    ratingCount > 0
-      ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratingCount
-      : 0;
+  if (error || !authorProfile) {
+    return (
+      <View style={styles.container}>
+        <Text>Author not found.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -86,22 +87,20 @@ export default function Author({ route }: any) {
       ) : (
         <View style={styles.initialsAvatar}>
           <Text style={styles.initialsText}>
-            {getInitials(authorProfile?.display_name || "U")}
+            {getInitials(authorProfile?.display_name || 'U')}
           </Text>
         </View>
       )}
       <View style={styles.reviewsContainer}>
         <View>
           <Text style={styles.authorText}>
-            Recipe by {authorProfile?.display_name || "Unknown"}
+            Recipe by {authorProfile?.display_name || 'Unknown'}
           </Text>
         </View>
         <View style={styles.ratingRow}>
-          <Star size={16} color={"#e3c100ff"} />
-          <Text style={styles.averageRating}>{avgRating?.toFixed(1)}</Text>
-          <Text style={styles.ratingCount}>
-            ({ratingCount} ratings)
-          </Text>
+          <Star size={16} color={'#e3c100ff'} />
+          <Text style={styles.averageRating}>{avgRating.toFixed(1)}</Text>
+          <Text style={styles.ratingCount}>({ratingCount} ratings)</Text>
         </View>
       </View>
     </View>
@@ -110,12 +109,12 @@ export default function Author({ route }: any) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    backgroundColor: "#EDEDED",
+    flexDirection: 'row',
+    backgroundColor: '#EDEDED',
     padding: 12,
     borderRadius: 16,
     gap: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   image: {
     width: 50,
@@ -126,45 +125,45 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#E16235",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#E16235',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   initialsText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 18,
   },
   reviewsContainer: {
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 4,
   },
   starIcon: {
-    color: "#e3c100ff",
+    color: '#e3c100ff',
   },
   ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 3,
   },
   averageRating: {
-    color: "#e3c100ff",
-    fontWeight: "bold",
+    color: '#e3c100ff',
+    fontWeight: 'bold',
   },
   ratingCount: {
-    color: "#5f5f5fff",
-    fontWeight: "400",
+    color: '#5f5f5fff',
+    fontWeight: '400',
   },
   authorText: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
   kernelRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 3,
   },
   kernelText: {
-    color: "#E16235",
-    fontWeight: "bold",
+    color: '#E16235',
+    fontWeight: 'bold',
   },
 });
