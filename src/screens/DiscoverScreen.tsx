@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,42 +9,32 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DiscoverHeader from '../components/DiscoverHeader';
-import { useDiscoverStore } from '../store/useDiscoverStore';
-import { useRecipesQuery } from '../../../hooks/useRecipesQuery';
+import { useRecipesQuery } from '../hooks/useRecipesQuery';
+import { useFetchTagsQuery } from '../hooks/useRecipesQuery';
 import SearchAndFilter from '../components/SearchAndFilter';
 import RecipeCard from '../components/RecipeCards';
-import { FullRecipe } from '../../../types/recipe';
+import { FullRecipe } from '../types/recipe';
 import FilterModal from '../components/FilterModal';
 
 export default function DiscoverScreen({ navigation }: any) {
-  const loading = useDiscoverStore(s => s.loading);
-  const availableTags = useDiscoverStore(s => s.availableTags);
-  const fetchRecipes = useDiscoverStore(s => s.fetchRecipes);
-  const fetchTags = useDiscoverStore(s => s.fetchTags);
-  const { data: recipes, isLoading, error } = useRecipesQuery();
+  const { data: tags, refetch: refetchTags } = useFetchTagsQuery();
+  const { data: recipes, isLoading: recipeLoading, error: recipeError, refetch: refecthRecipe } = useRecipesQuery();
 
   const [search, setSearch] = useState('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [servings, setServings] = useState<number | null>(null);
   const [cookTime, setCookTime] = useState<string | null>(null);
   const [minRating, setMinRating] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchRecipes();
-    fetchTags();
-  }, [fetchRecipes, fetchTags]);
-
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchRecipes();
-    await fetchTags();
+    await refecthRecipe();
+    await refetchTags();
     setRefreshing(false);
   };
 
-  // Ensure filteredRecipes is always an array
   const filteredRecipes = (recipes ?? []).filter(recipe => {
     const matchesSearch =
       recipe.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -98,7 +88,15 @@ export default function DiscoverScreen({ navigation }: any) {
             onOpenFilter={() => setFilterModalVisible(true)}
           />
         </View>
-        {(loading || isLoading) ? (
+        {recipeError ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.emptyText}>
+              {typeof recipeError === 'string'
+                ? recipeError
+                : recipeError.message || 'Failed to load recipes.'}
+            </Text>
+          </View>
+        ) : recipeLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#9f9f9fff" />
             <Text style={styles.emptyText}>Loading recipes...</Text>
@@ -127,7 +125,7 @@ export default function DiscoverScreen({ navigation }: any) {
         <FilterModal
           visible={filterModalVisible}
           onClose={() => setFilterModalVisible(false)}
-          availableTags={availableTags}
+          availableTags={tags ?? []}
           selectedTagIds={selectedTagIds}
           setSelectedTagIds={setSelectedTagIds}
           servings={servings}

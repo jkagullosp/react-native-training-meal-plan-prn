@@ -10,11 +10,11 @@ import {
   Modal,
 } from 'react-native';
 import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
-import Stats from '../../discover/components/Stats';
-import Nutrition from '../../discover/components/Nutrition';
-import Ingredients from '../../discover/components/Ingredients';
-import Instructions from '../../discover/components/Instructions';
-import Author from '../../discover/components/Author';
+import Stats from '../../../components/RecipeStats';
+import Nutrition from '@/components/RecipeNutrition';
+import Ingredients from '@/components/RecipeIngredients';
+import Instructions from '@/components/RecipeInstructions';
+import Author from '@/components/RecipeAuthor';
 import AddMealModal from '../../meal-plan/components/AddMealModal';
 import { useMealPlanStore } from '../../meal-plan/store/useMealPlanStore';
 import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';

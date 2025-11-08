@@ -8,8 +8,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { FullRecipe } from '../../../types/recipe';
-import { RecipeTag } from '../../../types/recipe';
+import { FullRecipe } from '@/types/recipe';
+import { RecipeTag } from '@/types/recipe';
 import { Star } from 'lucide-react-native';
 import { Timer, Users } from 'lucide-react-native';
 
@@ -29,7 +29,7 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
 
   const imageSource = getPrimaryImage(recipe)
     ? { uri: getPrimaryImage(recipe) }
-    : require('../../../../assets/images/onboardImage1.jpg');
+    : require('@assets/images/placeholder.png');
 
   const ratings = recipe.ratings || [];
   const ratingCount = ratings.length;

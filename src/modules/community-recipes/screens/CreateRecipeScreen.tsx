@@ -13,7 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { Platform } from 'react-native';
-import Input from '../../../shared/components/Input';
+import Input from '../../../components/Input';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CreateRecipeHeader from '../components/CreateRecipeHeader';
 import { useCommunityStore } from '../store/useCommunityStore';

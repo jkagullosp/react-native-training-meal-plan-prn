@@ -70,7 +70,7 @@ export default function MyFavoritesScreen({ navigation }: any) {
             source={
               recipe.images && recipe.images.length > 0
                 ? { uri: recipe.images[0].image_url }
-                : require('../../../../assets/images/onboardImage1.jpg')
+                : require('@assets/images/placeholder.png')
             }
             style={styles.recipeImage}
             resizeMode="cover"

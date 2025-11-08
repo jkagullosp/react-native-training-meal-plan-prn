@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet, Text } from "react-native";
-import { useDiscoverStore } from "../store/useDiscoverStore";
+import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
 
 export default function Ingredients({ route }: any) {
   const { recipeId } = route.params;

@@ -8,12 +8,12 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import Input from '../../../shared/components/Input';
+import Input from '../../../components/Input';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../store/useAuthStore';
 import Toast from 'react-native-toast-message';
 import { auth_texts } from '../../../constants/constants';
-import Button from '../../../shared/components/Button';
+import Button from '../../../components/Button';
 import { Linking } from 'react-native';
 import { supabase } from '../../../client/supabase';
 
@@ -159,7 +159,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
       >
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            <Image source={require('../../../../assets/logos/AppLogo.png')} />
+            <Image source={require('@assets/logos/AppLogo.png')} />
           </View>
           <View style={styles.panel}>
             <View style={styles.titleContainer}>

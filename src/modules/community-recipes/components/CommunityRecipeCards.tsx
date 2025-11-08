@@ -84,7 +84,7 @@ export default function CommunityRecipeCards({
 
   const imageSource = getPrimaryImage(recipe)
     ? { uri: getPrimaryImage(recipe) }
-    : require('../../../../assets/images/onboardImage1.jpg');
+    : require('@assets/images/placeholder.png');
 
   return (
     <TouchableOpacity
