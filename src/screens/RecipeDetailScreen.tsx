@@ -10,24 +10,27 @@ import {
   Modal,
   Dimensions,
 } from 'react-native';
-import { useDiscoverStore } from '../store/useDiscoverStore';
-import Stats from '../components/Stats';
-import Nutrition from '../components/Nutrition';
-import Instructions from '../components/Instructions';
-import Author from '../components/Author';
-import AddMealModal from '../../meal-plan/components/AddMealModal';
-import { useMealPlanStore } from '../../meal-plan/store/useMealPlanStore';
-import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
-import { supabase } from '../../../client/supabase';
+import { useDiscoverStore } from '../modules/discover/store/useDiscoverStore';
+import Stats from '../components/RecipeStats';
+import Nutrition from '@/components/RecipeNutrition';
+import Instructions from '@/components/RecipeInstructions';
+import Author from '@/components/RecipeAuthor';
+import Ingredients from '@/components/RecipeIngredients';
+import AddMealModal from '../modules/meal-plan/components/AddMealModal';
+import { useMealPlanStore } from '../modules/meal-plan/store/useMealPlanStore';
+import { useShoppingListStore } from '../modules/shopping-list/store/useShoppingListStore';
+import { supabase } from '../client/supabase';
 import Toast from 'react-native-toast-message';
-import { FullRecipe } from '../../../types/recipe';
+import { FullRecipe } from '../types/recipe';
+import { useRecipesQuery } from '../hooks/useRecipesQuery';
 
 export default function RecipeDetailScreen({ navigation, route }: any) {
-  const { loading, user, fetchRecipes } = useDiscoverStore();
+  const { loading, user } = useDiscoverStore();
   const [modalVisible, setModalVisible] = useState(false);
   const { addMealPlan } = useMealPlanStore();
   const { addMissingIngredients } = useShoppingListStore();
   const { fetchMealPlans } = useMealPlanStore();
+  const { refetch: refetchRecipes } = useRecipesQuery();
 
   const recipe: FullRecipe = route.params.recipe;
 
@@ -46,13 +49,6 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
       title: recipe.title || 'Recipe Detail',
     });
   }, [navigation, recipe.title]);
-
-  useEffect(() => {
-    const loadRecipe = async () => {
-      await fetchRecipes();
-    };
-    loadRecipe();
-  }, [fetchRecipes]);
 
   const handleScroll = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -109,7 +105,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
 
       if (updateError) throw updateError;
 
-      await fetchRecipes();
+      await refetchRecipes();
     } catch (err) {
       console.error('Error handling rating:', err);
     } finally {
@@ -163,7 +159,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
               ))
             ) : (
               <Image
-                source={require('../../../../assets/images/onboardImage1.jpg')}
+                source={require('@assets/images/placeholder.png')}
                 style={[styles.image, { width: screenWidth, height: 200 }]}
                 resizeMode="cover"
               />
@@ -195,47 +191,8 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
           <Nutrition route={route} />
           <View>
             <Text style={styles.ingredients}>Ingredients</Text>
-            {recipe.ingredients && recipe.ingredients.length > 0 ? (
-              recipe.ingredients.map((ingredient, idx) => (
-                <View
-                  key={ingredient.id || idx}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 6,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      color: '#E16235',
-                      marginRight: 8,
-                    }}
-                  >
-                    •
-                  </Text>
-                  <Text style={{ fontSize: 16, color: '#222' }}>
-                    {ingredient.name}
-                    {ingredient.quantity_value
-                      ? ` (${ingredient.quantity_value}${
-                          ingredient.unit ? ` ${ingredient.unit}` : ''
-                        })`
-                      : ''}
-                  </Text>
-                </View>
-              ))
-            ) : (
-              <Text
-                style={{
-                  color: '#888',
-                  fontSize: 15,
-                  marginTop: 8,
-                }}
-              >
-                No ingredients listed.
-              </Text>
-            )}
           </View>
+          <Ingredients route={route} />
           <View>
             <Text style={styles.nutrition}>Instructions</Text>
           </View>
@@ -299,7 +256,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
             await addMealPlan(user.id, recipe.id, date, mealType);
             await addMissingIngredients(user.id);
             await fetchMealPlans(user.id);
-            await fetchRecipes();
+            await refetchRecipes();
           }
           setAddingMeal(false);
           setModalVisible(false);

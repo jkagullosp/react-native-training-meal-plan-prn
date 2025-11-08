@@ -12,6 +12,16 @@ module.exports = {
         allowUndefined: true,
       },
     ],
+    [
+      'module-resolver',
+      {
+        root: ['./src'],
+        alias: {
+          '@': './src',
+          '@assets': './assets',
+        },
+      },
+    ],
     'react-native-reanimated/plugin', // MUST be last!
   ],
-};0
+};

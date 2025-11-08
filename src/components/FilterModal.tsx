@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
-import { Tag } from '../../../types/recipe';
+import { Tag } from '@/types/recipe';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CircleX, Star } from 'lucide-react-native';
 

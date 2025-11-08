@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet, Text, Image } from "react-native";
-import { useDiscoverStore } from "../store/useDiscoverStore";
+import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
 import { Star, BadgeCheck } from "lucide-react-native";
 
 export default function Author({ route }: any) {
@@ -45,7 +45,7 @@ export default function Author({ route }: any) {
     return (
       <View style={styles.container}>
         <Image
-          source={require("../../../../assets/logos/logoIcon.png")}
+          source={require("@assets/logos/logoIcon.png")}
           style={styles.image}
         />
         <View style={styles.reviewsContainer}>

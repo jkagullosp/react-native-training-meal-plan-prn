@@ -1,8 +1,8 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import DiscoverScreen from "../screens/DiscoverScreen";
-import RecipeDetailScreen from "../screens/RecipeDetailScreen";
-import RecipeFavoriteButton from "../../profile/components/RecipeFavoriteButton";
+import DiscoverScreen from "@/screens/DiscoverScreen";
+import RecipeDetailScreen from "@/screens/RecipeDetailScreen";
+import RecipeFavoriteButton from "@/modules/profile/components/RecipeFavoriteButton";
 
 export type DiscoverStackParamList = {
   Discover: undefined;

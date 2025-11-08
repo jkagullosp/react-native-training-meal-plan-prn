@@ -1,7 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Platform } from "react-native";
-import DiscoverStack from "../modules/discover/navigation/DiscoverStack";
+import DiscoverStack from "@/navigation/stacks/DiscoverStack";
 import MealPlanScreen from "../modules/meal-plan/screens/MealPlanScreen";
 import CommunityStack from "../modules/community-recipes/navigation/CommunityStack";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

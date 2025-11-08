@@ -9,8 +9,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useEffect } from "react";
-import { useDiscoverStore } from "../store/useDiscoverStore";
-import { discover_texts } from "../../../constants/constants";
+import { useDiscoverStore } from "@/modules/discover/store/useDiscoverStore";
+import { discover_texts } from "@/constants/constants";
 
 export default function DiscoverHeader({navigation} : any) {
   const { user, loading, fetchProfile } = useDiscoverStore();

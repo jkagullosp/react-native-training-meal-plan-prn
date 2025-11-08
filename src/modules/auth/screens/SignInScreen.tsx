@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,20 +6,20 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Image,
-} from "react-native";
-import Input from "../../../shared/components/Input";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import Input from '../../../components/Input';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../../stores/auth.store';
-import Toast from "react-native-toast-message";
-import { auth_texts } from "../../../constants/constants";
-import Button from "../../../shared/components/Button";
+import Toast from 'react-native-toast-message';
+import { auth_texts } from '../../../constants/constants';
+import Button from '../../../components/Button';
 import { authService } from '../../../services/authService';
 
 export default function SignInScreen({ navigation }: any) {
   const { signIn, loading } = useAuthStore();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const isFormValid = authService.isValidEmail(email) && password.length > 0;
@@ -32,14 +32,14 @@ export default function SignInScreen({ navigation }: any) {
     if (signInError) {
       setError(signInError);
       Toast.show({
-        type: "error",
-        text1: "Sign In Error",
+        type: 'error',
+        text1: 'Sign In Error',
         text2: signInError,
       });
     } else {
       Toast.show({
-        type: "success",
-        text1: "Welcome back!",
+        type: 'success',
+        text1: 'Welcome back!',
       });
     }
   };
@@ -55,7 +55,7 @@ export default function SignInScreen({ navigation }: any) {
         <View style={styles.content}>
           <View style={styles.logoContainer}>
             <Image
-              source={require("../../../../assets/logos/myIcon.png")}
+              source={require('@assets/logos/myIcon.png')}
               style={{ width: 150, height: 150 }}
             />
           </View>
@@ -87,17 +87,17 @@ export default function SignInScreen({ navigation }: any) {
             {error && (
               <Text
                 style={{
-                  color: "#E16235",
+                  color: '#E16235',
                   fontSize: 13,
                   marginVertical: 4,
-                  textAlign: "center",
+                  textAlign: 'center',
                 }}
               >
                 {error}
               </Text>
             )}
             <TouchableOpacity
-              onPress={() => navigation.navigate("ForgotPassword")}
+              onPress={() => navigation.navigate('ForgotPassword')}
             >
               <Text style={styles.forgot}>Forgot password?</Text>
             </TouchableOpacity>
@@ -109,7 +109,7 @@ export default function SignInScreen({ navigation }: any) {
             />
             <View style={styles.toSignIn}>
               <Text style={styles.toSignInText}>Don't have an account?</Text>
-              <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+              <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
                 <Text style={styles.signUpText}>Sign Up.</Text>
               </TouchableOpacity>
             </View>
@@ -123,29 +123,29 @@ export default function SignInScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
   },
   keyboardAvoidStyle: {
     flex: 1,
   },
   content: {
     flex: 1,
-    backgroundColor: "#E16235",
-    position: "relative",
+    backgroundColor: '#E16235',
+    position: 'relative',
   },
   logoContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 40,
   },
   panel: {
-    backgroundColor: "#F7F7F7",
-    position: "absolute",
-    top: "30%",
+    backgroundColor: '#F7F7F7',
+    position: 'absolute',
+    top: '30%',
     left: 0,
     right: 0,
     bottom: 0,
     padding: 25,
-    width: "100%",
+    width: '100%',
     borderTopLeftRadius: 45,
     borderTopRightRadius: 45,
   },
@@ -154,44 +154,44 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   titleRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 6,
   },
   title: {
     fontSize: 26,
-    color: "#000000",
-    fontWeight: "bold",
+    color: '#000000',
+    fontWeight: 'bold',
   },
   appName: {
     fontSize: 26,
-    fontWeight: "bold",
-    color: "#E16235",
+    fontWeight: 'bold',
+    color: '#E16235',
   },
   subtitle: {
     fontSize: 14,
-    color: "#777777",
+    color: '#777777',
   },
   input: {
     margin: 0,
   },
   forgot: {
-    textAlign: "right",
+    textAlign: 'right',
     fontSize: 12,
-    color: "#E16235",
-    fontWeight: "normal",
+    color: '#E16235',
+    fontWeight: 'normal',
   },
   toSignIn: {
     marginTop: 5,
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
     gap: 5,
   },
   toSignInText: {
     fontSize: 12,
-    color: "#000",
+    color: '#000',
   },
   signUpText: {
     fontSize: 12,
-    color: "#E16235",
+    color: '#E16235',
   },
 });

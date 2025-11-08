@@ -398,7 +398,7 @@ export default function MealPlanScreen({ navigation }: any) {
                     const primaryImage =
                       recipe.images?.find(img => img.is_primary)?.image_url ||
                       recipe.images?.[0]?.image_url ||
-                      require('../../../../assets/images/onboardImage1.jpg');
+                      require('@assets/images/placeholder.png');
                     return (
                       <Pressable
                         key={recipe.id}

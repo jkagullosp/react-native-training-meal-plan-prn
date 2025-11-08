@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,20 +12,23 @@ import {
   Image,
   Modal,
   Alert,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { useAuthStore } from '../../../stores/auth.store';
-import { useProfileStore } from "../store/useProfileStore";
-import Button from "../../../shared/components/Button";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { profile_settings_texts } from "../../../constants/constants";
-import { MoveLeft } from "lucide-react-native";
-import { pickImageFromDevice, uploadImageToSupabase } from "../../community-recipes/utils/ImageHelper";
+import { useProfileStore } from '../store/useProfileStore';
+import Button from '../../../components/Button';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { profile_settings_texts } from '../../../constants/constants';
+import { MoveLeft } from 'lucide-react-native';
+import {
+  pickImageFromDevice,
+  uploadImageToSupabase,
+} from '../../community-recipes/utils/ImageHelper';
 
 export default function ProfileSettingsScreen({ navigation }: any) {
-  const signOut = useAuthStore((state) => state.signOut);
-  const authUser = useAuthStore((state) => state.user);
+  const signOut = useAuthStore(state => state.signOut);
+  const authUser = useAuthStore(state => state.user);
 
   const {
     user,
@@ -39,17 +42,17 @@ export default function ProfileSettingsScreen({ navigation }: any) {
     changePassword,
   } = useProfileStore();
 
-  const [profileImage, setProfileImage] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [profileImage, setProfileImage] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
+  const [bio, setBio] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Modal state for image selection
   const [modalVisible, setModalVisible] = useState(false);
-  const [imageUrlInput, setImageUrlInput] = useState("");
-  const [previewImage, setPreviewImage] = useState<string>("");
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [previewImage, setPreviewImage] = useState<string>('');
 
   useEffect(() => {
     if (authUser?.id) {
@@ -59,11 +62,11 @@ export default function ProfileSettingsScreen({ navigation }: any) {
 
   useEffect(() => {
     if (user) {
-      setProfileImage(user.profile_image || "");
-      setDisplayName(user.display_name || "");
-      setUsername(user.username || "");
-      setBio(user.bio || "");
-      setPreviewImage(user.profile_image || "");
+      setProfileImage(user.profile_image || '');
+      setDisplayName(user.display_name || '');
+      setUsername(user.username || '');
+      setBio(user.bio || '');
+      setPreviewImage(user.profile_image || '');
     }
   }, [user]);
 
@@ -88,8 +91,8 @@ export default function ProfileSettingsScreen({ navigation }: any) {
     setSaving(false);
 
     Toast.show({
-      type: success ? "success" : "error",
-      text1: success ? "Profile updated!" : "Update failed",
+      type: success ? 'success' : 'error',
+      text1: success ? 'Profile updated!' : 'Update failed',
     });
   };
 
@@ -99,10 +102,10 @@ export default function ProfileSettingsScreen({ navigation }: any) {
     const success = await changePassword(authUser.email, newPassword);
     setSaving(false);
     Toast.show({
-      type: success ? "success" : "error",
-      text1: success ? "Password changed!" : "Password change failed",
+      type: success ? 'success' : 'error',
+      text1: success ? 'Password changed!' : 'Password change failed',
     });
-    if (success) setNewPassword("");
+    if (success) setNewPassword('');
   };
 
   // Modal handlers
@@ -116,7 +119,7 @@ export default function ProfileSettingsScreen({ navigation }: any) {
   const handleUseImageUrl = () => {
     setProfileImage(imageUrlInput);
     setPreviewImage(imageUrlInput);
-    setImageUrlInput("");
+    setImageUrlInput('');
     closeImageModal();
   };
 
@@ -132,22 +135,22 @@ export default function ProfileSettingsScreen({ navigation }: any) {
         setProfileImage(url);
         setPreviewImage(url);
       } else {
-        Alert.alert("Upload failed", "Could not upload image to Supabase.");
+        Alert.alert('Upload failed', 'Could not upload image to Supabase.');
       }
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeAreaView} edges={["top"]}>
+    <SafeAreaView style={styles.safeAreaView} edges={['top']}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingViewStyle}>
         <ScrollView style={styles.container}>
           <View>
             <View style={styles.backRow}>
               <TouchableOpacity
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
                 onPress={() => navigation.goBack()}
               >
-                {Platform.OS === "ios" ? (
+                {Platform.OS === 'ios' ? (
                   <Icon name="keyboard-backspace" size={16} color="#E16235" />
                 ) : (
                   <MoveLeft size={16} color="#E16235" />
@@ -180,7 +183,7 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                       height: 120,
                       borderRadius: 60,
                       marginBottom: 8,
-                      alignSelf: "center",
+                      alignSelf: 'center',
                     }}
                     resizeMode="cover"
                   />
@@ -190,11 +193,11 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                       width: 120,
                       height: 120,
                       borderRadius: 60,
-                      backgroundColor: "#eee",
-                      justifyContent: "center",
-                      alignItems: "center",
+                      backgroundColor: '#eee',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                       marginBottom: 8,
-                      alignSelf: "center",
+                      alignSelf: 'center',
                     }}
                   >
                     <Text>No Image</Text>
@@ -271,7 +274,7 @@ export default function ProfileSettingsScreen({ navigation }: any) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={{ fontWeight: "bold", marginBottom: 8 }}>
+              <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
                 Change Profile Image
               </Text>
               <TextInput
@@ -302,7 +305,7 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                     height: 120,
                     borderRadius: 60,
                     marginTop: 12,
-                    alignSelf: "center",
+                    alignSelf: 'center',
                   }}
                   resizeMode="cover"
                 />
@@ -320,13 +323,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   keyboardAvoidingViewStyle: {
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     flex: 1,
   },
   container: {
-    flexDirection: "column",
+    flexDirection: 'column',
     gap: 12,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: '#F7F7F7',
     padding: 16,
   },
   headerContainer: {
@@ -334,51 +337,51 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   label: {
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: 4,
     marginTop: 12,
   },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 12,
     fontSize: 15,
     marginBottom: 4,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: '#eee',
   },
   error: {
-    color: "red",
+    color: 'red',
     marginTop: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
   titleColumn: {
-    flexDirection: "column",
+    flexDirection: 'column',
     marginBottom: 16,
   },
   subTitle: {
     fontSize: 12,
-    color: "#878787",
+    color: '#878787',
   },
   backRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 6,
     marginBottom: 16,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
-    width: "80%",
-    alignItems: "stretch",
+    width: '80%',
+    alignItems: 'stretch',
   },
 });

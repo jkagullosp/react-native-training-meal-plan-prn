@@ -15,19 +15,19 @@ const { width } = Dimensions.get("window");
 
 const slides = [
   {
-    image: require("../../../../assets/images/onboardImage1.jpg"),
+    image: require("@assets/images/onboardImage1.jpg"),
     title: onboarding_texts.screen1.title,
     subtitle: onboarding_texts.screen1.subtitle,
     Icon: ChefHat
   },
   {
-    image: require("../../../../assets/images/onboardImage2.jpg"),
+    image: require("@assets/images/onboardImage2.jpg"),
     title: onboarding_texts.screen2.title,
     subtitle: onboarding_texts.screen2.subtitle,
     Icon: Calendar1
   },
   {
-    image: require("../../../../assets/images/onboardImage3.jpg"),
+    image: require("@assets/images/onboardImage3.jpg"),
     title: onboarding_texts.screen3.title,
     subtitle: onboarding_texts.screen3.subtitle,
     Icon: ShoppingBasket
