@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import OnboardingNavigation from './src/modules/onboarding/navigation/OnboardingNavigation';
-import AuthNavigator from './src/modules/auth/navigation/AuthNavigation';
+import AuthNavigator from './src/navigation/stacks/AuthStack';
 import AppNavigator from './src/navigation/AppNavigator';
 import {
   useOnboardingStore,
@@ -17,7 +17,7 @@ import {
   initNotificationChannel,
   requestAndSaveFcmToken,
   requestNotificationPermission,
-  registerForegroundMessageHandler
+  registerForegroundMessageHandler,
 } from './src/utils/notificationChannel';
 import messaging from '@react-native-firebase/messaging';
 import { useAuthStore } from './src/stores/auth.store';
@@ -107,13 +107,13 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <NavigationContainer>
-          {content}
-          <Toast />
-        </NavigationContainer>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+        <SafeAreaProvider>
+          <NavigationContainer>
+            {content}
+            <Toast />
+          </NavigationContainer>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
     </QueryClientProvider>
   );
 }
