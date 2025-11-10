@@ -15,17 +15,31 @@ import SearchAndFilter from '../components/SearchAndFilter';
 import RecipeCard from '../components/RecipeCards';
 import { FullRecipe } from '../types/recipe';
 import FilterModal from '../components/FilterModal';
+import { useRecipeSearchAndFilter } from '@/hooks/useRecipeSearchaAndFilter';
 
 export default function DiscoverScreen({ navigation }: any) {
   const { data: tags, refetch: refetchTags } = useFetchTagsQuery();
-  const { data: recipes, isLoading: recipeLoading, error: recipeError, refetch: refecthRecipe } = useRecipesQuery();
-
-  const [search, setSearch] = useState('');
+  const {
+    data: recipes,
+    isLoading: recipeLoading,
+    error: recipeError,
+    refetch: refecthRecipe,
+  } = useRecipesQuery();
+  const {
+    search,
+    setSearch,
+    selectedTagIds,
+    setSelectedTagIds,
+    servings,
+    setServings,
+    cookTime,
+    setCookTime,
+    minRating,
+    setMinRating,
+    filteredRecipes,
+    clearFilters,
+  } = useRecipeSearchAndFilter(recipes ?? [], tags ?? []);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [servings, setServings] = useState<number | null>(null);
-  const [cookTime, setCookTime] = useState<string | null>(null);
-  const [minRating, setMinRating] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -34,41 +48,6 @@ export default function DiscoverScreen({ navigation }: any) {
     await refetchTags();
     setRefreshing(false);
   };
-
-  const filteredRecipes = (recipes ?? []).filter(recipe => {
-    const matchesSearch =
-      recipe.title.toLowerCase().includes(search.toLowerCase()) ||
-      recipe.tags.some(tagObj =>
-        tagObj.tag.name.toLowerCase().includes(search.toLowerCase()),
-      );
-
-    const matchesTags =
-      selectedTagIds.length === 0 ||
-      recipe.tags.some(tagObj => selectedTagIds.includes(tagObj.tag.id));
-
-    const matchesServings = servings === null || recipe.servings === servings;
-
-    const matchesCookTime =
-      !cookTime ||
-      (cookTime === 'under30' && recipe.total_time && recipe.total_time < 30) ||
-      (cookTime === '30to60' &&
-        recipe.total_time &&
-        recipe.total_time >= 30 &&
-        recipe.total_time <= 60) ||
-      (cookTime === 'over60' && recipe.total_time && recipe.total_time > 60);
-
-    const matchesRating =
-      minRating === null ||
-      (recipe.avg_rating !== null && recipe.avg_rating >= minRating);
-
-    return (
-      matchesSearch &&
-      matchesTags &&
-      matchesServings &&
-      matchesCookTime &&
-      matchesRating
-    );
-  });
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
@@ -134,12 +113,7 @@ export default function DiscoverScreen({ navigation }: any) {
           setCookTime={setCookTime}
           minRating={minRating}
           setMinRating={setMinRating}
-          onClear={() => {
-            setSelectedTagIds([]);
-            setServings(null);
-            setCookTime(null);
-            setMinRating(null);
-          }}
+          onClear={clearFilters}
         />
       </ScrollView>
     </SafeAreaView>

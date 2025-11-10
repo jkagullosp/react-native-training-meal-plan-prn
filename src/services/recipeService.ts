@@ -11,3 +11,15 @@ export async function fetchTags() {
 export async function fetchRecipeAuthor(authorId: string) {
   return await recipeApi.fetchRecipeAuthor(authorId);
 }
+
+export async function submitRating({
+  userId,
+  recipeId,
+  rating,
+}: {
+  userId: string;
+  recipeId: string;
+  rating: number;
+}): Promise<{ avg: number; count: number }> {
+  return await recipeApi.submitRating(userId, recipeId, rating);
+}

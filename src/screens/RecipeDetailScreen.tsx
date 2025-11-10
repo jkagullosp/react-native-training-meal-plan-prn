@@ -18,10 +18,12 @@ import Ingredients from '@/components/RecipeIngredients';
 import AddMealModal from '../modules/meal-plan/components/AddMealModal';
 import { useMealPlanStore } from '../modules/meal-plan/store/useMealPlanStore';
 import { useShoppingListStore } from '../modules/shopping-list/store/useShoppingListStore';
-import { supabase } from '../client/supabase';
 import Toast from 'react-native-toast-message';
 import { FullRecipe } from '../types/recipe';
-import { useRecipesQuery } from '../hooks/useRecipesQuery';
+import {
+  useRecipesQuery,
+  useSubmitRecipeRating,
+} from '../hooks/useRecipesQuery';
 import { useAuthStore } from '@/stores/auth.store';
 
 export default function RecipeDetailScreen({ navigation, route }: any) {
@@ -30,14 +32,17 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
   const { addMissingIngredients } = useShoppingListStore();
   const { fetchMealPlans } = useMealPlanStore();
   const { refetch: refetchRecipes } = useRecipesQuery();
+  const { mutate: submitRecipeRating, isPending: submitting } =
+    useSubmitRecipeRating();
 
   const recipe: FullRecipe = route.params.recipe;
   const isAuthor = user?.id === recipe?.author_id;
-  const userRating = recipe?.ratings?.find(r => r.user_id === user?.id);
 
+  const [userRating, setUserRating] = useState(
+    recipe?.ratings?.find(r => r.user_id === user?.id),
+  );
   const [modalVisible, setModalVisible] = useState(false);
   const [rating, setRating] = useState<number>(userRating?.rating || 0);
-  const [submitting, setSubmitting] = useState(false);
   const [addingMeal, setAddingMeal] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
@@ -64,50 +69,40 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
 
   const screenWidth = Dimensions.get('window').width;
 
-  const handleSubmitRating = async () => {
+  const handleSubmitRating = () => {
     if (!user?.id || !recipe?.id || rating < 1 || rating > 5) return;
-    setSubmitting(true);
-
-    try {
-      const { error: upsertError } = await supabase
-        .from('recipe_ratings')
-        .upsert([
-          {
+    submitRecipeRating(
+      { userId: user.id, recipeId: recipe.id, rating },
+      {
+        onSuccess: data => {
+          refetchRecipes();
+          setUserRating({
             user_id: user.id,
-            recipe_id: recipe.id,
             rating,
-          },
-        ]);
+            id: 'temp',
+            recipe_id: recipe.id,
+            created_at: new Date().toISOString(),
+          });
+          setRating(rating);
 
-      if (upsertError) throw upsertError;
-
-      const { data: ratings, error: ratingsError } = await supabase
-        .from('recipe_ratings')
-        .select('rating')
-        .eq('recipe_id', recipe.id);
-
-      if (ratingsError) throw ratingsError;
-
-      const count = ratings.length;
-      const avg =
-        count > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / count : 0;
-
-      const { error: updateError } = await supabase
-        .from('recipes')
-        .update({
-          avg_rating: Math.round(avg * 10) / 10,
-          rating_count: count,
-        })
-        .eq('id', recipe.id);
-
-      if (updateError) throw updateError;
-
-      await refetchRecipes();
-    } catch (err) {
-      console.error('Error handling rating:', err);
-    } finally {
-      setSubmitting(false);
-    }
+          Toast.show({
+            type: 'success',
+            text1: 'Thank you!',
+            text2: `Your rating has been submitted. New average: ${data.avg.toFixed(
+              1,
+            )} (${data.count} ratings)`,
+          });
+        },
+        onError: err => {
+          console.error('Error handling rating:', err);
+          Toast.show({
+            type: 'error',
+            text1: 'Error',
+            text2: 'Failed to submit rating.',
+          });
+        },
+      },
+    );
   };
 
   if (loading) {
