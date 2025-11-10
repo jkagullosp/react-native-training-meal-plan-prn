@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   fetchRecipes,
   fetchTags,
   fetchRecipeAuthor,
+  submitRating
 } from '../services/recipeService';
 
 export function useRecipesQuery() {
@@ -25,4 +27,10 @@ export function useAuthorQuery(authorId: string) {
     queryFn: () => fetchRecipeAuthor(authorId),
     enabled: !!authorId,
   });
+}
+
+export function useSubmitRecipeRating() {
+  return useMutation({
+    mutationFn: submitRating,
+  })
 }
