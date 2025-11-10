@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import Input from '../../../components/Input';
-import Button from '../../../components/Button';
-import { supabase } from '../../../client/supabase';
+import Input from '@/components/Input';
+import Button from '@/components/Button';
+import { supabase } from '@/client/supabase';
 import Toast from 'react-native-toast-message';
 
 export default function ResetPasswordScreen({ navigation }: any) {

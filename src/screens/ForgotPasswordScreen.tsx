@@ -8,14 +8,14 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import Input from '../../../components/Input';
+import Input from '@/components/Input';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '@/modules/auth/store/useAuthStore';
 import Toast from 'react-native-toast-message';
-import { auth_texts } from '../../../constants/constants';
-import Button from '../../../components/Button';
+import { auth_texts } from '@/constants/constants';
+import Button from '@/components/Button';
 import { Linking } from 'react-native';
-import { supabase } from '../../../client/supabase';
+import { supabase } from '@/client/supabase';
 
 export default function ForgotPasswordScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
