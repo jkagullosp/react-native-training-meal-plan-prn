@@ -8,12 +8,12 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuthStore } from '../../../stores/auth.store';
+import { useAuthStore } from '@/stores/auth.store';
 import Toast from 'react-native-toast-message';
-import { auth_texts } from '../../../constants/constants';
-import Button from '../../../components/Button';
-import Input from '../../../components/Input';
-import { authService } from '../../../services/authService';
+import { auth_texts } from '@/constants/constants';
+import Button from '@/components/Button';
+import Input from '@/components/Input';
+import { authService } from '@/services/authService';
 
 export default function SignUpScreen({ navigation }: any) {
   const { signUp, loading } = useAuthStore();

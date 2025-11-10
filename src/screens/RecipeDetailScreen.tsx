@@ -16,7 +16,6 @@ import Instructions from '@/components/RecipeInstructions';
 import Author from '@/components/RecipeAuthor';
 import Ingredients from '@/components/RecipeIngredients';
 import AddMealModal from '../modules/meal-plan/components/AddMealModal';
-import { useMealPlanStore } from '../modules/meal-plan/store/useMealPlanStore';
 import { useShoppingListStore } from '../modules/shopping-list/store/useShoppingListStore';
 import Toast from 'react-native-toast-message';
 import { FullRecipe } from '../types/recipe';
@@ -25,15 +24,20 @@ import {
   useSubmitRecipeRating,
 } from '../hooks/useRecipesQuery';
 import { useAuthStore } from '@/stores/auth.store';
+import { useAddMealPlan, useMealQuery } from '@/hooks/useMealQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function RecipeDetailScreen({ navigation, route }: any) {
+  const queryClient = useQueryClient();
   const { loading, user } = useAuthStore();
-  const { addMealPlan } = useMealPlanStore();
+  const { mutate: addMealPlanMutation } = useAddMealPlan();
+  const { refetch: refetchMeal } = useMealQuery(user?.id ?? '');
   const { addMissingIngredients } = useShoppingListStore();
-  const { fetchMealPlans } = useMealPlanStore();
   const { refetch: refetchRecipes } = useRecipesQuery();
   const { mutate: submitRecipeRating, isPending: submitting } =
     useSubmitRecipeRating();
+
+  const [addingMeal, setAddingMeal] = useState(false);
 
   const recipe: FullRecipe = route.params.recipe;
   const isAuthor = user?.id === recipe?.author_id;
@@ -41,9 +45,9 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
   const [userRating, setUserRating] = useState(
     recipe?.ratings?.find(r => r.user_id === user?.id),
   );
+
   const [modalVisible, setModalVisible] = useState(false);
   const [rating, setRating] = useState<number>(userRating?.rating || 0);
-  const [addingMeal, setAddingMeal] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
@@ -242,27 +246,56 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
       <AddMealModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        onAdd={async (date, mealType) => {
-          setAddingMeal(true);
+        onAdd={(date, mealType) => {
           if (user && recipe) {
-            await addMealPlan(user.id, recipe.id, date, mealType);
-            await addMissingIngredients(user.id);
-            await fetchMealPlans(user.id);
-            await refetchRecipes();
+            setAddingMeal(true); // Set loading state
+            addMealPlanMutation(
+              {
+                userId: user.id,
+                recipeId: recipe.id,
+                mealDate: date,
+                mealType: mealType,
+              },
+              {
+                onSuccess: async () => {
+                  try {
+                    await addMissingIngredients(user.id);
+                    await refetchMeal();
+                    await refetchRecipes();
+                    queryClient.invalidateQueries({ queryKey: ['meals'] });
+                    queryClient.invalidateQueries({ queryKey: ['recipes'] });
+                    setModalVisible(false);
+                    Toast.show({
+                      type: 'success',
+                      text1: 'Meal Plan Added',
+                      text2: 'Check your meal plans for details',
+                    });
+                  } finally {
+                    setAddingMeal(false);
+                  }
+                },
+                onError: error => {
+                  Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: 'Failed to add meal plan.',
+                  });
+                  console.error('Failed to add meal plan:', error);
+                },
+              },
+            );
           }
-          setAddingMeal(false);
-          setModalVisible(false);
-          Toast.show({
-            type: 'success',
-            text1: 'Meal Plan Added',
-            text2: 'Check your meal plans for details',
-          });
         }}
       />
       {addingMeal && (
-        <Modal transparent visible>
+        <Modal
+          transparent
+          visible={addingMeal}
+          animationType="fade"
+          onRequestClose={() => {}}
+        >
           <View style={styles.blurOverlay}>
-            <ActivityIndicator size="small" color="#E16235" />
+            <ActivityIndicator size="small" />
             <Text style={styles.loadingText}>Adding meal to plan...</Text>
           </View>
         </Modal>
