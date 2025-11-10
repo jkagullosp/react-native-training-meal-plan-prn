@@ -4,13 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   RefreshControl,
-  FlatList,
-  Modal,
-  Pressable,
-  Image,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMealPlanStore } from '../store/useMealPlanStore';
@@ -18,10 +12,6 @@ import MealPlanHeader from '../components/MealPlanHeader';
 import { format, addDays } from 'date-fns';
 import DailyNutrition from '../components/DailyNutrition';
 import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Circle, CircleCheck, Trash2 } from 'lucide-react-native';
-import { scheduleHybridMealNotification } from '../../../utils/notificationChannel';
-import { supabase } from '../../../client/supabase';
 import {
   useMealQuery,
   useMealHistory,
@@ -29,11 +19,12 @@ import {
 } from '@/hooks/useMealQuery';
 import { useRecipesQuery } from '@/hooks/useRecipesQuery';
 import { useAuthStore } from '@/stores/auth.store';
-import { useQueryClient } from '@tanstack/react-query';
-import Toast from 'react-native-toast-message';
+import WeekDateSelector from '@/utils/weekDateSelector';
+import MealTypeSection from '@/components/MealTypeSection';
+import MealHistory from '@/components/MealHistory';
+import MealPlanModal from '@/components/MealPlanModal';
 
 export default function MealPlanScreen({ navigation }: any) {
-  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { removeMealPlan, markMealDone, removeIngredientsForRecipe } =
     useMealPlanStore();
@@ -77,68 +68,68 @@ export default function MealPlanScreen({ navigation }: any) {
     return Array.from({ length: 7 }, (_, i) => addDays(today, i));
   }
 
-  function uuidv4() {
-    // simple RFC4122 v4 UUID generator
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  }
+  // function uuidv4() {
+  //   // simple RFC4122 v4 UUID generator
+  //   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+  //     const r = (Math.random() * 16) | 0;
+  //     const v = c === 'x' ? r : (r & 0x3) | 0x8;
+  //     return v.toString(16);
+  //   });
+  // }
 
-  useEffect(() => {
-    const testNotification = async () => {
-      if (!user?.id) return;
+  // useEffect(() => {
+  //   const testNotification = async () => {
+  //     if (!user?.id) return;
 
-      // Check if we already have a pending test notification
-      const { data: existing } = await supabase
-        .from('scheduled_meal_notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('sent', false)
-        .gte('notification_time', new Date().toISOString());
+  //     // Check if we already have a pending test notification
+  //     const { data: existing } = await supabase
+  //       .from('scheduled_meal_notifications')
+  //       .select('*')
+  //       .eq('user_id', user.id)
+  //       .eq('sent', false)
+  //       .gte('notification_time', new Date().toISOString());
 
-      if (existing && existing.length > 0) {
-        console.log('⏳ Already have pending notification, skipping');
-        console.log(
-          '   Scheduled for:',
-          new Date(existing[0].notification_time).toLocaleTimeString(),
-        );
-        return;
-      }
+  //     if (existing && existing.length > 0) {
+  //       console.log('⏳ Already have pending notification, skipping');
+  //       console.log(
+  //         '   Scheduled for:',
+  //         new Date(existing[0].notification_time).toLocaleTimeString(),
+  //       );
+  //       return;
+  //     }
 
-      // Schedule for EXACTLY 2 minutes from now (gives more time to see it)
-      const testDate = new Date(Date.now() + 2 * 60 * 1000);
+  //     // Schedule for EXACTLY 2 minutes from now (gives more time to see it)
+  //     const testDate = new Date(Date.now() + 2 * 60 * 1000);
 
-      console.log('🧪 Creating test notification');
-      console.log('   Current time:', new Date().toLocaleTimeString());
-      console.log('   Notification time:', testDate.toLocaleTimeString());
+  //     console.log('🧪 Creating test notification');
+  //     console.log('   Current time:', new Date().toLocaleTimeString());
+  //     console.log('   Notification time:', testDate.toLocaleTimeString());
 
-      const result = await scheduleHybridMealNotification({
-        userId: user.id,
-        mealPlanId: uuidv4(),
-        mealDate: testDate.toISOString(),
-        mealType: 'lunch',
-        recipeTitle: 'Test Chicken Adobo 🍗',
-        notificationHoursBefore: 0,
-      });
+  //     const result = await scheduleHybridMealNotification({
+  //       userId: user.id,
+  //       mealPlanId: uuidv4(),
+  //       mealDate: testDate.toISOString(),
+  //       mealType: 'lunch',
+  //       recipeTitle: 'Test Chicken Adobo 🍗',
+  //       notificationHoursBefore: 0,
+  //     });
 
-      console.log('✅ Result:', result);
+  //     console.log('✅ Result:', result);
 
-      // Verify it was created
-      const { data } = await supabase
-        .from('scheduled_meal_notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+  //     // Verify it was created
+  //     const { data } = await supabase
+  //       .from('scheduled_meal_notifications')
+  //       .select('*')
+  //       .eq('user_id', user.id)
+  //       .order('created_at', { ascending: false })
+  //       .limit(1);
 
-      console.log('📋 Created in DB:', data?.[0]);
-    };
+  //     console.log('📋 Created in DB:', data?.[0]);
+  //   };
 
-    // Run the test
-    testNotification();
-  }, [user]);
+  //   // Run the test
+  //   testNotification();
+  // }, [user]);
 
   const onRefresh = async () => {
     if (user?.id) {
@@ -166,61 +157,12 @@ export default function MealPlanScreen({ navigation }: any) {
             <MealPlanHeader />
           </View>
           <View>
-            <FlatList
-              data={weekDates}
-              keyExtractor={item => format(item, 'yyyy-MM-dd')}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.weekList}
-              contentContainerStyle={{ paddingHorizontal: 6 }}
-              renderItem={({ item }) => {
-                const dateStr = format(item, 'yyyy-MM-dd');
-                const isSelected = dateStr === selectedDate;
-                const hasMeal = meals?.some(plan => plan.meal_date === dateStr);
-                return (
-                  <TouchableOpacity
-                    key={dateStr}
-                    style={[
-                      styles.dayCard,
-                      isSelected && styles.dayCardSelected,
-                    ]}
-                    onPress={() => setSelectedDate(dateStr)}
-                  >
-                    <Text
-                      style={[
-                        styles.dayOfWeek,
-                        isSelected && styles.dayOfWeekSelected,
-                      ]}
-                    >
-                      {format(item, 'EEE')}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.dayOfMonth,
-                        isSelected && styles.dayOfMonthSelected,
-                      ]}
-                    >
-                      {format(item, 'd')}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.monthText,
-                        isSelected && styles.monthTextSelected,
-                      ]}
-                    >
-                      {format(item, 'MMM')}
-                    </Text>
-                    {hasMeal && (
-                      <View
-                        style={[
-                          styles.dotIndicator,
-                          isSelected && styles.dotIndicatorSelected,
-                        ]}
-                      />
-                    )}
-                  </TouchableOpacity>
-                );
-              }}
+            <WeekDateSelector
+              weekDates={weekDates}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              meals={meals ?? []}
+              styles={styles}
             />
           </View>
           <View style={styles.mealPlanContainer}>
@@ -230,129 +172,22 @@ export default function MealPlanScreen({ navigation }: any) {
                 p => p.meal_type === type.value,
               );
               return (
-                <View key={type.value} style={styles.mealTypeContainer}>
-                  <View style={styles.typeContainer}>
-                    <View style={styles.typeRow}>
-                      <Text style={styles.mealTypeTitle}>
-                        {type.emoji} {type.label}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => {
-                          setSelectedMealType(type.value);
-                          setModalVisible(true);
-                        }}
-                      >
-                        <Text style={styles.addButtonText}>+</Text>
-                      </TouchableOpacity>
-                    </View>
-                    {plansForType.length > 0 ? (
-                      plansForType.map(plan => {
-                        const isDone = history?.some(
-                          h =>
-                            h.recipe_id === plan.recipe_id &&
-                            h.meal_date === plan.meal_date &&
-                            h.meal_type === plan.meal_type,
-                        );
-                        return (
-                          <View
-                            key={plan.id}
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              opacity: isDone ? 0.5 : 1,
-                              backgroundColor: isDone ? '#F0F0F0' : '#fff',
-                              borderRadius: 12,
-                              marginBottom: 4,
-                              paddingHorizontal: 8,
-                            }}
-                          >
-                            <TouchableOpacity
-                              style={{ marginRight: 8 }}
-                              onPress={async () => {
-                                if (!user?.id || isDone) return;
-                                await markMealDone(
-                                  user.id,
-                                  plan.recipe_id,
-                                  plan.meal_date,
-                                  plan.meal_type,
-                                );
-                                await refetchHistory();
-                                await removeIngredientsForRecipe(
-                                  user.id,
-                                  plan.recipe_id,
-                                );
-                              }}
-                              disabled={isDone}
-                            >
-                              {Platform.OS === 'ios' ? (
-                                <Icon
-                                  name={
-                                    isDone
-                                      ? 'checkbox-marked'
-                                      : 'checkbox-blank-outline'
-                                  }
-                                  size={24}
-                                  color={isDone ? '#4CAF50' : '#888'}
-                                />
-                              ) : isDone ? (
-                                <CircleCheck size={24} color="#4CAF50" />
-                              ) : (
-                                <Circle size={24} color="#888" />
-                              )}
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                              style={{ flex: 1 }}
-                              onPress={() =>
-                                navigation.navigate('Discover', {
-                                  screen: 'RecipeDetail',
-                                  params: {
-                                    recipeId: plan.recipe_id,
-                                    title: plan.recipe?.title,
-                                    recipe: plan.recipe,
-                                  },
-                                })
-                              }
-                            >
-                              <View style={styles.mealCard}>
-                                <Text style={styles.mealTitle}>
-                                  {plan.recipe?.title}
-                                </Text>
-                                <Text style={styles.mealMeta}>
-                                  {plan.recipe?.total_time}m •{' '}
-                                  {plan.recipe?.servings} servings •{' '}
-                                  {plan.recipe?.calories} cal
-                                </Text>
-                              </View>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                              onPress={async () => {
-                                await removeMealPlan(plan.id, user?.id || '');
-                                if (user?.id) {
-                                  await refetchMeals();
-                                }
-                              }}
-                              style={{ padding: 8 }}
-                            >
-                              {Platform.OS === 'ios' ? (
-                                <Icon
-                                  name="trash-can-outline"
-                                  size={18}
-                                  color="#E16235"
-                                />
-                              ) : (
-                                <Trash2 size={18} color="#E16235" />
-                              )}
-                            </TouchableOpacity>
-                          </View>
-                        );
-                      })
-                    ) : (
-                      <View style={styles.noMealPlanned}>
-                        <Text style={styles.emptyText}>No meal planned</Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
+                <MealTypeSection
+                  key={type.value}
+                  type={type}
+                  plansForType={plansForType}
+                  history={history ?? []}
+                  navigation={navigation}
+                  setSelectedMealType={setSelectedMealType}
+                  setModalVisible={setModalVisible}
+                  markMealDone={markMealDone}
+                  removeMealPlan={removeMealPlan}
+                  removeIngredientsForRecipe={removeIngredientsForRecipe}
+                  user={user}
+                  refetchHistory={refetchHistory}
+                  refetchMeals={refetchMeals}
+                  styles={styles}
+                />
               );
             })}
           </View>
@@ -361,156 +196,24 @@ export default function MealPlanScreen({ navigation }: any) {
           </View>
           <DailyNutrition mealPlans={plansForSelectedDate ?? []} />
           <View>
-            <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>
-              Meal History
-            </Text>
-            {history?.length === 0 ? (
-              <View style={styles.noMealHistory}>
-                <Text style={styles.emptyHistory}>
-                  No meal history available
-                </Text>
-              </View>
-            ) : (
-              history?.map(h => (
-                <View key={h.id} style={{ marginBottom: 12 }}>
-                  <Text style={{ fontWeight: 'bold' }}>
-                    {h.recipe?.title} ({h.meal_type})
-                  </Text>
-                  <Text style={{ color: '#888' }}>
-                    {h.meal_date} • Marked at{' '}
-                    {new Date(h.marked_at).toLocaleTimeString()}
-                  </Text>
-                </View>
-              ))
-            )}
+            <MealHistory history={history ?? []} styles={styles} />
           </View>
         </View>
-        <Modal
+        <MealPlanModal
           visible={modalVisible}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalView}>
-            <View style={styles.innerModalView}>
-              <Text style={styles.modalTitle}>Select a Recipe</Text>
-              <ScrollView>
-                {recipes && recipes.length > 0 ? (
-                  recipes.map(recipe => {
-                    const primaryImage =
-                      recipe.images?.find(img => img.is_primary)?.image_url ||
-                      recipe.images?.[0]?.image_url ||
-                      require('@assets/images/placeholder.png');
-                    return (
-                      <Pressable
-                        key={recipe.id}
-                        style={styles.pressable}
-                        onPress={() => {
-                          if (user && selectedDate && selectedMealType) {
-                            const alreadyExists = meals?.some(
-                              plan =>
-                                plan.recipe_id === recipe.id &&
-                                plan.meal_date === selectedDate &&
-                                plan.meal_type === selectedMealType,
-                            );
-                            if (alreadyExists) {
-                              Toast.show({
-                                type: 'info',
-                                text1: 'Already added',
-                                text2:
-                                  'This recipe is already in your meal plan for this meal.',
-                              });
-                              return;
-                            }
-                            addMealPlanMutation(
-                              {
-                                userId: user.id,
-                                recipeId: recipe.id,
-                                mealDate: selectedDate,
-                                mealType: selectedMealType,
-                              },
-                              {
-                                onSuccess: async () => {
-                                  await addMissingIngredients(user.id);
-                                  await refetchMeals();
-                                  await refetchRecipes();
-                                  queryClient.invalidateQueries({
-                                    queryKey: ['meals'],
-                                  });
-                                  queryClient.invalidateQueries({
-                                    queryKey: ['recipes'],
-                                  });
-                                  setModalVisible(false);
-                                },
-                                onError: error => {
-                                  // Optionally show a toast or alert
-                                  console.error(
-                                    'Failed to add meal plan:',
-                                    error,
-                                  );
-                                },
-                              },
-                            );
-                          }
-                        }}
-                      >
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 12,
-                          }}
-                        >
-                          <Image
-                            source={
-                              typeof primaryImage === 'string'
-                                ? { uri: primaryImage }
-                                : primaryImage
-                            }
-                            style={{
-                              width: 56,
-                              height: 56,
-                              borderRadius: 8,
-                              backgroundColor: '#eee',
-                            }}
-                            resizeMode="cover"
-                          />
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={{ fontWeight: 'medium', fontSize: 16 }}
-                            >
-                              {recipe.title}
-                            </Text>
-                            <Text style={{ color: '#888', fontSize: 13 }}>
-                              {recipe.servings} servings • {recipe.calories} cal
-                              • {recipe.total_time}m
-                            </Text>
-                          </View>
-                        </View>
-                      </Pressable>
-                    );
-                  })
-                ) : (
-                  <Text>No recipes found.</Text>
-                )}
-              </ScrollView>
-              <TouchableOpacity
-                style={{ marginTop: 16, alignSelf: 'center' }}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text
-                  style={{
-                    color: '#E16235',
-                    fontWeight: 'bold',
-                    marginBottom: 18,
-                  }}
-                >
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+          onClose={() => setModalVisible(false)}
+          recipes={recipes ?? []}
+          meals={meals ?? []}
+          selectedDate={selectedDate}
+          selectedMealType={selectedMealType ?? ''}
+          user={user}
+          addMealPlanMutation={addMealPlanMutation}
+          addMissingIngredients={addMissingIngredients}
+          refetchMeals={refetchMeals}
+          refetchRecipes={refetchRecipes}
+          styles={styles}
+          setModalVisible={setModalVisible}
+        />
       </ScrollView>
     </SafeAreaView>
   );

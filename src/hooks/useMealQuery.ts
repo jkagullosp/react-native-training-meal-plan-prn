@@ -3,6 +3,7 @@ import {
   fetchMealHistory,
   fetchMealPlans,
   addMealPlan,
+  removeMealPlan
 } from '@/services/mealService';
 
 export function useMealQuery(userId: string) {
@@ -25,4 +26,10 @@ export function useAddMealPlan() {
   return useMutation({
     mutationFn: addMealPlan,
   });
+}
+
+export function useRemoveMealPlan() {
+  return useMutation({
+    mutationFn: removeMealPlan,
+  })
 }

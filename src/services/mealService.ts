@@ -8,6 +8,10 @@ export async function fetchMealHistory(userId: string) {
   return await mealApi.fetchMealHistory(userId);
 }
 
+export async function removeMealPlan(mealPlanId: string) {
+  return await mealApi.removeMealplan(mealPlanId);
+}
+
 export async function addMealPlan({
   userId,
   recipeId,
