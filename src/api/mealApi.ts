@@ -87,6 +87,55 @@ class MealAPi {
       throw handleApiError(error, 'Failed to fetch meal history');
     }
   }
+
+  async markMealDone(
+    userId: string,
+    recipeId: string,
+    mealDate: string,
+    mealType: string,
+  ): Promise<void> {
+    try {
+      const { data, error } = await supabase.from('meal_history').insert([
+        {
+          user_id: userId,
+          recipe_id: recipeId,
+          meal_date: mealDate,
+          meal_type: mealType,
+        },
+      ]);
+
+      if (error || !data) throw error;
+      console.log('Marked meal done: ', JSON.stringify(data, null, 2));
+    } catch (error) {
+      throw handleApiError(error, 'Failed to mark meal as done');
+    }
+  }
+
+  async removeIngredientsForRecipe(
+    userId: string,
+    recipeId: string,
+  ): Promise<void> {
+    try {
+      const { data: ingredients, error: ingredientsError } = await supabase
+        .from('ingredients')
+        .select('name')
+        .eq('recipe_id', recipeId);
+
+      if (ingredientsError || !ingredients) throw ingredientsError;
+
+      for (const ingredient of ingredients) {
+        const { data: shop, error: shopError } = await supabase
+          .from('shopping_list')
+          .delete()
+          .eq('user_id', userId)
+          .eq('ingredient_name', ingredient.name);
+
+        if (shopError || !shop) throw shopError;
+      }
+    } catch (error) {
+      throw handleApiError(error, 'Cannot remove ingredients for recipe');
+    }
+  }
 }
 
 export const mealApi = new MealAPi();

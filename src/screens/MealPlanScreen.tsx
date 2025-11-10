@@ -7,18 +7,20 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMealPlanStore } from '../store/useMealPlanStore';
 import MealPlanHeader from '../components/MealPlanHeader';
 import { format, addDays } from 'date-fns';
 import DailyNutrition from '../components/DailyNutrition';
-import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
+import { useShoppingListStore } from '../modules/shopping-list/store/useShoppingListStore';
 import {
   useMealQuery,
   useMealHistory,
   useAddMealPlan,
+  useMarkMealPLan,
+  useRemoveIngredientsForRecipe,
 } from '@/hooks/useMealQuery';
 import { useRecipesQuery } from '@/hooks/useRecipesQuery';
 import { useAuthStore } from '@/stores/auth.store';
+import { useRemoveMealPlan } from '@/hooks/useMealQuery';
 import WeekDateSelector from '@/utils/weekDateSelector';
 import MealTypeSection from '@/components/MealTypeSection';
 import MealHistory from '@/components/MealHistory';
@@ -26,8 +28,10 @@ import MealPlanModal from '@/components/MealPlanModal';
 
 export default function MealPlanScreen({ navigation }: any) {
   const { user } = useAuthStore();
-  const { removeMealPlan, markMealDone, removeIngredientsForRecipe } =
-    useMealPlanStore();
+  const { mutate: removeMealPlanMutation } = useRemoveMealPlan();
+  const { mutate: markMealDoneMutation } = useMarkMealPLan();
+  const { mutate: removeIngredientsForRecipeMutation } =
+    useRemoveIngredientsForRecipe();
   const {
     data: meals,
     isLoading: mealsLoading,
@@ -180,9 +184,11 @@ export default function MealPlanScreen({ navigation }: any) {
                   navigation={navigation}
                   setSelectedMealType={setSelectedMealType}
                   setModalVisible={setModalVisible}
-                  markMealDone={markMealDone}
-                  removeMealPlan={removeMealPlan}
-                  removeIngredientsForRecipe={removeIngredientsForRecipe}
+                  markMealDoneMutation={markMealDoneMutation}
+                  removeMealPlanMutation={removeMealPlanMutation}
+                  removeIngredientsForRecipeMutation={
+                    removeIngredientsForRecipeMutation
+                  }
                   user={user}
                   refetchHistory={refetchHistory}
                   refetchMeals={refetchMeals}
@@ -196,6 +202,7 @@ export default function MealPlanScreen({ navigation }: any) {
           </View>
           <DailyNutrition mealPlans={plansForSelectedDate ?? []} />
           <View>
+            <Text style={styles.nutrition}>Meal History</Text>
             <MealHistory history={history ?? []} styles={styles} />
           </View>
         </View>
@@ -402,5 +409,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#888',
     fontSize: 12,
+  },
+
+  mealHistoryContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    gap: 8,
+  },
+  mealHistoryTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 8,
+    color: '#222',
+  },
+  mealHistoryItem: {
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#F7F7F7',
+  },
+  mealHistoryRecipe: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    color: '#222',
+  },
+  mealHistoryMeta: {
+    color: '#888',
+    fontSize: 13,
   },
 });

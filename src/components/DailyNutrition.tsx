@@ -1,13 +1,13 @@
 import { View, Text, StyleSheet } from "react-native";
-import { FullMealPlan } from "../types/mealPlanTypes";
-import { useDiscoverStore } from "../../discover/store/useDiscoverStore";
+import { FullMealPlan } from "@/types/meal";
+import { useAuthStore } from "@/stores/auth.store";
 
 type Props = {
   mealPlans: FullMealPlan[];
 };
 
 export default function DailyNutrition({ mealPlans }: Props) {
-  const { loading } = useDiscoverStore();
+  const { loading } = useAuthStore();
 
   const total = mealPlans.reduce(
     (acc, plan) => {

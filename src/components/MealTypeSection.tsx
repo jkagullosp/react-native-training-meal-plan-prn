@@ -17,14 +17,17 @@ type Props = {
   navigation: any;
   setSelectedMealType: (type: string) => void;
   setModalVisible: (visible: boolean) => void;
-  markMealDone: (
-    userId: string,
-    recipeId: string,
-    mealDate: string,
-    mealType: string
-  ) => Promise<void>;
-  removeMealPlan: (planId: string, userId: string) => Promise<void>;
-  removeIngredientsForRecipe: (userId: string, recipeId: string) => Promise<void>;
+  markMealDoneMutation: (vars: {
+    userId: string;
+    recipeId: string;
+    mealDate: string;
+    mealType: string;
+  }) => void;
+  removeMealPlanMutation: (mealPlanId: string) => void;
+  removeIngredientsForRecipeMutation: (vars: {
+    userId: string;
+    recipeId: string;
+  }) => void;
   user: { id: string } | null;
   refetchHistory: () => Promise<any>;
   refetchMeals: () => Promise<any>;
@@ -38,9 +41,9 @@ export default function MealTypeSection({
   navigation,
   setSelectedMealType,
   setModalVisible,
-  markMealDone,
-  removeMealPlan,
-  removeIngredientsForRecipe,
+  markMealDoneMutation,
+  removeMealPlanMutation,
+  removeIngredientsForRecipeMutation,
   user,
   refetchHistory,
   refetchMeals,
@@ -87,20 +90,25 @@ export default function MealTypeSection({
                   style={{ marginRight: 8 }}
                   onPress={async () => {
                     if (!user?.id || isDone) return;
-                    await markMealDone(
-                      user.id,
-                      plan.recipe_id,
-                      plan.meal_date,
-                      plan.meal_type,
-                    );
+                    markMealDoneMutation({
+                      userId: user.id,
+                      recipeId: plan.recipe.id,
+                      mealDate: plan.meal_date,
+                      mealType: plan.meal_type,
+                    });
                     await refetchHistory();
-                    await removeIngredientsForRecipe(user.id, plan.recipe_id);
+                    removeIngredientsForRecipeMutation({
+                      userId: user.id,
+                      recipeId: plan.recipe_id,
+                    });
                   }}
                   disabled={isDone}
                 >
                   {Platform.OS === 'ios' ? (
                     <Icon
-                      name={isDone ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                      name={
+                        isDone ? 'checkbox-marked' : 'checkbox-blank-outline'
+                      }
                       size={24}
                       color={isDone ? '#4CAF50' : '#888'}
                     />
@@ -118,7 +126,7 @@ export default function MealTypeSection({
                       params: {
                         recipeId: plan.recipe_id,
                         title: plan.recipe?.title,
-                        recipe: plan.recipe,
+                        recipe: plan.recipe
                       },
                     })
                   }
@@ -126,13 +134,14 @@ export default function MealTypeSection({
                   <View style={styles.mealCard}>
                     <Text style={styles.mealTitle}>{plan.recipe?.title}</Text>
                     <Text style={styles.mealMeta}>
-                      {plan.recipe?.total_time}m • {plan.recipe?.servings} servings • {plan.recipe?.calories} cal
+                      {plan.recipe?.total_time}m • {plan.recipe?.servings}{' '}
+                      servings • {plan.recipe?.calories} cal
                     </Text>
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={async () => {
-                    await removeMealPlan(plan.id, user?.id || '');
+                    removeMealPlanMutation(plan.id);
                     if (user?.id) {
                       await refetchMeals();
                     }

@@ -3,13 +3,13 @@ import { ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import OnboardingNavigation from './src/modules/onboarding/navigation/OnboardingNavigation';
+import OnboardingNavigation from './src/navigation/OnboardingNavigation';
 import AuthNavigator from './src/navigation/stacks/AuthStack';
 import AppNavigator from './src/navigation/AppNavigator';
 import {
   useOnboardingStore,
   loadOnboardingState,
-} from './src/modules/onboarding/store/useOnboardingStore';
+} from './src/stores/useOnboardingStore';
 //import { useAuthStore } from './src/modules/auth/store/useAuthStore';
 import Toast from 'react-native-toast-message';
 import { testFirebaseInit } from './src/utils/firebaseHelper';

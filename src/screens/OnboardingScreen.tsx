@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
 import { ChefHat, ShoppingBasket, Calendar1 } from "lucide-react-native";
-import { onboarding_texts } from "../../../constants/constants";
+import { onboarding_texts } from "@/constants/constants";
 
 const { width } = Dimensions.get("window");
 
