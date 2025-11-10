@@ -15,7 +15,7 @@ import SearchAndFilter from '../components/SearchAndFilter';
 import RecipeCard from '../components/RecipeCards';
 import { FullRecipe } from '../types/recipe';
 import FilterModal from '../components/FilterModal';
-import { useRecipeSearchAndFilter } from '@/hooks/useRecipeSearchaAndFilter';
+import { useRecipeSearchAndFilter } from '@/hooks/useRecipeSearchAndFilter';
 
 export default function DiscoverScreen({ navigation }: any) {
   const { data: tags, refetch: refetchTags } = useFetchTagsQuery();

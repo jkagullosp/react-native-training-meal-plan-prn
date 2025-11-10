@@ -14,46 +14,50 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMealPlanStore } from '../store/useMealPlanStore';
-import { useAuthStore } from '../../auth/store/useAuthStore';
 import MealPlanHeader from '../components/MealPlanHeader';
 import { format, addDays } from 'date-fns';
 import DailyNutrition from '../components/DailyNutrition';
-import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
 import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Circle, CircleCheck, Trash2 } from 'lucide-react-native';
 import { scheduleHybridMealNotification } from '../../../utils/notificationChannel';
 import { supabase } from '../../../client/supabase';
-
-const mealTypes = [
-  { label: 'Breakfast', value: 'breakfast', emoji: '🌅' },
-  { label: 'Lunch', value: 'lunch', emoji: '🌞' },
-  { label: 'Dinner', value: 'dinner', emoji: '🌙' },
-  { label: 'Snack', value: 'snack', emoji: '🍪' },
-];
-
-function getWeekDates() {
-  const today = new Date();
-  return Array.from({ length: 7 }, (_, i) => addDays(today, i));
-}
+import {
+  useMealQuery,
+  useMealHistory,
+  useAddMealPlan,
+} from '@/hooks/useMealQuery';
+import { useRecipesQuery } from '@/hooks/useRecipesQuery';
+import { useAuthStore } from '@/stores/auth.store';
+import { useQueryClient } from '@tanstack/react-query';
+import Toast from 'react-native-toast-message';
 
 export default function MealPlanScreen({ navigation }: any) {
-  const {
-    mealPlans,
-    fetchMealPlans,
-    loading,
-    removeMealPlan,
-    fetchMealHistory,
-    markMealDone,
-    mealHistory,
-    removeIngredientsForRecipe,
-  } = useMealPlanStore();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const { removeMealPlan, markMealDone, removeIngredientsForRecipe } =
+    useMealPlanStore();
+  const {
+    data: meals,
+    isLoading: mealsLoading,
+    refetch: refetchMeals,
+  } = useMealQuery(user?.id ?? '');
+  const {
+    data: history,
+    isLoading: mealHistoryLoading, // implement history loading
+    refetch: refetchHistory,
+  } = useMealHistory(user?.id ?? '');
+  const {
+    data: recipes,
+    isLoading: recipesLoading,
+    refetch: refetchRecipes,
+  } = useRecipesQuery(); //implement recipe loading
+  const { mutate: addMealPlanMutation, isPending: addingMeal } =
+    useAddMealPlan(); // implement adding meal
+
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<string | null>(null);
-  const { recipes, fetchRecipes } = useDiscoverStore();
-  const { addMealPlan } = useMealPlanStore();
   const { addMissingIngredients } = useShoppingListStore();
 
   const weekDates = getWeekDates();
@@ -61,9 +65,17 @@ export default function MealPlanScreen({ navigation }: any) {
     format(weekDates[0], 'yyyy-MM-dd'),
   );
 
-  useEffect(() => {
-    fetchRecipes();
-  }, [fetchRecipes]);
+  const mealTypes = [
+    { label: 'Breakfast', value: 'breakfast', emoji: '🌅' },
+    { label: 'Lunch', value: 'lunch', emoji: '🌞' },
+    { label: 'Dinner', value: 'dinner', emoji: '🌙' },
+    { label: 'Snack', value: 'snack', emoji: '🍪' },
+  ];
+
+  function getWeekDates() {
+    const today = new Date();
+    return Array.from({ length: 7 }, (_, i) => addDays(today, i));
+  }
 
   function uuidv4() {
     // simple RFC4122 v4 UUID generator
@@ -131,23 +143,15 @@ export default function MealPlanScreen({ navigation }: any) {
   const onRefresh = async () => {
     if (user?.id) {
       setRefreshing(true);
-      await fetchMealPlans(user.id);
-      await fetchRecipes();
-      await fetchMealHistory(user.id);
+      await refetchMeals();
+      await refetchRecipes();
+      await refetchHistory();
       setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchMealPlans(user.id);
-      fetchMealHistory(user.id);
-    }
-  }, [user, fetchMealPlans, fetchMealHistory]);
-
-  const plansForSelectedDate = mealPlans.filter(
-    plan => plan.meal_date === selectedDate,
-  );
+  const plansForSelectedDate =
+    meals?.filter(plan => plan.meal_date === selectedDate) ?? [];
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
@@ -172,9 +176,7 @@ export default function MealPlanScreen({ navigation }: any) {
               renderItem={({ item }) => {
                 const dateStr = format(item, 'yyyy-MM-dd');
                 const isSelected = dateStr === selectedDate;
-                const hasMeal = mealPlans.some(
-                  plan => plan.meal_date === dateStr,
-                );
+                const hasMeal = meals?.some(plan => plan.meal_date === dateStr);
                 return (
                   <TouchableOpacity
                     key={dateStr}
@@ -222,9 +224,9 @@ export default function MealPlanScreen({ navigation }: any) {
             />
           </View>
           <View style={styles.mealPlanContainer}>
-            {loading && <Text>Loading meal plans...</Text>}
+            {mealsLoading && <Text>Loading meal plans...</Text>}
             {mealTypes.map(type => {
-              const plansForType = plansForSelectedDate.filter(
+              const plansForType = plansForSelectedDate?.filter(
                 p => p.meal_type === type.value,
               );
               return (
@@ -245,7 +247,7 @@ export default function MealPlanScreen({ navigation }: any) {
                     </View>
                     {plansForType.length > 0 ? (
                       plansForType.map(plan => {
-                        const isDone = mealHistory.some(
+                        const isDone = history?.some(
                           h =>
                             h.recipe_id === plan.recipe_id &&
                             h.meal_date === plan.meal_date &&
@@ -274,7 +276,7 @@ export default function MealPlanScreen({ navigation }: any) {
                                   plan.meal_date,
                                   plan.meal_type,
                                 );
-                                await fetchMealHistory(user.id);
+                                await refetchHistory();
                                 await removeIngredientsForRecipe(
                                   user.id,
                                   plan.recipe_id,
@@ -326,7 +328,7 @@ export default function MealPlanScreen({ navigation }: any) {
                               onPress={async () => {
                                 await removeMealPlan(plan.id, user?.id || '');
                                 if (user?.id) {
-                                  await fetchMealPlans(user.id);
+                                  await refetchMeals();
                                 }
                               }}
                               style={{ padding: 8 }}
@@ -357,19 +359,19 @@ export default function MealPlanScreen({ navigation }: any) {
           <View>
             <Text style={styles.nutrition}>Daily Nutrition Summary</Text>
           </View>
-          <DailyNutrition mealPlans={plansForSelectedDate} />
+          <DailyNutrition mealPlans={plansForSelectedDate ?? []} />
           <View>
             <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>
               Meal History
             </Text>
-            {mealHistory.length === 0 ? (
+            {history?.length === 0 ? (
               <View style={styles.noMealHistory}>
                 <Text style={styles.emptyHistory}>
                   No meal history available
                 </Text>
               </View>
             ) : (
-              mealHistory.map(h => (
+              history?.map(h => (
                 <View key={h.id} style={{ marginBottom: 12 }}>
                   <Text style={{ fontWeight: 'bold' }}>
                     {h.recipe?.title} ({h.meal_type})
@@ -403,18 +405,52 @@ export default function MealPlanScreen({ navigation }: any) {
                       <Pressable
                         key={recipe.id}
                         style={styles.pressable}
-                        onPress={async () => {
+                        onPress={() => {
                           if (user && selectedDate && selectedMealType) {
-                            await addMealPlan(
-                              user.id,
-                              recipe.id,
-                              selectedDate,
-                              selectedMealType,
+                            const alreadyExists = meals?.some(
+                              plan =>
+                                plan.recipe_id === recipe.id &&
+                                plan.meal_date === selectedDate &&
+                                plan.meal_type === selectedMealType,
                             );
-                            await addMissingIngredients(user.id);
-                            await fetchMealPlans(user.id);
-                            await fetchRecipes();
-                            setModalVisible(false);
+                            if (alreadyExists) {
+                              Toast.show({
+                                type: 'info',
+                                text1: 'Already added',
+                                text2:
+                                  'This recipe is already in your meal plan for this meal.',
+                              });
+                              return;
+                            }
+                            addMealPlanMutation(
+                              {
+                                userId: user.id,
+                                recipeId: recipe.id,
+                                mealDate: selectedDate,
+                                mealType: selectedMealType,
+                              },
+                              {
+                                onSuccess: async () => {
+                                  await addMissingIngredients(user.id);
+                                  await refetchMeals();
+                                  await refetchRecipes();
+                                  queryClient.invalidateQueries({
+                                    queryKey: ['meals'],
+                                  });
+                                  queryClient.invalidateQueries({
+                                    queryKey: ['recipes'],
+                                  });
+                                  setModalVisible(false);
+                                },
+                                onError: error => {
+                                  // Optionally show a toast or alert
+                                  console.error(
+                                    'Failed to add meal plan:',
+                                    error,
+                                  );
+                                },
+                              },
+                            );
                           }
                         }}
                       >
