@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {
   fetchMealHistory,
   fetchMealPlans,
@@ -42,8 +42,13 @@ export function useMarkMealPLan() {
   });
 }
 
-export function useRemoveIngredientsForRecipe() {
+export function useRemoveIngredientsForRecipe(userId: string) {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: removeIngredientsForRecipe,
+    mutationFn: ({ recipeId }: { recipeId: string }) =>
+      removeIngredientsForRecipe({ userId, recipeId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shoppingList', userId] });
+    },
   });
 }

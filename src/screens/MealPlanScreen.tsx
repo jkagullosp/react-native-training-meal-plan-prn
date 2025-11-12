@@ -28,12 +28,11 @@ import { useRemoveMealPlanAndShoppingListMutation } from '@/hooks/useShopQuery';
 
 export default function MealPlanScreen({ navigation }: any) {
   const { user } = useAuthStore();
-  const { mutate: removeMealPlanMutation } = useRemoveMealPlanAndShoppingListMutation(
-    user?.id ?? '',
-  );
+  const { mutate: removeMealPlanMutation } =
+    useRemoveMealPlanAndShoppingListMutation(user?.id ?? '');
   const { mutate: markMealDoneMutation } = useMarkMealPLan();
   const { mutate: removeIngredientsForRecipeMutation } =
-    useRemoveIngredientsForRecipe();
+    useRemoveIngredientsForRecipe(user?.id ?? '');
   const {
     data: meals,
     isLoading: mealsLoading,

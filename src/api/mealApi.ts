@@ -112,30 +112,20 @@ class MealAPi {
   }
 
   async removeIngredientsForRecipe(
-    userId: string,
-    recipeId: string,
-  ): Promise<void> {
-    try {
-      const { data: ingredients, error: ingredientsError } = await supabase
-        .from('ingredients')
-        .select('name')
-        .eq('recipe_id', recipeId);
-
-      if (ingredientsError || !ingredients) throw ingredientsError;
-
-      for (const ingredient of ingredients) {
-        const { data: shop, error: shopError } = await supabase
-          .from('shopping_list')
-          .delete()
-          .eq('user_id', userId)
-          .eq('ingredient_name', ingredient.name);
-
-        if (shopError || !shop) throw shopError;
-      }
-    } catch (error) {
-      throw handleApiError(error, 'Cannot remove ingredients for recipe');
-    }
+  userId: string,
+  recipeId: string,
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('shopping_list')
+      .delete()
+      .eq('user_id', userId)
+      .eq('recipe_id', recipeId);
+    if (error) throw error;
+  } catch (error) {
+    throw handleApiError(error, 'Cannot remove ingredients for recipe');
   }
+}
 }
 
 export const mealApi = new MealAPi();
