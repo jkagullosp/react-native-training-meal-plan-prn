@@ -29,7 +29,7 @@ type MealPlanModalProps = {
     },
     options?: any,
   ) => void;
-  addMissingIngredients: (userId: string) => Promise<void>;
+  addMissingIngredients: () => Promise<void>;
   refetchMeals: () => Promise<any>;
   refetchRecipes: () => Promise<any>;
   styles: any;
@@ -98,7 +98,7 @@ export default function MealPlanModal({
                           },
                           {
                             onSuccess: async () => {
-                              await addMissingIngredients(user.id);
+                              await addMissingIngredients();
                               await refetchMeals();
                               await refetchRecipes();
                               setModalVisible(false);

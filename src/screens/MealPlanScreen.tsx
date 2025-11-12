@@ -10,7 +10,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MealPlanHeader from '../components/MealPlanHeader';
 import { format, addDays } from 'date-fns';
 import DailyNutrition from '../components/DailyNutrition';
-import { useShoppingListStore } from '../modules/shopping-list/store/useShoppingListStore';
 import {
   useMealQuery,
   useMealHistory,
@@ -20,15 +19,18 @@ import {
 } from '@/hooks/useMealQuery';
 import { useRecipesQuery } from '@/hooks/useRecipesQuery';
 import { useAuthStore } from '@/stores/auth.store';
-import { useRemoveMealPlan } from '@/hooks/useMealQuery';
 import WeekDateSelector from '@/utils/weekDateSelector';
 import MealTypeSection from '@/components/MealTypeSection';
 import MealHistory from '@/components/MealHistory';
 import MealPlanModal from '@/components/MealPlanModal';
+import { useAddMissingIngredientsMutation } from '@/hooks/useShopQuery';
+import { useRemoveMealPlanAndShoppingListMutation } from '@/hooks/useShopQuery';
 
 export default function MealPlanScreen({ navigation }: any) {
   const { user } = useAuthStore();
-  const { mutate: removeMealPlanMutation } = useRemoveMealPlan();
+  const { mutate: removeMealPlanMutation } = useRemoveMealPlanAndShoppingListMutation(
+    user?.id ?? '',
+  );
   const { mutate: markMealDoneMutation } = useMarkMealPLan();
   const { mutate: removeIngredientsForRecipeMutation } =
     useRemoveIngredientsForRecipe();
@@ -53,8 +55,9 @@ export default function MealPlanScreen({ navigation }: any) {
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<string | null>(null);
-  const { addMissingIngredients } = useShoppingListStore();
-
+  const addMissingIngredientsMutation = useAddMissingIngredientsMutation(
+    user?.id ?? '',
+  );
   const weekDates = getWeekDates();
   const [selectedDate, setSelectedDate] = useState(
     format(weekDates[0], 'yyyy-MM-dd'),
@@ -215,7 +218,7 @@ export default function MealPlanScreen({ navigation }: any) {
           selectedMealType={selectedMealType ?? ''}
           user={user}
           addMealPlanMutation={addMealPlanMutation}
-          addMissingIngredients={addMissingIngredients}
+          addMissingIngredients={addMissingIngredientsMutation.mutateAsync}
           refetchMeals={refetchMeals}
           refetchRecipes={refetchRecipes}
           styles={styles}

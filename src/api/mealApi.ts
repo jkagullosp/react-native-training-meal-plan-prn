@@ -52,13 +52,13 @@ class MealAPi {
 
   async removeMealplan(mealPlanId: string): Promise<void> {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('meal_plans')
         .delete()
         .eq('id', mealPlanId);
 
-      if (error || !data) throw error;
-      console.log('Meal plan removed: ', JSON.stringify(data, null, 2));
+      if (error) throw error;
+      console.log('Meal plan removed: ', mealPlanId);
     } catch (error) {
       throw handleApiError(error, 'Failed to remove meal plan');
     }
@@ -95,7 +95,7 @@ class MealAPi {
     mealType: string,
   ): Promise<void> {
     try {
-      const { data, error } = await supabase.from('meal_history').insert([
+      const { error } = await supabase.from('meal_history').insert([
         {
           user_id: userId,
           recipe_id: recipeId,
@@ -104,8 +104,8 @@ class MealAPi {
         },
       ]);
 
-      if (error || !data) throw error;
-      console.log('Marked meal done: ', JSON.stringify(data, null, 2));
+      if (error) throw error;
+      console.log('Marked meal done: ', recipeId);
     } catch (error) {
       throw handleApiError(error, 'Failed to mark meal as done');
     }
