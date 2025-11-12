@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import React from "react";
-import { meal_plan_texts } from "../../../constants/constants";
+import { meal_plan_texts } from "@/constants/constants";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";

@@ -1,4 +1,7 @@
-import { useOnboardingStore, loadOnboardingState } from './useOnboardingStore';
+import {
+  useOnboardingStore,
+  loadOnboardingState,
+} from '../../../stores/useOnboardingStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -19,12 +22,16 @@ describe('useOnboardingStore', () => {
   });
 
   it('handles AsyncStorage error when saving onboarding state', async () => {
-    (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('fail'));
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(
+      new Error('fail'),
+    );
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     await useOnboardingStore.getState().setHasOnboarded(false);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'Failed to save onboarding status: ',
-      expect.any(Error)
+      expect.any(Error),
     );
     consoleErrorSpy.mockRestore();
   });
@@ -45,12 +52,16 @@ describe('loadOnboardingState', () => {
   });
 
   it('handles AsyncStorage error when loading onboarding state', async () => {
-    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(new Error('fail'));
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(
+      new Error('fail'),
+    );
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const result = await loadOnboardingState();
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'Failed to load onboarding status: ',
-      expect.any(Error)
+      expect.any(Error),
     );
     expect(result).toBeUndefined();
     consoleErrorSpy.mockRestore();

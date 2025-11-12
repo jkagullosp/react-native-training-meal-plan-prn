@@ -44,14 +44,17 @@ class RecipeApi {
         .maybeSingle();
 
       if (error || !data) throw error;
-      console.log('(Api Layer) Fetched Author: ', JSON.stringify(data, null, 2));
+      console.log(
+        '(Api Layer) Fetched Author: ',
+        JSON.stringify(data, null, 2),
+      );
       return data as Profile;
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch recipe authors.');
     }
   }
 
-  async fetchuserRecipes(userId: string): Promise<void> {
+  async fetchuserRecipes(userId: string): Promise<FullRecipe[]> {
     try {
       const { data, error } = await supabase
         .from('recipes')
@@ -73,6 +76,7 @@ class RecipeApi {
         '(Api Layer) Fetched user recipes: ',
         JSON.stringify(data, null, 2),
       );
+      return data as FullRecipe[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch user recipes');
     }
@@ -115,7 +119,7 @@ class RecipeApi {
 
     if (updateError) throw updateError;
 
-    console.log("Submitted rating: ", avg, count)
+    console.log('Submitted rating: ', avg, count);
     return { avg, count };
   }
 }

@@ -15,7 +15,7 @@ import Nutrition from '@/components/RecipeNutrition';
 import Ingredients from '@/components/RecipeIngredients';
 import Instructions from '@/components/RecipeInstructions';
 import Author from '@/components/RecipeAuthor';
-import AddMealModal from '../../meal-plan/components/AddMealModal';
+import AddMealModal from '../../../components/AddMealModal';
 import { useMealPlanStore } from '../../meal-plan/store/useMealPlanStore';
 import { useShoppingListStore } from '../../shopping-list/store/useShoppingListStore';
 import Toast from 'react-native-toast-message';
