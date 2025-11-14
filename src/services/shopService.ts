@@ -92,7 +92,7 @@ export async function addMissingIngredients(userId: string) {
   const shoppingList = await fetchShoppingList(userId);
 
   const ingredientTotals: { [key: string]: number } = {};
-  mealPlans.forEach(plan => {
+  activeMealPlans.forEach(plan => {
     (ingredients ?? [])
       .filter(
         (ingredient: Ingredient) => ingredient.recipe_id === plan.recipe_id,
@@ -123,7 +123,8 @@ export async function addMissingIngredients(userId: string) {
       .map((item: ShoppingListItem) => item.meal_plan_id);
 
     let added = 0;
-    for (const plan of mealPlans) {
+    // FIX: Only consider activeMealPlans, not all mealPlans
+    for (const plan of activeMealPlans) {
       if (added < toBuy) {
         const ingredient = (ingredients ?? []).find(
           (ing: Ingredient) =>

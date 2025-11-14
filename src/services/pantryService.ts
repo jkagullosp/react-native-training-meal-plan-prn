@@ -14,7 +14,7 @@ export async function deductFromShoppingList(
     userId,
     ingredientName,
   );
-
+  
   let remaining = addQty;
   for (const item of shoppingItems || []) {
     if (remaining <= 0) break;

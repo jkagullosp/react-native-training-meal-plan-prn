@@ -15,7 +15,7 @@ import { useShoppingListStore } from '../store/useShoppingListStore';
 import { supabase } from '../../../client/supabase';
 import Toast from 'react-native-toast-message';
 import { useFetchPantryQuery } from '@/hooks/usePantryQuery';
-
+import { useShoppingListQuery } from '@/hooks/useShopQuery';
 
 export default function PantryScreen() {
   const { user } = useAuthStore();
@@ -84,6 +84,7 @@ export default function PantryScreen() {
           remaining = 0;
         }
       }
+      // refetch shoppinglist
       await fetchShoppingList(user.id);
     },
     [user?.id, fetchShoppingList],
