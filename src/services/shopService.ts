@@ -4,16 +4,33 @@ import { Ingredient, Recipe, PantryItem, ShoppingListItem } from '@/types/shop';
 import { MealPlan } from '@/types/shop';
 import { mealApi } from '@/api/mealApi';
 
-export async function fetchShoppingListFilter(userId: string): Promise<ShoppingListItem[]> {
+export async function fetchShoppingListFilter(
+  userId: string,
+): Promise<ShoppingListItem[]> {
   const today = new Date();
   const weekDates = Array.from({ length: 7 }, (_, i) =>
     format(addDays(today, i), 'yyyy-MM-dd'),
   );
 
+  // Fetch meal plans and meal history for the week
   const mealPlans = await shopApi.fetchMealPlans(userId, weekDates);
   if (!mealPlans) return [];
 
-  const recipeIds = mealPlans.map(plan => plan.recipe_id).filter(Boolean);
+  const mealHistory = await mealApi.fetchMealHistory(userId);
+  // Build a set of done keys for quick lookup
+  const doneKeys = new Set(
+    (mealHistory ?? []).map(
+      h => `${h.recipe_id}_${h.meal_date}_${h.meal_type}`,
+    ),
+  );
+
+  // Filter out meal plans that are already marked as done
+  const activeMealPlans = mealPlans.filter(
+    plan =>
+      !doneKeys.has(`${plan.recipe_id}_${plan.meal_date}_${plan.meal_type}`),
+  );
+
+  const recipeIds = activeMealPlans.map(plan => plan.recipe_id).filter(Boolean);
   if (recipeIds.length === 0) return [];
 
   return await shopApi.fetchShoppingListFilter(userId, recipeIds);
@@ -57,7 +74,18 @@ export async function addMissingIngredients(userId: string) {
   const mealPlans = await fetchMealPlans(userId, weekDates);
   if (!mealPlans) return;
 
-  const recipeIds = mealPlans.map(plan => plan.recipe_id).filter(Boolean);
+  const mealHistory = await mealApi.fetchMealHistory(userId);
+  const doneKeys = new Set(
+    (mealHistory ?? []).map(
+      h => `${h.recipe_id}_${h.meal_date}_${h.meal_type}`,
+    ),
+  );
+  const activeMealPlans = mealPlans.filter(
+    plan =>
+      !doneKeys.has(`${plan.recipe_id}_${plan.meal_date}_${plan.meal_type}`),
+  );
+
+  const recipeIds = activeMealPlans.map(plan => plan.recipe_id).filter(Boolean);
   if (recipeIds.length === 0) return;
 
   const ingredients = await fetchIngredients(recipeIds);
@@ -110,6 +138,8 @@ export async function addMissingIngredients(userId: string) {
             is_checked: false,
             quantity: Number(ingredient.quantity) || 1,
             unit: ingredient.unit || '',
+            meal_date: plan.meal_date,
+            meal_type: plan.meal_type,
           });
           added += Number(ingredient.quantity) || 1;
         }

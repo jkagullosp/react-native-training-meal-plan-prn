@@ -189,13 +189,16 @@ class ShopApi {
 
   async removeOutdatedItems(outdatedItems: any): Promise<void> {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('shopping_list')
         .delete()
         .in('id', outdatedItems);
 
-      if (error || !data) throw error;
-      console.log('Removed outdated items: ', JSON.stringify(data, null, 2));
+      if (error) throw error;
+      console.log(
+        'Removed outdated items: ',
+        JSON.stringify(outdatedItems, null, 2),
+      );
     } catch (error) {
       throw handleApiError(error, 'Failed to remove outdated items');
     }

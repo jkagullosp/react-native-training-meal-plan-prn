@@ -18,6 +18,8 @@ export type ShoppingListItem = {
   created_at: string;
   quantity?: number;
   unit?: string;
+  meal_date: string;
+  meal_type: string;
 };
 
 export type ShoppingListStore = {

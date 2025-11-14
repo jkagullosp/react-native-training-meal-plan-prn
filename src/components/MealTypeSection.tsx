@@ -24,7 +24,7 @@ type Props = {
     mealType: string;
   }) => void;
   removeMealPlanMutation: (mealPlanId: string) => void;
-  removeIngredientsForRecipeMutation: (vars: { recipeId: string }) => void;
+  removeIngredientsForRecipeMutation: (vars: { recipeId: string; mealDate: string; mealType: string }) => void;
   user: { id: string } | null;
   refetchHistory: () => Promise<any>;
   refetchMeals: () => Promise<any>;
@@ -96,6 +96,8 @@ export default function MealTypeSection({
                     await refetchHistory();
                     removeIngredientsForRecipeMutation({
                       recipeId: plan.recipe_id,
+                      mealDate: plan.meal_date,
+                      mealType: plan.meal_type,
                     });
                   }}
                   disabled={isDone}

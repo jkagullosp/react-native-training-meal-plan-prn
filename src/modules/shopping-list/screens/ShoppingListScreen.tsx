@@ -15,7 +15,7 @@ import {
   useShoppingListQuery,
   useMealPlansAndRecipesQuery,
   useMarkAsCheckedMutation,
-  useAddMissingIngredientsMutation
+  useAddMissingIngredientsMutation,
 } from '@/hooks/useShopQuery';
 
 interface GroupedRecipe {
@@ -28,17 +28,22 @@ export default function ShoppingListScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data: shoppingList = [], refetch: refetchShoppingList, isLoading: loading } =
-    useShoppingListQuery(user?.id ?? '');
+  const {
+    data: shoppingList = [],
+    refetch: refetchShoppingList,
+    isLoading: loading,
+  } = useShoppingListQuery(user?.id ?? '');
   const { data: mealPlansAndRecipes } = useMealPlansAndRecipesQuery(
     user?.id ?? '',
   );
-  
+
   const mealPlanMap = mealPlansAndRecipes?.mealPlanMap ?? {};
   const recipeMap = mealPlansAndRecipes?.recipeMap ?? {};
 
   // NEW: Use the mutations
-  const addMissingIngredientsMutation = useAddMissingIngredientsMutation(user?.id ?? '');
+  const addMissingIngredientsMutation = useAddMissingIngredientsMutation(
+    user?.id ?? '',
+  );
   const markAsCheckedMutation = useMarkAsCheckedMutation(user?.id ?? '');
 
   useEffect(() => {
@@ -63,10 +68,12 @@ export default function ShoppingListScreen({ navigation }: any) {
   const grouped = (shoppingList ?? []).reduce<Record<string, GroupedRecipe>>(
     (acc, item) => {
       const mealPlan = mealPlanMap[item.meal_plan_id];
-      const key = `${item.recipe_id}_${mealPlan?.meal_type ?? ''}`;
+      // Use meal_plan_id as the key!
+      const key = item.meal_plan_id;
       acc[key] = acc[key] || {
         recipeId: item.recipe_id,
         mealType: mealPlan?.meal_type ?? '',
+        mealDate: mealPlan?.meal_date ?? '',
         items: [],
       };
       acc[key].items.push(item);
@@ -110,7 +117,10 @@ export default function ShoppingListScreen({ navigation }: any) {
                       item.is_checked && styles.checkboxChecked,
                     ]}
                     onPress={async () => {
-                      markAsCheckedMutation.mutate({ item, checked: !item.is_checked });
+                      markAsCheckedMutation.mutate({
+                        item,
+                        checked: !item.is_checked,
+                      });
                       Toast.show({
                         type: 'success',
                         text1: `Marked "${item.ingredient_name}" as ${

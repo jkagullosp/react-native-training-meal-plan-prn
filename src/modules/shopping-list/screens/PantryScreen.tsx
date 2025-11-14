@@ -10,21 +10,25 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
-import { useAuthStore } from '../../auth/store/useAuthStore';
+import { useAuthStore } from '@/stores/auth.store';
 import { useShoppingListStore } from '../store/useShoppingListStore';
 import { supabase } from '../../../client/supabase';
 import Toast from 'react-native-toast-message';
+import { useFetchPantryQuery } from '@/hooks/usePantryQuery';
+
 
 export default function PantryScreen() {
   const { user } = useAuthStore();
   const {
-    pantry,
-    loading,
-    fetchPantry,
+    // pantry,
+    // loading,
+    //fetchPantry,
     fetchShoppingList,
     addMissingIngredients,
   } = useShoppingListStore();
   const [refreshing, setRefreshing] = useState(false);
+
+  const { data: pantry = [], isLoading: loading, refetch: refetchPantry } = useFetchPantryQuery(user?.id ?? '');
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newIngredient, setNewIngredient] = useState({
@@ -43,14 +47,14 @@ export default function PantryScreen() {
 
   useEffect(() => {
     if (user?.id) {
-      fetchPantry(user.id);
+      refetchPantry();
     }
-  }, [user?.id, fetchPantry]);
+  }, [user?.id, refetchPantry]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     if (user?.id) {
-      await fetchPantry(user.id);
+      await refetchPantry();
     }
     setRefreshing(false);
   };
@@ -87,8 +91,8 @@ export default function PantryScreen() {
 
   const handleAddPantry = async () => {
     if (!user?.id || !newIngredient.name) return;
-    await fetchPantry(user.id);
-    const exists = pantry.find(
+    await refetchPantry();
+    const exists = pantry?.find(
       item =>
         item.ingredient_name.toLowerCase() ===
         newIngredient.name.trim().toLowerCase(),
@@ -124,15 +128,15 @@ export default function PantryScreen() {
       text2: `${newIngredient.name.trim()} was added into pantry`,
     });
     setNewIngredient({ name: '', quantity: '', unit: '' });
-    await fetchPantry(user.id);
+    await refetchPantry();
   };
 
   const handleDeletePantry = async (itemId: string) => {
     if (!user?.id) return;
-    const item = pantry.find(i => i.id === itemId);
+    const item = pantry?.find(i => i.id === itemId);
     if (!item) return;
     await supabase.from('user_pantry').delete().eq('id', itemId);
-    await fetchPantry(user.id);
+    await refetchPantry();
     await addMissingIngredients(user.id);
     setDeleteModal({ show: false, itemId: undefined });
   };

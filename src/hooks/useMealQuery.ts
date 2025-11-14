@@ -37,16 +37,25 @@ export function useMealHistory(userId: string) {
 }
 
 export function useMarkMealPLan() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: markMealDone,
+    onSuccess: (_, variables) => {
+      // Invalidate history so UI updates
+      queryClient.invalidateQueries({ queryKey: ['history', variables.userId] });
+    },
   });
 }
 
 export function useRemoveIngredientsForRecipe(userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ recipeId }: { recipeId: string }) =>
-      removeIngredientsForRecipe({ userId, recipeId }),
+    mutationFn: ({
+      recipeId,
+      mealDate,
+      mealType,
+    }: { recipeId: string; mealDate: string; mealType: string }) =>
+      removeIngredientsForRecipe({ userId, recipeId, mealDate, mealType }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shoppingList', userId] });
     },

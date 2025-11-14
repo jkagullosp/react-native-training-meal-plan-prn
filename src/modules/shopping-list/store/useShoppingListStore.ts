@@ -189,6 +189,8 @@ export const useShoppingListStore = create<MealPlanState>((set, get) => ({
               is_checked: false,
               quantity: Number(ingredient.quantity) || 1,
               unit: ingredient.unit || '',
+              meal_date: plan.meal_date,
+              meal_type: plan.meal_type,
             });
             added += Number(ingredient.quantity) || 1;
           }
