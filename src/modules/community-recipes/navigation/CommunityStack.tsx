@@ -1,13 +1,19 @@
-import React from "react";
-import { createStackNavigator } from "@react-navigation/stack";
-import CommunityRecipesScreen from "../screens/CommunityRecipeScreen";
-import CommunityRecipeDetailScreen from "../screens/CommunityRecipeDetailScreen";
-import CreateRecipeScreen from "../screens/CreateRecipeScreen";
-import RecipeFavoriteButton from "../../profile/components/RecipeFavoriteButton";
+import React from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import DiscoverScreen from '@/screens/DiscoverScreen';
+import CreateRecipeScreen from '../screens/CreateRecipeScreen';
+import RecipeFavoriteButton from '../../profile/components/RecipeFavoriteButton';
+import RecipeDetailScreen from '@/screens/RecipeDetailScreen';
 
 export type CommunityStackParamList = {
-  CommunityRecipes: undefined;
+  Community: undefined;
   CommunityRecipeDetail: { title: string; recipeId: string };
+  RecipeDetail: {
+    title: string;
+    recipeId: string;
+    recipe?: any;
+    mode?: 'discover' | 'community';
+  }; // <-- add this
   CommunityProfile: undefined;
   CreateRecipe: undefined;
 };
@@ -18,7 +24,7 @@ export default function CommunityStack() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        headerTintColor: "#2a2a2aff",
+        headerTintColor: '#2a2a2aff',
         headerBackTitleStyle: {
           fontSize: 15,
         },
@@ -28,20 +34,32 @@ export default function CommunityStack() {
       }}
     >
       <Stack.Screen
-        name="CommunityRecipes"
-        component={CommunityRecipesScreen}
+        name="Community"
+        children={props => <DiscoverScreen {...props} mode="community" />}
       />
+
       <Stack.Screen
-        name="CommunityRecipeDetail"
-        component={CommunityRecipeDetailScreen}
+        name="RecipeDetail"
+        component={RecipeDetailScreen}
         options={({ route }) => ({
           headerShown: true,
-          title: route.params?.title || "Recipe Detail",
+          title: route.params?.title || 'Recipe Detail',
           headerRight: () => (
             <RecipeFavoriteButton recipeId={route.params?.recipeId} />
           ),
         })}
       />
+      {/* <Stack.Screen
+        name="CommunityRecipeDetail"
+        component={CommunityRecipeDetailScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          title: route.params?.title || 'Recipe Detail',
+          headerRight: () => (
+            <RecipeFavoriteButton recipeId={route.params?.recipeId} />
+          ),
+        })}
+      /> */}
       <Stack.Screen name="CreateRecipe" component={CreateRecipeScreen} />
     </Stack.Navigator>
   );
