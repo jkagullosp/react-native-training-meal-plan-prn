@@ -46,9 +46,13 @@ export async function addMealPlan({
 export async function removeIngredientsForRecipe({
   userId,
   recipeId,
+  mealDate,
+  mealType,
 }: {
   userId: string;
   recipeId: string;
+  mealDate: string;
+  mealType: string;
 }): Promise<void> {
-  return await mealApi.removeIngredientsForRecipe(userId, recipeId);
+  return await mealApi.removeIngredientsForRecipe(userId, recipeId, mealDate, mealType);
 }

@@ -4,7 +4,7 @@ import {
   addMissingIngredients,
   fetchMealPlansAndRecipes,
   markAsChecked,
-  removeMealPlanAndShoppingList
+  removeMealPlanAndShoppingList,
 } from '@/services/shopService';
 import { MealPlan, Recipe } from '@/types/shop';
 import { ShoppingListItem } from '@/types/shop';

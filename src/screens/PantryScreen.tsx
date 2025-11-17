@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,21 +10,26 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
-import { useAuthStore } from '../../auth/store/useAuthStore';
+import { useAuthStore } from '@/stores/auth.store';
 import { useShoppingListStore } from '../store/useShoppingListStore';
-import { supabase } from '../../../client/supabase';
 import Toast from 'react-native-toast-message';
+import { useFetchPantryQuery } from '@/hooks/usePantryQuery';
+import { useAddToPantryMutation, useDeletePantryItemMutation } from '@/hooks/usePantryQuery';
 
 export default function PantryScreen() {
   const { user } = useAuthStore();
   const {
-    pantry,
-    loading,
-    fetchPantry,
-    fetchShoppingList,
-    addMissingIngredients,
+    // pantry,
+    // loading,
+    //fetchPantry,
+    //fetchShoppingList,
+    //addMissingIngredients,
   } = useShoppingListStore();
   const [refreshing, setRefreshing] = useState(false);
+
+  const { data: pantry = [], isLoading: loading, refetch: refetchPantry } = useFetchPantryQuery(user?.id ?? '');
+  const addToPantryMutation = useAddToPantryMutation(user?.id ?? '', pantry);
+  const deletePantryItemMutation = useDeletePantryItemMutation(user?.id ?? '');
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newIngredient, setNewIngredient] = useState({
@@ -43,98 +48,40 @@ export default function PantryScreen() {
 
   useEffect(() => {
     if (user?.id) {
-      fetchPantry(user.id);
+      refetchPantry();
     }
-  }, [user?.id, fetchPantry]);
+  }, [user?.id, refetchPantry]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     if (user?.id) {
-      await fetchPantry(user.id);
+      await refetchPantry();
     }
     setRefreshing(false);
   };
 
-  const deductFromShoppingList = useCallback(
-    async (ingredientName: string, addQty: number, _unit: string) => {
-      if (!user?.id) return;
-      const { data: shoppingItems } = await supabase
-        .from('shopping_list')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('ingredient_name', ingredientName)
-        .order('created_at', { ascending: true });
-
-      let remaining = addQty;
-      for (const item of shoppingItems || []) {
-        if (remaining <= 0) break;
-        const itemQty = Number(item.quantity) || 1;
-        if (itemQty <= remaining) {
-          await supabase.from('shopping_list').delete().eq('id', item.id);
-          remaining -= itemQty;
-        } else {
-          await supabase
-            .from('shopping_list')
-            .update({ quantity: itemQty - remaining })
-            .eq('id', item.id);
-          remaining = 0;
-        }
-      }
-      await fetchShoppingList(user.id);
-    },
-    [user?.id, fetchShoppingList],
-  );
-
   const handleAddPantry = async () => {
     if (!user?.id || !newIngredient.name) return;
-    await fetchPantry(user.id);
-    const exists = pantry.find(
-      item =>
-        item.ingredient_name.toLowerCase() ===
-        newIngredient.name.trim().toLowerCase(),
-    );
-    const addQty = Number(newIngredient.quantity) || 1;
-    if (exists) {
-      await supabase
-        .from('user_pantry')
-        .update({
-          quantity: exists.quantity + addQty,
-          unit: newIngredient.unit || exists.unit,
-        })
-        .eq('id', exists.id);
-    } else {
-      await supabase.from('user_pantry').insert([
-        {
-          user_id: user.id,
-          ingredient_name: newIngredient.name.trim(),
-          quantity: addQty,
-          unit: newIngredient.unit || '',
-        },
-      ]);
-    }
-    await deductFromShoppingList(
-      newIngredient.name.trim(),
-      addQty,
-      newIngredient.unit || '',
-    );
-    setShowAddModal(false);
-    Toast.show({
-      type: 'success',
-      text1: 'Added to Pantry',
-      text2: `${newIngredient.name.trim()} was added into pantry`,
+    addToPantryMutation.mutate(newIngredient, {
+      onSuccess: () => {
+        setShowAddModal(false);
+        Toast.show({
+          type: 'success',
+          text1: 'Added to Pantry',
+          text2: `${newIngredient.name.trim()} was added into pantry`,
+        });
+        setNewIngredient({ name: '', quantity: '', unit: '' });
+      },
     });
-    setNewIngredient({ name: '', quantity: '', unit: '' });
-    await fetchPantry(user.id);
   };
 
   const handleDeletePantry = async (itemId: string) => {
     if (!user?.id) return;
-    const item = pantry.find(i => i.id === itemId);
-    if (!item) return;
-    await supabase.from('user_pantry').delete().eq('id', itemId);
-    await fetchPantry(user.id);
-    await addMissingIngredients(user.id);
-    setDeleteModal({ show: false, itemId: undefined });
+    deletePantryItemMutation.mutate(itemId, {
+      onSuccess: () => {
+        setDeleteModal({ show: false, itemId: undefined });
+      },
+    });
   };
 
   return (
