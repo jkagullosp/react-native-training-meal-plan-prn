@@ -10,20 +10,22 @@ export async function deductFromShoppingList(
 ) {
   if (!userId) return;
 
+  // Fetch shopping list items for this ingredient (case-insensitive)
   const shoppingItems = await pantryApi.fetchShoppingListItems(
     userId,
-    ingredientName,
+    ingredientName.trim(),
   );
-  
+
   let remaining = addQty;
   for (const item of shoppingItems || []) {
     if (remaining <= 0) break;
     const itemQty = Number(item.quantity) || 1;
     if (itemQty <= remaining) {
-      await pantryApi.removeFromShoppingList(item.id);
+      await pantryApi.removeFromShoppingList(item); // Pass the full item
       remaining -= itemQty;
     } else {
       await pantryApi.deductQuantityToShoppingList(item, itemQty, remaining);
+      remaining = 0;
     }
   }
 }

@@ -134,6 +134,7 @@ class PantryApi {
     addQty: number,
   ) {
     try {
+      if (!userId) throw new Error('User ID is required to insert pantry item');
       const { error } = await supabase.from('user_pantry').insert([
         {
           user_id: userId,

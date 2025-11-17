@@ -5,7 +5,7 @@ import DiscoverStack from '@/navigation/stacks/DiscoverStack';
 import MealPlanScreen from '../screens/MealPlanScreen';
 import CommunityStack from '../modules/community-recipes/navigation/CommunityStack';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import ShoppingListTabs from '../modules/shopping-list/navigation/ShoppingListTabs';
+import ShoppingListTabs from './tabs/ShoppingListTabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProfileStack from '../modules/profile/navigation/ProfileStack';
 import {
