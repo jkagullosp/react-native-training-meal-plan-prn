@@ -22,6 +22,7 @@ import {
 import messaging from '@react-native-firebase/messaging';
 import { useAuthStore } from './src/stores/auth.store';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import AdminNavigator from '@/navigation/AdminNavigator';
 
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
@@ -100,6 +101,8 @@ export default function App() {
     content = <OnboardingNavigation onFinish={() => setHasOnboarded(true)} />;
   } else if (!isAuthenticated) {
     content = <AuthNavigator />;
+  } else if (user?.is_admin) {
+    content = <AdminNavigator />;
   } else {
     content = <AppNavigator />;
   }

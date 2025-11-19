@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,13 @@ import { format } from 'date-fns';
 import { FullRecipe, RecipeTag, RecipeLike } from '@/types/recipe';
 import { Timer, Users, Star, Heart } from 'lucide-react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useCommunityStore } from '@/modules/community-recipes/store/useCommunityStore';
 import { useAuthStore } from '@/stores/auth.store';
+import {
+  useAuthor,
+  useRecipeLikes,
+  useLikeRecipe,
+  useUnlikeRecipe,
+} from '@/hooks/useCommunityQuery';
 
 type RecipeCardProps = {
   recipe: FullRecipe;
@@ -32,27 +37,20 @@ export default function RecipeCard({
   onPress,
   variant = 'discover',
 }: RecipeCardProps) {
-  const [imageLoading, setImageLoading] = useState(true);
-  const {
-    authors,
-    fetchAuthor,
-    recipeLikes,
-    likeRecipe,
-    unlikeRecipe,
-    fetchRecipeLikes,
-  } = useCommunityStore();
   const { user } = useAuthStore();
   const authorId = recipe.author_id;
+  const [imageLoading, setImageLoading] = useState(true);
 
-  useEffect(() => {
-    if (variant === 'community') {
-      fetchRecipeLikes(recipe.id);
-      if (authorId && !authors[authorId]) {
-        fetchAuthor(authorId);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, recipe.id, authorId]);
+  // Use React Query hooks for community variant
+  const { data: author } = useAuthor(
+    variant === 'community' ? authorId : undefined,
+  );
+  const { data: recipeLikes = [] } = useRecipeLikes(
+    variant === 'community' ? recipe.id : undefined,
+  );
+
+  const likeMutation = useLikeRecipe(recipe.id, user?.id ?? '');
+  const unlikeMutation = useUnlikeRecipe(recipe.id, user?.id ?? '');
 
   const isLiked =
     variant === 'community'
@@ -67,8 +65,6 @@ export default function RecipeCard({
       ? recipeLikes.filter((like: RecipeLike) => like.recipe_id === recipe.id)
           .length
       : 0;
-
-  const author = variant === 'community' && authorId ? authors[authorId] : null;
 
   function getDifficultyColor(difficulty?: string | null) {
     if (difficulty === 'easy') return '#4CAF50';
@@ -219,9 +215,9 @@ export default function RecipeCard({
               onPress={() => {
                 if (!user?.id) return;
                 if (isLiked) {
-                  unlikeRecipe(user.id, recipe.id);
+                  unlikeMutation.mutate();
                 } else {
-                  likeRecipe(user.id, recipe.id);
+                  likeMutation.mutate();
                 }
               }}
             >

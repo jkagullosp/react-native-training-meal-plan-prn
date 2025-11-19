@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useAuthStore } from '@/stores/auth.store';
-import { discover_texts, community_create_texts, community_recipes_texts } from '@/constants/constants';
+import { discover_texts, community_recipes_texts } from '@/constants/constants';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Plus } from 'lucide-react-native';
 
