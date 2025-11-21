@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,15 +6,24 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-import { FullRecipe } from '@/types/recipe';
-import { RecipeTag } from '@/types/recipe';
-import { Star } from 'lucide-react-native';
-import { Timer, Users } from 'lucide-react-native';
+import { format } from 'date-fns';
+import { FullRecipe, RecipeTag, RecipeLike } from '@/types/recipe';
+import { Timer, Users, Star, Heart } from 'lucide-react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAuthStore } from '@/stores/auth.store';
+import {
+  useAuthor,
+  useRecipeLikes,
+  useLikeRecipe,
+  useUnlikeRecipe,
+} from '@/hooks/useCommunityQuery';
 
 type RecipeCardProps = {
   recipe: FullRecipe;
   onPress: () => void;
+  variant?: 'discover' | 'community';
 };
 
 const getPrimaryImage = (recipe: FullRecipe) => {
@@ -24,13 +32,62 @@ const getPrimaryImage = (recipe: FullRecipe) => {
   return primary?.image_url;
 };
 
-export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
+export default function RecipeCard({
+  recipe,
+  onPress,
+  variant = 'discover',
+}: RecipeCardProps) {
+  const { user } = useAuthStore();
+  const authorId = recipe.author_id;
   const [imageLoading, setImageLoading] = useState(true);
+
+  // Use React Query hooks for community variant
+  const { data: author } = useAuthor(
+    variant === 'community' ? authorId : undefined,
+  );
+  const { data: recipeLikes = [] } = useRecipeLikes(
+    variant === 'community' ? recipe.id : undefined,
+  );
+
+  const likeMutation = useLikeRecipe(recipe.id, user?.id ?? '');
+  const unlikeMutation = useUnlikeRecipe(recipe.id, user?.id ?? '');
+
+  const isLiked =
+    variant === 'community'
+      ? recipeLikes.some(
+          (like: RecipeLike) =>
+            like.user_id === user?.id && like.recipe_id === recipe.id,
+        )
+      : false;
+
+  const likeCount =
+    variant === 'community'
+      ? recipeLikes.filter((like: RecipeLike) => like.recipe_id === recipe.id)
+          .length
+      : 0;
+
+  function getDifficultyColor(difficulty?: string | null) {
+    if (difficulty === 'easy') return '#4CAF50';
+    if (difficulty === 'medium') return '#d88262ff';
+    if (difficulty === 'hard') return '#f9622bff';
+    return '#888';
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      ? name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+      : '';
+  };
 
   const imageSource = getPrimaryImage(recipe)
     ? { uri: getPrimaryImage(recipe) }
     : require('@assets/images/placeholder.png');
 
+  // Ratings for discover
   const ratings = recipe.ratings || [];
   const ratingCount = ratings.length;
   const avgRating =
@@ -40,7 +97,10 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.recipeCard}
+      style={[
+        styles.recipeCard,
+        variant === 'community' && styles.communityCard,
+      ]}
       onPress={onPress}
       activeOpacity={0.8}
     >
@@ -57,12 +117,45 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
         )}
       </View>
       <View style={styles.recipeDetails}>
+        {variant === 'community' && (
+          <View style={styles.authorRow}>
+            <View>
+              {author?.profile_image ? (
+                <Image
+                  source={{ uri: author?.profile_image }}
+                  style={styles.image}
+                />
+              ) : (
+                <View style={styles.initialsAvatar}>
+                  <Text style={styles.initialsText}>
+                    {getInitials(author?.display_name || 'U')}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <View>
+              <Text style={styles.authorText}>{author?.display_name}</Text>
+              <Text style={styles.createdAt}>
+                {recipe.created_at
+                  ? format(new Date(recipe.created_at), 'MM-dd-yyyy')
+                  : ''}
+              </Text>
+            </View>
+          </View>
+        )}
         <View style={styles.recipeTitle}>
-          <Text style={styles.recipeTitleText}>{recipe.title}</Text>
+          <Text
+            style={[
+              styles.recipeTitleText,
+              variant === 'community' && styles.communityTitleText,
+            ]}
+          >
+            {recipe.title}
+          </Text>
         </View>
         <Text
           style={styles.recipeSubtitleText}
-          numberOfLines={3}
+          numberOfLines={variant === 'community' ? 2 : 3}
           ellipsizeMode="tail"
         >
           {recipe.description}
@@ -75,14 +168,30 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
             </View>
             <View style={styles.servingsRow}>
               <Users size={14} color={'#777777'} />
-              <Text style={styles.text}>{recipe.servings}</Text>
+              <Text style={styles.text}>
+                {recipe.servings}
+                {variant === 'community' ? ' servings' : ''}
+              </Text>
             </View>
           </View>
-          <View style={styles.ratingRow}>
-            <Star size={14} color={'#FFD700'} />
-            <Text style={styles.text}>{avgRating.toFixed(1)}</Text>
-            <Text style={styles.text}>({ratingCount})</Text>
-          </View>
+          {variant === 'community' ? (
+            <View style={styles.ratingRow}>
+              <Text
+                style={[
+                  styles.value,
+                  { color: getDifficultyColor(recipe.difficulty) },
+                ]}
+              >
+                {recipe.difficulty ?? '-'}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.ratingRow}>
+              <Star size={14} color={'#FFD700'} />
+              <Text style={styles.text}>{avgRating.toFixed(1)}</Text>
+              <Text style={styles.text}>({ratingCount})</Text>
+            </View>
+          )}
         </View>
         <View style={styles.tagsRow}>
           {recipe.tags && recipe.tags.length > 0 ? (
@@ -100,6 +209,43 @@ export default function RecipeCard({ recipe, onPress }: RecipeCardProps) {
             </View>
           )}
         </View>
+        {variant === 'community' && (
+          <View style={styles.likesRow}>
+            <TouchableOpacity
+              onPress={() => {
+                if (!user?.id) return;
+                if (isLiked) {
+                  unlikeMutation.mutate();
+                } else {
+                  likeMutation.mutate();
+                }
+              }}
+            >
+              {Platform.OS === 'ios' ? (
+                <Icon
+                  name={isLiked ? 'heart' : 'heart-outline'}
+                  size={18}
+                  style={[styles.icon, isLiked && { color: '#E16235' }]}
+                  color={isLiked ? '#E16235' : '#777777'}
+                />
+              ) : (
+                <Heart
+                  size={18}
+                  color={'#e16235'}
+                  fill={isLiked ? '#E16235' : 'none'}
+                />
+              )}
+            </TouchableOpacity>
+            <Text
+              style={[
+                styles.likes,
+                isLiked && { color: '#E16235', fontWeight: 'bold' },
+              ]}
+            >
+              {likeCount}
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -117,6 +263,19 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 0,
   },
+  communityCard: {
+    backgroundColor: '#F3E8FF',
+    borderColor: '#A78BFA',
+    borderWidth: 1,
+  },
+  recipeTitleText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  communityTitleText: {
+    color: '#6D28D9',
+  },
   recipeImage: {
     width: '100%',
     height: '100%',
@@ -133,10 +292,6 @@ const styles = StyleSheet.create({
   },
   recipeTitle: {
     flexDirection: 'row',
-  },
-  recipeTitleText: {
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   recipeSubtitleText: {
     fontSize: 12,
@@ -207,5 +362,52 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     backgroundColor: '#eeeeeeff',
+  },
+  // Community styles
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  image: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+  },
+  initialsAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+    backgroundColor: '#E16235',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  initialsText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  createdAt: {
+    color: '#777777',
+    fontSize: 12,
+  },
+  authorText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  value: {
+    fontSize: 12,
+    fontWeight: 'normal',
+    padding: 4,
+    backgroundColor: '#f1f1f1ff',
+    borderRadius: 8,
+  },
+  likesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  likes: {
+    color: '#777777',
   },
 });

@@ -24,6 +24,7 @@ type FilterModalProps = {
   minRating: number | null;
   setMinRating: React.Dispatch<React.SetStateAction<number | null>>;
   onClear: () => void;
+  variant?: 'discover' | 'community';
 };
 
 export default function FilterModal({
@@ -39,6 +40,7 @@ export default function FilterModal({
   minRating,
   setMinRating,
   onClear,
+  variant = 'discover',
 }: FilterModalProps) {
   return (
     <Modal
@@ -48,8 +50,23 @@ export default function FilterModal({
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Filter Recipes</Text>
+        <View
+          style={[
+            styles.modalContent,
+            variant === 'community' && styles.communityModalContent,
+          ]}
+        >
+          <Text
+            style={[
+              styles.modalTitle,
+              variant === 'community' && styles.communityModalTitle,
+            ]}
+          >
+            {' '}
+            {variant === 'community'
+              ? 'Filter Community Recipes'
+              : 'Filter Recipes'}
+          </Text>
           <TouchableOpacity style={styles.exitButton} onPress={onClose}>
             {Platform.OS === 'ios' ? (
               <Icon name="close" size={20} color={'#E16235'} />
@@ -335,5 +352,13 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  communityModalContent: {
+    backgroundColor: '#F3E8FF', // Example: different bg for community
+    borderColor: '#A78BFA',
+    borderWidth: 1,
+  },
+  communityModalTitle: {
+    color: '#6D28D9', // Example: purple for community
   },
 });

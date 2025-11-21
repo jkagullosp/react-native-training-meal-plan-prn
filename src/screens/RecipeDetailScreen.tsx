@@ -50,6 +50,8 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
   const [rating, setRating] = useState<number>(userRating?.rating || 0);
   const [currentImage, setCurrentImage] = useState(0);
 
+  const mode = route.params?.mode ?? 'discover';
+
   useEffect(() => {
     navigation.setOptions({
       title: recipe.title || 'Recipe Detail',

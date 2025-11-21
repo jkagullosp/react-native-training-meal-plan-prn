@@ -17,7 +17,15 @@ import { FullRecipe } from '../types/recipe';
 import FilterModal from '../components/FilterModal';
 import { useRecipeSearchAndFilter } from '@/hooks/useRecipeSearchAndFilter';
 
-export default function DiscoverScreen({ navigation }: any) {
+type DiscoverScreenProps = {
+  navigation: any;
+  mode?: 'discover' | 'community';
+};
+
+export default function DiscoverScreen({
+  navigation,
+  mode = 'discover',
+}: DiscoverScreenProps) {
   const { data: tags, refetch: refetchTags } = useFetchTagsQuery();
   const {
     data: recipes,
@@ -49,6 +57,11 @@ export default function DiscoverScreen({ navigation }: any) {
     setRefreshing(false);
   };
 
+  const displayRecipes =
+    mode === 'community'
+      ? filteredRecipes.filter(r => r.is_community)
+      : filteredRecipes;
+
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
       <ScrollView
@@ -58,13 +71,14 @@ export default function DiscoverScreen({ navigation }: any) {
         }
       >
         <View style={styles.headerContainer}>
-          <DiscoverHeader navigation={navigation} />
+          <DiscoverHeader navigation={navigation} variant={mode} />
         </View>
         <View style={styles.headerContainerSearch}>
           <SearchAndFilter
             search={search}
             setSearch={setSearch}
             onOpenFilter={() => setFilterModalVisible(true)}
+            variant={mode}
           />
         </View>
         {recipeError ? (
@@ -80,9 +94,9 @@ export default function DiscoverScreen({ navigation }: any) {
             <ActivityIndicator size="large" color="#9f9f9fff" />
             <Text style={styles.emptyText}>Loading recipes...</Text>
           </View>
-        ) : filteredRecipes.length > 0 ? (
+        ) : displayRecipes.length > 0 ? (
           <View style={styles.cardScrollView}>
-            {filteredRecipes.map((recipe: FullRecipe) => (
+            {displayRecipes.map((recipe: FullRecipe) => (
               <RecipeCard
                 key={recipe.id}
                 recipe={recipe}
@@ -90,8 +104,10 @@ export default function DiscoverScreen({ navigation }: any) {
                   navigation.navigate('RecipeDetail', {
                     recipeId: recipe.id,
                     recipe,
+                    mode,
                   })
                 }
+                variant={mode}
               />
             ))}
           </View>
@@ -114,6 +130,7 @@ export default function DiscoverScreen({ navigation }: any) {
           minRating={minRating}
           setMinRating={setMinRating}
           onClear={clearFilters}
+          variant={mode}
         />
       </ScrollView>
     </SafeAreaView>

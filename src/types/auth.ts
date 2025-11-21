@@ -7,4 +7,6 @@ export type Profile = {
   bio: string | null;
   created_at: string;
   updated_at: string;
+  is_admin: boolean;
+  status: string;
 };
