@@ -34,12 +34,17 @@ export const useAuthStore = create<AuthState>(set => ({
     const result = await authService.signIn(email, password);
 
     if ('profile' in result) {
-      set({
-        user: result.profile,
-        isAuthenticated: true,
-        loading: false,
-      });
-      return { error: null };
+      if (result.profile.status === 'active') {
+        set({
+          user: result.profile,
+          isAuthenticated: true,
+          loading: false,
+        });
+        return { error: null };
+      } else {
+        set({ loading: false });
+        return { error: result.profile.status };
+      }
     }
 
     set({ loading: false });

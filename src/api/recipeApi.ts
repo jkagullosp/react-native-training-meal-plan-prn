@@ -6,8 +6,10 @@ import { supabase } from '../client/supabase';
 class RecipeApi {
   async fetchRecipes(): Promise<FullRecipe[]> {
     try {
-      const { data, error } = await supabase.from('recipes').select(
-        `*,
+      const { data, error } = await supabase
+        .from('recipes')
+        .select(
+          `*,
         images:recipe_images(*),
         steps:recipe_steps(*),
         ingredients(*),
@@ -16,7 +18,9 @@ class RecipeApi {
         ),
         ratings:recipe_ratings(*)
       `,
-      );
+        )
+        .eq('approved', true);
+
       if (error || !data) throw error;
       console.log('(API Layer) Recipes: ', JSON.stringify(data, null, 2));
       return data as FullRecipe[];
@@ -121,6 +125,22 @@ class RecipeApi {
 
     console.log('Submitted rating: ', avg, count);
     return { avg, count };
+  }
+
+  async fetchPendingUserRecipes(userId: string): Promise<FullRecipe[]> {
+    try {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('author_id', userId)
+        .eq('approved', false)
+        .order('created_at', { ascending: false });
+
+      if (error || !data) throw error;
+      return data as FullRecipe[];
+    } catch (error) {
+      throw handleApiError(error, 'Failed to fetch pending user recipes.');
+    }
   }
 }
 

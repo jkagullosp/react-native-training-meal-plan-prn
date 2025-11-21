@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { searchTypes } from '@/types/search';
 import { Funnel } from 'lucide-react-native';
-//import Icon from "@react-native-vector-icons/material-design-icons";
 
 type SearchAndFilterProps = searchTypes & {
   variant?: 'discover' | 'community';
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     tintColor: '#fff',
   },
   communityTextInput: {
-    backgroundColor: '#F3E8FF', // example: different bg for community
+    backgroundColor: '#F3E8FF',
     color: '#6D28D9',
   },
 });

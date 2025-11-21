@@ -1,4 +1,4 @@
-import { recipeApi } from "../api/recipeApi";
+import { recipeApi } from '../api/recipeApi';
 
 export async function fetchRecipes() {
   return await recipeApi.fetchRecipes();
@@ -10,6 +10,10 @@ export async function fetchTags() {
 
 export async function fetchRecipeAuthor(authorId: string) {
   return await recipeApi.fetchRecipeAuthor(authorId);
+}
+
+export async function fetchUserPendingRecipe(userId: string) {
+  return await recipeApi.fetchPendingUserRecipes(userId);
 }
 
 export async function submitRating({

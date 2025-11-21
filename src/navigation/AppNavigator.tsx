@@ -3,11 +3,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
 import DiscoverStack from '@/navigation/stacks/DiscoverStack';
 import MealPlanScreen from '../screens/MealPlanScreen';
-import CommunityStack from '../modules/community-recipes/navigation/CommunityStack';
+import CommunityStack from './stacks/CommunityStack';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ShoppingListTabs from './tabs/ShoppingListTabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ProfileStack from '../modules/profile/navigation/ProfileStack';
+import ProfileStack from './stacks/ProfileStack';
 import {
   Search,
   CalendarFold,

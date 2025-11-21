@@ -45,15 +45,16 @@ class AdminApi {
     }
   }
 
-  async suspendUser(userId: string) {
+  async suspendUser(userId: string, durationMs: number) {
     try {
+      const until = new Date(Date.now() + durationMs).toISOString();
       const { error } = await supabase
         .from('profiles')
-        .update({ status: 'suspended' })
+        .update({ status: 'suspended', suspended_until: until })
         .eq('id', userId);
 
       if (error) throw error;
-      console.log('Admin: Suspended user - ', userId);
+      console.log('Admin: Suspended user - ', userId, 'until', until);
     } catch (error) {
       throw handleApiError(error, 'Failed to suspend user');
     }
@@ -155,7 +156,6 @@ class AdminApi {
 
       if (error || !data || data.length === 0) return null;
 
-      // Count occurrences in JS
       const counts: Record<string, number> = {};
       data.forEach(({ recipe_id }) => {
         counts[recipe_id] = (counts[recipe_id] || 0) + 1;
@@ -194,6 +194,61 @@ class AdminApi {
       return data as FullRecipe[];
     } catch (error) {
       throw handleApiError(error, 'Admin: failed to fetch recipes approved');
+    }
+  }
+
+  async unSuspendUser(userId: string) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'active' })
+        .eq('id', userId);
+
+      if (error) throw error;
+      console.log('Admin: unsuspended user: ', userId);
+    } catch (error) {
+      throw handleApiError(error, 'Failed to unsuspend user');
+    }
+  }
+
+  async unbanUser(userId: string) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'active' })
+        .eq('id', userId);
+      if (error) throw error;
+      console.log('Admin: unbanned user - ', userId);
+    } catch (error) {
+      throw handleApiError(error, 'Failed to unban user');
+    }
+  }
+
+  async approveRecipe(recipeId: string) {
+    try {
+      const { error } = await supabase
+        .from('recipes')
+        .update({ approved: true })
+        .eq('id', recipeId);
+
+      if (error) throw error;
+      console.log('Admin: approved recipe', recipeId);
+    } catch (error) {
+      throw handleApiError(error, 'Failed to approve recipe');
+    }
+  }
+
+  async disapproveRecipe(recipeId: string) {
+    try {
+      const { error } = await supabase
+        .from('recipes')
+        .delete()
+        .eq('id', recipeId);
+
+      if (error) throw error;
+      console.log('Admin: disapproved recipe: ', recipeId);
+    } catch (error) {
+      throw handleApiError(error, 'Failed to disapprove recipe');
     }
   }
 }

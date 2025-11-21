@@ -187,6 +187,7 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
           fat: data.fat,
           protein: data.protein,
           carbs: data.carbs,
+          approved: false,
         },
       ])
       .select()
@@ -219,7 +220,6 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
     }
 
     for (const tagName of data.tags) {
-      // Try to find the tag by name
       let { data: tagData } = await supabase
         .from('tags')
         .select('id')
@@ -228,7 +228,6 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
 
       let tagId: string | undefined = tagData?.id;
 
-      // If not found, try to insert
       if (!tagId) {
         const { data: newTag, error: newTagError } = await supabase
           .from('tags')
@@ -239,7 +238,6 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
         if (newTag && newTag.id) {
           tagId = newTag.id;
         } else {
-          // If insert failed (e.g. duplicate), fetch again
           const { data: existingTag } = await supabase
             .from('tags')
             .select('id')
@@ -249,7 +247,6 @@ export const useCommunityStore = create<CommunityState>((set, get) => ({
         }
       }
 
-      // Only insert if we have a tagId
       if (tagId) {
         await supabase
           .from('recipe_tags')

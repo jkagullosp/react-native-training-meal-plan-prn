@@ -9,11 +9,12 @@ import {
   ActivityIndicator,
   RefreshControl,
   Dimensions,
-  ViewStyle
+  ViewStyle,
+  Alert,
 } from 'react-native';
+import { formatDistanceToNowStrict, parseISO, isAfter } from 'date-fns';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/auth.store';
-import { supabase } from '@/client/supabase';
 import {
   LogOut,
   User,
@@ -21,6 +22,8 @@ import {
   Ban,
   UserX,
   PauseCircle,
+  PlayCircle,
+  UserCheck,
 } from 'lucide-react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
@@ -29,8 +32,10 @@ import {
   useMostFavoritedRecipe,
   useMostLikedRecipe,
   useRecipesApprovedLast30Days,
+  useSuspendUser,
 } from '@/hooks/useAdminQuery';
 import { adminService } from '@/services/adminService';
+import Toast from 'react-native-toast-message';
 
 const CARD_GAP = 16;
 const CARD_COLUMNS = 2;
@@ -38,8 +43,28 @@ const CARD_WIDTH =
   (Dimensions.get('window').width - 40 - CARD_GAP * (CARD_COLUMNS - 1)) /
   CARD_COLUMNS;
 
+const SUSPEND_OPTIONS = [
+  { label: '1 hour', ms: 1 * 60 * 60 * 1000 },
+  { label: '12 hours', ms: 12 * 60 * 60 * 1000 },
+  { label: '1 day', ms: 24 * 60 * 60 * 1000 },
+];
+
+const statusBadge = (status: string): ViewStyle => ({
+  backgroundColor:
+    status === 'active'
+      ? '#e0f7e9'
+      : status === 'banned'
+      ? '#ffeaea'
+      : '#fff6e0',
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  alignSelf: 'flex-start',
+  marginLeft: 8,
+});
+
 export default function AdminManagementScreen() {
-  const { user } = useAuthStore();
+  const { user, signOut } = useAuthStore();
   const {
     data: allUsers,
     isLoading: usersLoading,
@@ -52,6 +77,8 @@ export default function AdminManagementScreen() {
   const { data: mostLikedRecipe } = useMostLikedRecipe();
   const { data: recipesApprovedLast30Days } = useRecipesApprovedLast30Days();
 
+  const { mutate: suspendUser } = useSuspendUser();
+
   const [refreshing, setRefreshing] = useState(false);
 
   const usersCount = allUsers?.length ?? 0;
@@ -59,7 +86,7 @@ export default function AdminManagementScreen() {
   const recipesApprovedCount = recipesApprovedLast30Days?.length ?? 0;
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
   };
 
   const onRefresh = async () => {
@@ -68,17 +95,147 @@ export default function AdminManagementScreen() {
     setRefreshing(false);
   };
 
-  const handleSuspend = async (userId: string) => {
-    await adminService.suspendUser(userId);
-    refetchAllUsers();
+  const handleSuspend = (userId: string) => {
+    Alert.alert(
+      'Suspend User',
+      'Select suspension duration:',
+      [
+        ...SUSPEND_OPTIONS.map(opt => ({
+          text: opt.label,
+          onPress: () => {
+            suspendUser(
+              { userId, durationMs: opt.ms },
+              {
+                onSuccess: () => {
+                  refetchAllUsers();
+                  Toast.show({
+                    type: 'success',
+                    text1: 'User suspended!',
+                    text2: `Suspended for ${opt.label}.`,
+                  });
+                },
+                onError: () => {
+                  Toast.show({
+                    type: 'error',
+                    text1: 'Failed to suspend user',
+                  });
+                },
+              },
+            );
+          },
+        })),
+        { text: 'Cancel', style: 'cancel' },
+      ],
+      { cancelable: true },
+    );
   };
-  const handleBan = async (userId: string) => {
-    await adminService.banUser(userId);
-    refetchAllUsers();
+
+  const handleBan = (userId: string) => {
+    Alert.alert('Ban User', 'Are you sure you want to ban this user?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Ban',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await adminService.banUser(userId);
+            refetchAllUsers();
+            Toast.show({
+              type: 'success',
+              text1: 'User banned!',
+            });
+          } catch {
+            Toast.show({
+              type: 'error',
+              text1: 'Failed to ban user',
+            });
+          }
+        },
+      },
+    ]);
   };
-  const handleDelete = async (userId: string) => {
-    await adminService.deleteUser(userId);
-    refetchAllUsers();
+
+  const handleDelete = (userId: string) => {
+    Alert.alert(
+      'Delete User',
+      'Are you sure you want to delete this user? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await adminService.deleteUser(userId);
+              refetchAllUsers();
+              Toast.show({
+                type: 'success',
+                text1: 'User deleted!',
+              });
+            } catch {
+              Toast.show({
+                type: 'error',
+                text1: 'Failed to delete user',
+              });
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleUnsuspend = (userId: string) => {
+    Alert.alert(
+      'Unsuspend User',
+      'Are you sure you want to unsuspend this user?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Unsuspend',
+          style: 'default',
+          onPress: async () => {
+            try {
+              await adminService.unSuspendUser(userId);
+              refetchAllUsers();
+              Toast.show({
+                type: 'success',
+                text1: 'User unsuspended!',
+              });
+            } catch {
+              Toast.show({
+                type: 'error',
+                text1: 'Failed to unsuspend user',
+              });
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleUnban = (userId: string) => {
+    Alert.alert('Unban User', 'Are you sure you want to unban this user?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Unban',
+        style: 'default',
+        onPress: async () => {
+          try {
+            await adminService.unBanUser(userId);
+            refetchAllUsers();
+            Toast.show({
+              type: 'success',
+              text1: 'User unbanned!',
+            });
+          } catch {
+            Toast.show({
+              type: 'error',
+              text1: 'Failed to unban user',
+            });
+          }
+        },
+      },
+    ]);
   };
 
   if (usersLoading) {
@@ -191,32 +348,80 @@ export default function AdminManagementScreen() {
                 </View>
               </View>
               <View style={styles.actionRow}>
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() => handleSuspend(users.id)}
-                >
-                  {Platform.OS === 'ios' ? (
-                    <Icon name="pause-circle" size={22} color="#e1a135" />
-                  ) : (
-                    <View>
-                      <PauseCircle size={22} color="#e1a135" />
-                    </View>
-                  )}
-                  <Text style={styles.actionText}>Suspend</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() => handleBan(users.id)}
-                >
-                  {Platform.OS === 'ios' ? (
-                    <Icon name="block-helper" size={22} color="#e16235" />
-                  ) : (
-                    <View>
-                      <Ban size={22} color="#e16235" />
-                    </View>
-                  )}
-                  <Text style={styles.actionText}>Ban</Text>
-                </TouchableOpacity>
+                {users.status === 'suspended' ? (
+                  <>
+                    {users.suspended_until &&
+                      isAfter(parseISO(users.suspended_until), new Date()) && (
+                        <Text style={styles.suspendTimer}>
+                          Suspended for{' '}
+                          {formatDistanceToNowStrict(
+                            parseISO(users.suspended_until),
+                            { addSuffix: true },
+                          )}
+                        </Text>
+                      )}
+                    <TouchableOpacity
+                      style={styles.actionBtn}
+                      onPress={() => handleUnsuspend(users.id)}
+                    >
+                      {Platform.OS === 'ios' ? (
+                        <Icon name="play-circle" size={22} color="#4caf50" />
+                      ) : (
+                        <View>
+                          <PlayCircle size={22} color="#4caf50" />
+                        </View>
+                      )}
+                      <Text style={[styles.actionText, { color: '#4caf50' }]}>
+                        Unsuspend
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handleSuspend(users.id)}
+                  >
+                    {Platform.OS === 'ios' ? (
+                      <Icon name="pause-circle" size={22} color="#e1a135" />
+                    ) : (
+                      <View>
+                        <PauseCircle size={22} color="#e1a135" />
+                      </View>
+                    )}
+                    <Text style={styles.actionText}>Suspend</Text>
+                  </TouchableOpacity>
+                )}
+                {users.status === 'banned' ? (
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handleUnban(users.id)}
+                  >
+                    {Platform.OS === 'ios' ? (
+                      <Icon name="account-check" size={22} color="#4caf50" />
+                    ) : (
+                      <View>
+                        <UserCheck size={22} color="#4caf50" />
+                      </View>
+                    )}
+                    <Text style={[styles.actionText, { color: '#4caf50' }]}>
+                      Unban
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handleBan(users.id)}
+                  >
+                    {Platform.OS === 'ios' ? (
+                      <Icon name="block-helper" size={22} color="#e16235" />
+                    ) : (
+                      <View>
+                        <Ban size={22} color="#e16235" />
+                      </View>
+                    )}
+                    <Text style={styles.actionText}>Ban</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={styles.actionBtn}
                   onPress={() => handleDelete(users.id)}
@@ -238,20 +443,6 @@ export default function AdminManagementScreen() {
     </SafeAreaView>
   );
 }
-
-const statusBadge = (status: string): ViewStyle => ({
-  backgroundColor:
-    status === 'active'
-      ? '#e0f7e9'
-      : status === 'banned'
-      ? '#ffeaea'
-      : '#fff6e0',
-  borderRadius: 8,
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  alignSelf: 'flex-start',
-  marginLeft: 8,
-});
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -429,6 +620,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: 12,
     marginTop: 8,
+    flexWrap: 'wrap',
+    alignItems: 'center',
   },
   actionBtn: {
     flexDirection: 'row',
@@ -438,11 +631,18 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     marginLeft: 4,
+    marginTop: 4,
   },
   actionText: {
     fontSize: 13,
     fontWeight: '600',
     marginLeft: 4,
     color: '#444',
+  },
+  suspendTimer: {
+    fontSize: 13,
+    color: '#e1a135',
+    fontWeight: '600',
+    marginRight: 8,
   },
 });

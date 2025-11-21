@@ -58,9 +58,9 @@ export default function DiscoverScreen({
   };
 
   const displayRecipes =
-    mode === 'community'
-      ? filteredRecipes.filter(r => r.is_community)
-      : filteredRecipes;
+  mode === 'community'
+    ? filteredRecipes.filter(r => r.is_community)
+    : filteredRecipes.filter(r => !r.is_community);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>

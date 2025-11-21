@@ -13,17 +13,17 @@ import {
   Modal,
 } from 'react-native';
 import { Platform } from 'react-native';
-import Input from '../../../components/Input';
+import Input from '../components/Input';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CreateRecipeHeader from '../components/CreateRecipeHeader';
-import { useCommunityStore } from '../store/useCommunityStore';
-import { useAuthStore } from '../../auth/store/useAuthStore';
+import CreateRecipeHeader from '../modules/community-recipes/components/CreateRecipeHeader';
+import { useCommunityStore } from '../modules/community-recipes/store/useCommunityStore';
+import { useAuthStore } from '../modules/auth/store/useAuthStore';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   pickImageFromDevice,
   uploadImageToSupabase,
-} from '../utils/ImageHelper';
-import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
+} from '../modules/community-recipes/utils/ImageHelper';
+import { useDiscoverStore } from '../modules/discover/store/useDiscoverStore';
 import { ImagePlus, CircleX } from 'lucide-react-native';
 
 export default function CreateRecipeScreen({ navigation }: any) {
@@ -115,7 +115,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
     }
 
     const asset = await pickImageFromDevice(fromCamera);
-    closeImageModal(); // move here after picker action completes
+    closeImageModal();
 
     if (asset && asset.base64 && asset.uri && user?.id) {
       setImages(prev => [...prev, { local_uri: asset.uri, is_primary: false }]);

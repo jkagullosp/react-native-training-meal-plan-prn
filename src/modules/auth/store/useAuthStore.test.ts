@@ -42,7 +42,6 @@ jest.mock('../../utils/supabase', () => ({
 
 describe('authentication test', () => {
   beforeEach(() => {
-    // Reset Zustand store before each test
     useAuthStore.setState(
       {
         user: null,
@@ -143,7 +142,6 @@ describe('authentication test', () => {
 
   describe('fetchProfile', () => {
     it('fetches profile and sets user when session and user exist', async () => {
-      // Mock session and user
       (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
         data: { session: { user: { id: '123' } } },
         error: null,
