@@ -1,3 +1,4 @@
+import { CreateRecipeInput } from '@/types/recipe';
 import { recipeApi } from '../api/recipeApi';
 
 export async function fetchRecipes() {
@@ -26,4 +27,8 @@ export async function submitRating({
   rating: number;
 }): Promise<{ avg: number; count: number }> {
   return await recipeApi.submitRating(userId, recipeId, rating);
+}
+
+export async function submitRecipe(userId: string, data: CreateRecipeInput) {
+  return await recipeApi.submitRecipe(userId, data);
 }

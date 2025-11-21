@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ProfileScreenHeader from "../components/ProfileScreenHeader";
-import ProfileTabs from "../navigation/ProfileTabs";
+import ProfileTabs from "@/navigation/tabs/ProfileTabs";
 
 export default function ProfileMainScreen({ navigation }: any) {
   return (

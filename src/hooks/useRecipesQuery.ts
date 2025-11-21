@@ -6,7 +6,9 @@ import {
   fetchRecipeAuthor,
   submitRating,
   fetchUserPendingRecipe,
+  submitRecipe,
 } from '../services/recipeService';
+import { CreateRecipeInput } from '@/types/recipe';
 
 export function useRecipesQuery() {
   return useQuery({
@@ -41,5 +43,12 @@ export function useUserPendingRecipes(userId: string) {
     queryKey: ['userPendingRecipes'],
     queryFn: () => fetchUserPendingRecipe(userId),
     enabled: !!userId,
+  });
+}
+
+export function useSubmitRecipe(userId: string) {
+  return useMutation({
+    mutationKey: ['submitRecipe'],
+    mutationFn: (data: CreateRecipeInput) => submitRecipe(userId, data),
   });
 }
