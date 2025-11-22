@@ -2,7 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import DiscoverScreen from '@/screens/DiscoverScreen';
 import CreateRecipeScreen from '@/screens/CreateRecipeScreen';
-import RecipeFavoriteButton from '@/modules/profile/components/RecipeFavoriteButton';
+import RecipeFavoriteButton from '@/components/RecipeFavoriteButton';
 import RecipeDetailScreen from '@/screens/RecipeDetailScreen';
 
 export type CommunityStackParamList = {

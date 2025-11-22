@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
-import { community_create_texts } from "../../../constants/constants";
+import { community_create_texts } from "@/constants/constants";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { MoveLeft } from 'lucide-react-native';
 

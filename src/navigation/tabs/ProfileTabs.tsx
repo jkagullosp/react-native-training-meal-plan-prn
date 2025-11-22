@@ -1,7 +1,7 @@
 import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import MyRecipesScreen from '@/modules/profile/screens/MyRecipesScreen';
-import MyFavoritesScreen from '@/modules/profile/screens/MyFavoritesScreen';
+import MyFavoritesScreen from '@/screens/MyFavoritesScreen';
 
 const Tab = createMaterialTopTabNavigator();
 

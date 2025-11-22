@@ -32,3 +32,7 @@ export async function submitRating({
 export async function submitRecipe(userId: string, data: CreateRecipeInput) {
   return await recipeApi.submitRecipe(userId, data);
 }
+
+export async function fetchUserRecipes(userId: string) {
+  return await recipeApi.fetchUserRecipes(userId);
+}

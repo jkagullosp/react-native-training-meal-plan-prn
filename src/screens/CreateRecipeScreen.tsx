@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import Input from '../components/Input';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CreateRecipeHeader from '../modules/community-recipes/components/CreateRecipeHeader';
+import CreateRecipeHeader from '@/components/CreateRecipeHeader';
 import { useAuthStore } from '@/stores/auth.store';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {

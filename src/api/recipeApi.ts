@@ -58,7 +58,7 @@ class RecipeApi {
     }
   }
 
-  async fetchuserRecipes(userId: string): Promise<FullRecipe[]> {
+  async fetchUserRecipes(userId: string): Promise<FullRecipe[]> {
     try {
       const { data, error } = await supabase
         .from('recipes')
