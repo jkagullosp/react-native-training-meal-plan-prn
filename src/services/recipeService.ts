@@ -36,3 +36,7 @@ export async function submitRecipe(userId: string, data: CreateRecipeInput) {
 export async function fetchUserRecipes(userId: string) {
   return await recipeApi.fetchUserRecipes(userId);
 }
+
+export async function fetchApprovedUserRecipes(userId: string) {
+  return await recipeApi.fetchApprovedUserRecipes(userId);
+}

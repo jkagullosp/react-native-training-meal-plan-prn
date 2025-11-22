@@ -10,12 +10,13 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuthStore } from '@/stores/auth.store';
 import { Settings, Bell } from 'lucide-react-native';
 import { useUserPendingRecipes } from '@/hooks/useRecipesQuery';
 import PendingRecipesModal from '@/components/PendingRecipesModal';
-import { useUserRecipe } from '@/hooks/useRecipesQuery';
+import { useApprovedUserRecipes } from '@/hooks/useRecipesQuery';
 import { useUserTotalLikes } from '@/hooks/useProfileQuery';
 
 export default function ProfileScreenHeader({ navigation }: any) {
@@ -26,7 +27,7 @@ export default function ProfileScreenHeader({ navigation }: any) {
     data: userRecipes,
     isLoading,
     refetch: refetchUserRecipes,
-  } = useUserRecipe(user?.id ?? '');
+  } = useApprovedUserRecipes(user?.id ?? '');
 
   const [pendingModalVisible, setPendingModalVisible] = useState(false);
   const authUser = useAuthStore(state => state.user);
@@ -57,75 +58,80 @@ export default function ProfileScreenHeader({ navigation }: any) {
   };
 
   return (
-    <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: '#fff' }}
+      edges={['bottom']}
     >
-      <View style={styles.container}>
-        <View style={styles.headerRow}>
-          <Text style={styles.header}>Profile</Text>
-          <View style={styles.iconsRow}>
-            <TouchableOpacity onPress={() => setPendingModalVisible(true)}>
-              {Platform.OS === 'ios' ? (
-                <Icon name="bell" size={24} color={'#adadadff'} />
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.container}>
+          <View style={styles.headerRow}>
+            <Text style={styles.header}>Profile</Text>
+            <View style={styles.iconsRow}>
+              <TouchableOpacity onPress={() => setPendingModalVisible(true)}>
+                {Platform.OS === 'ios' ? (
+                  <Icon name="bell" size={24} color={'#adadadff'} />
+                ) : (
+                  <Bell size={24} color={'#adadadff'} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+                {Platform.OS === 'ios' ? (
+                  <Icon name="cog" size={24} color={'#adadadff'} />
+                ) : (
+                  <Settings size={24} color={'#adadadff'} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={styles.imageContainer}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#9f9f9fff" />
+            ) : user ? (
+              user.profile_image ? (
+                <Image
+                  source={{ uri: user.profile_image }}
+                  style={styles.avatar}
+                />
               ) : (
-                <Bell size={24} color={'#adadadff'} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-              {Platform.OS === 'ios' ? (
-                <Icon name="cog" size={24} color={'#adadadff'} />
-              ) : (
-                <Settings size={24} color={'#adadadff'} />
-              )}
-            </TouchableOpacity>
+                <View style={styles.initialsAvatar}>
+                  <Text style={styles.initialsText}>
+                    {getInitials(user.display_name || 'U')}
+                  </Text>
+                </View>
+              )
+            ) : null}
           </View>
-        </View>
-        <View style={styles.imageContainer}>
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#9f9f9fff" />
-          ) : user ? (
-            user.profile_image ? (
-              <Image
-                source={{ uri: user.profile_image }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.initialsAvatar}>
-                <Text style={styles.initialsText}>
-                  {getInitials(user.display_name || 'U')}
-                </Text>
-              </View>
-            )
-          ) : null}
-        </View>
-        <View style={styles.info}>
-          <Text style={styles.displayName}>{user?.display_name}</Text>
-          <Text style={styles.username}>@{user?.username}</Text>
-        </View>
-        <View style={styles.bioContainer}>
-          <Text style={styles.bio}>{user?.bio}</Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.detailsRow}>
-          <View style={styles.details}>
-            <Text style={styles.count}>{userRecipes?.length ?? 0}</Text>
-            <Text style={styles.desc}>Recipes</Text>
+          <View style={styles.info}>
+            <Text style={styles.displayName}>{user?.display_name}</Text>
+            <Text style={styles.username}>@{user?.username}</Text>
           </View>
-          <View style={styles.details}>
-            <Text style={styles.count}>{totalLikes}</Text>
-            <Text style={styles.desc}>Total Likes</Text>
+          <View style={styles.bioContainer}>
+            <Text style={styles.bio}>{user?.bio}</Text>
           </View>
+          <View style={styles.divider} />
+          <View style={styles.detailsRow}>
+            <View style={styles.details}>
+              <Text style={styles.count}>{userRecipes?.length ?? 0}</Text>
+              <Text style={styles.desc}>Recipes</Text>
+            </View>
+            <View style={styles.details}>
+              <Text style={styles.count}>{totalLikes}</Text>
+              <Text style={styles.desc}>Total Likes</Text>
+            </View>
+          </View>
+          <PendingRecipesModal
+            visible={pendingModalVisible}
+            onClose={() => setPendingModalVisible(false)}
+            pendingRecipes={pendingRecipes || []}
+            loading={pendingLoading}
+          />
         </View>
-        <PendingRecipesModal
-          visible={pendingModalVisible}
-          onClose={() => setPendingModalVisible(false)}
-          pendingRecipes={pendingRecipes || []}
-          loading={pendingLoading}
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -135,8 +141,6 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 12,
     padding: 16,
-    borderColor: 'black',
-    borderWidth: 1,
   },
   headerRow: {
     flexDirection: 'row',
@@ -183,7 +187,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    
   },
   bio: {
     fontSize: 12,
@@ -230,5 +233,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 14,
     alignItems: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: '#F7F7F7',
   },
 });

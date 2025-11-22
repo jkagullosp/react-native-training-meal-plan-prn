@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,24 +6,25 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-} from "react-native";
-import { useDiscoverStore } from "../../discover/store/useDiscoverStore";
+} from 'react-native';
+import { useAuthStore } from '@/stores/auth.store';
+import { useApprovedUserRecipes } from '@/hooks/useRecipesQuery';
 
-export default function MyRecipesScreen({navigation}: any) {
-  const { user, loading, fetchUserRecipes, userRecipes, fetchProfile } =
-    useDiscoverStore();
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+export default function MyRecipesScreen({ navigation }: any) {
+  const { user } = useAuthStore();
+  const {
+    data: userRecipes,
+    isLoading: recipesLoading,
+    refetch: refetchUserRecipes,
+  } = useApprovedUserRecipes(user?.id ?? '');
 
   useEffect(() => {
     if (user?.id) {
-      fetchUserRecipes(user.id);
+      refetchUserRecipes();
     }
-  }, [user, fetchUserRecipes]);
+  }, [user, refetchUserRecipes]);
 
-  if (loading) {
+  if (recipesLoading) {
     return (
       <View style={styles.centered}>
         <Text>Loading...</Text>
@@ -31,7 +32,7 @@ export default function MyRecipesScreen({navigation}: any) {
     );
   }
 
-  if (!userRecipes.length) {
+  if (!userRecipes?.length) {
     return (
       <View style={styles.centered}>
         <Text>No recipes yet.</Text>
@@ -41,13 +42,13 @@ export default function MyRecipesScreen({navigation}: any) {
 
   return (
     <ScrollView style={styles.scrollView}>
-      {userRecipes.map((recipe) => (
+      {userRecipes.map(recipe => (
         <TouchableOpacity
           key={recipe.id}
           style={styles.recipeCard}
           onPress={() =>
-            navigation.navigate("Discover", {
-              screen: "RecipeDetail",
+            navigation.navigate('Discover', {
+              screen: 'RecipeDetail',
               params: {
                 recipeId: recipe.id,
                 recipe: recipe,
@@ -59,7 +60,7 @@ export default function MyRecipesScreen({navigation}: any) {
             source={
               recipe.images && recipe.images.length > 0
                 ? { uri: recipe.images[0].image_url }
-                : require("@assets/images/placeholder.png")
+                : require('@assets/images/placeholder.png')
             }
             style={styles.recipeImage}
             resizeMode="cover"
@@ -81,14 +82,14 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   recipeCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 16,
     padding: 10,
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
@@ -98,25 +99,25 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 8,
     marginRight: 12,
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
   },
   recipeInfo: {
     flex: 1,
-    flexDirection: "column",
+    flexDirection: 'column',
   },
   recipeTitle: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 4,
   },
   recipeDesc: {
     fontSize: 13,
-    color: "#888",
+    color: '#888',
   },
   centered: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 32,
   },
 });

@@ -241,6 +241,31 @@ class RecipeApi {
       throw handleApiError(error, 'Failed to submit recipe');
     }
   }
+
+  async fetchApprovedUserRecipes(userId: string): Promise<FullRecipe[]> {
+    try {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select(
+          `*,
+        images:recipe_images(*),
+        steps:recipe_steps(*),
+        ingredients(*),
+        tags:recipe_tags(
+          tag: tags(*)
+        ),
+        ratings:recipe_ratings(*)
+      `,
+        )
+        .eq('author_id', userId)
+        .eq('approved', true);
+
+      if (error || !data) throw error;
+      return data as FullRecipe[];
+    } catch (error) {
+      throw handleApiError(error, 'Failed to fetch approved user recipes');
+    }
+  }
 }
 
 export const recipeApi = new RecipeApi();

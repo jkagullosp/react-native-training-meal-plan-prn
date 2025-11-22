@@ -7,7 +7,7 @@ import {
   submitRating,
   fetchUserPendingRecipe,
   submitRecipe,
-  fetchUserRecipes,
+  fetchApprovedUserRecipes,
 } from '../services/recipeService';
 import { CreateRecipeInput } from '@/types/recipe';
 
@@ -54,9 +54,10 @@ export function useSubmitRecipe(userId: string) {
   });
 }
 
-export function useUserRecipe(userId: string) {
+export function useApprovedUserRecipes(userId: string) {
   return useQuery({
-    queryKey: ['userRecipes'],
-    queryFn: () => fetchUserRecipes(userId),
+    queryKey: ['userRecipes', userId],
+    queryFn: () => fetchApprovedUserRecipes(userId),
+    enabled: !!userId,
   });
 }
