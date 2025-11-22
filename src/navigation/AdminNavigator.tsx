@@ -3,6 +3,7 @@ import { Briefcase, Check, Cog } from 'lucide-react-native';
 import { Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AdminManagementScreen from '@/screens/AdminManagementScreen';
+import AdminContentScreen from '@/screens/AdminContentScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,6 +35,7 @@ export default function AdminNavigator() {
       })}
     >
       <Tab.Screen name="Management" component={AdminManagementScreen} />
+      <Tab.Screen name="Approvals" component={AdminContentScreen} />
     </Tab.Navigator>
   );
 }

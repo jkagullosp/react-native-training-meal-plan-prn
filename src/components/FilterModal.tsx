@@ -354,11 +354,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   communityModalContent: {
-    backgroundColor: '#F3E8FF', // Example: different bg for community
+    backgroundColor: '#F3E8FF',
     borderColor: '#A78BFA',
     borderWidth: 1,
   },
   communityModalTitle: {
-    color: '#6D28D9', // Example: purple for community
+    color: '#6D28D9',
   },
 });

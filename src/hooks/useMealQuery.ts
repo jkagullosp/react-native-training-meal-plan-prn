@@ -41,7 +41,6 @@ export function useMarkMealPLan() {
   return useMutation({
     mutationFn: markMealDone,
     onSuccess: (_, variables) => {
-      // Invalidate history so UI updates
       queryClient.invalidateQueries({ queryKey: ['history', variables.userId] });
     },
   });

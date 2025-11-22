@@ -1,4 +1,3 @@
-// src/modules/community/store/useCommunityStore.test.ts
 import { useCommunityStore } from './useCommunityStore';
 import { supabase } from '../../../client/supabase';
 
@@ -41,7 +40,6 @@ const mockFrom = (table: string) => {
     case 'tags':
       return {
         select: jest.fn().mockReturnValue({
-          // Simulate returning an array of tags
           then: (cb: any) =>
             cb({ data: [{ id: 't1', name: 'Vegan' }], error: null }),
           eq: jest.fn().mockReturnValue({
@@ -98,8 +96,6 @@ const mockFrom = (table: string) => {
 describe('useCommunityStore', () => {
   beforeEach(() => {
     (supabase.from as jest.Mock).mockImplementation(mockFrom);
-
-    // Reset Zustand store before each test
     useCommunityStore.setState({
       user: null,
       recipes: [],
@@ -143,7 +139,7 @@ describe('useCommunityStore', () => {
   it('fetches author details only once', async () => {
     const { fetchAuthor } = useCommunityStore.getState();
     await fetchAuthor('author1');
-    await fetchAuthor('author1'); // Should not call again
+    await fetchAuthor('author1');
 
     const authors = useCommunityStore.getState().authors;
     expect(authors.author1).toBeDefined();

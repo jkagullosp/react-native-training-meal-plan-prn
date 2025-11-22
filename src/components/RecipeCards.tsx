@@ -41,7 +41,6 @@ export default function RecipeCard({
   const authorId = recipe.author_id;
   const [imageLoading, setImageLoading] = useState(true);
 
-  // Use React Query hooks for community variant
   const { data: author } = useAuthor(
     variant === 'community' ? authorId : undefined,
   );
@@ -87,7 +86,6 @@ export default function RecipeCard({
     ? { uri: getPrimaryImage(recipe) }
     : require('@assets/images/placeholder.png');
 
-  // Ratings for discover
   const ratings = recipe.ratings || [];
   const ratingCount = ratings.length;
   const avgRating =
@@ -363,7 +361,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#eeeeeeff',
   },
-  // Community styles
   authorRow: {
     flexDirection: 'row',
     alignItems: 'center',

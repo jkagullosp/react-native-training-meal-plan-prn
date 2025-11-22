@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message';
 import { auth_texts } from '@/constants/constants';
 import Button from '@/components/Button';
 import { authService } from '@/services/authService';
+import { formatDistanceToNowStrict, parseISO, isAfter } from 'date-fns';
 
 export default function SignInScreen({ navigation }: any) {
   const { signIn, loading } = useAuthStore();
@@ -29,6 +30,37 @@ export default function SignInScreen({ navigation }: any) {
 
     const { error: signInError } = await signIn(email, password);
 
+    if (signInError === 'banned') {
+      Toast.show({
+        type: 'error',
+        text1: 'Account Banned',
+        text2: 'Your account has been banned. Please contact support.',
+      });
+      return;
+    }
+
+    if (signInError === 'suspended') {
+      const user = useAuthStore.getState().user;
+      let suspendedMsg = 'Your account is currently suspended.';
+      if (
+        user?.suspended_until &&
+        isAfter(parseISO(user.suspended_until), new Date())
+      ) {
+        suspendedMsg +=
+          ' Suspension will be lifted ' +
+          formatDistanceToNowStrict(parseISO(user.suspended_until), {
+            addSuffix: true,
+          }) +
+          '.';
+      }
+      Toast.show({
+        type: 'error',
+        text1: 'Account Suspended',
+        text2: suspendedMsg,
+      });
+      return;
+    }
+
     if (signInError) {
       setError(signInError);
       Toast.show({
@@ -36,16 +68,16 @@ export default function SignInScreen({ navigation }: any) {
         text1: 'Sign In Error',
         text2: signInError,
       });
-    } else {
-      Toast.show({
-        type: 'success',
-        text1: 'Welcome back!',
-      });
+      return;
     }
+
+    Toast.show({
+      type: 'success',
+      text1: 'Welcome back!',
+    });
   };
 
   useEffect(() => {
-    // Clear error on navigation
     setError(null);
   }, [navigation]);
 

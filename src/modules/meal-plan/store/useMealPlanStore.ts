@@ -68,7 +68,6 @@ export const useMealPlanStore = create<MealPlanState>(set => ({
     mealDate: string,
     mealType: string,
   ) => {
-    // Insert the meal plan
     const { data, error } = await supabase
       .from('meal_plans')
       .insert([
@@ -115,7 +114,7 @@ export const useMealPlanStore = create<MealPlanState>(set => ({
   },
 
   removeMealPlan: async (mealPlanId: string, userId: string) => {
-    // Cancel notifications before removing
+     Cancel notifications before removing
     await cancelHybridNotification(mealPlanId, userId);
 
     // Remove the meal plan

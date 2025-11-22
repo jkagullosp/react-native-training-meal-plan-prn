@@ -4,8 +4,12 @@ import {
   fetchRecipes,
   fetchTags,
   fetchRecipeAuthor,
-  submitRating
+  submitRating,
+  fetchUserPendingRecipe,
+  submitRecipe,
+  fetchApprovedUserRecipes,
 } from '../services/recipeService';
+import { CreateRecipeInput } from '@/types/recipe';
 
 export function useRecipesQuery() {
   return useQuery({
@@ -32,5 +36,28 @@ export function useAuthorQuery(authorId: string) {
 export function useSubmitRecipeRating() {
   return useMutation({
     mutationFn: submitRating,
-  })
+  });
+}
+
+export function useUserPendingRecipes(userId: string) {
+  return useQuery({
+    queryKey: ['userPendingRecipes'],
+    queryFn: () => fetchUserPendingRecipe(userId),
+    enabled: !!userId,
+  });
+}
+
+export function useSubmitRecipe(userId: string) {
+  return useMutation({
+    mutationKey: ['submitRecipe'],
+    mutationFn: (data: CreateRecipeInput) => submitRecipe(userId, data),
+  });
+}
+
+export function useApprovedUserRecipes(userId: string) {
+  return useQuery({
+    queryKey: ['userRecipes', userId],
+    queryFn: () => fetchApprovedUserRecipes(userId),
+    enabled: !!userId,
+  });
 }

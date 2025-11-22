@@ -292,7 +292,6 @@ describe('useDiscoverStore', () => {
     });
 
     await useDiscoverStore.getState().addFavorite('u1', 'r1');
-    // fetchUserFavorites should be called, so userFavorites should be updated
     expect(useDiscoverStore.getState().userFavorites).toContain('r1');
   });
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import DiscoverScreen from '@/screens/DiscoverScreen';
-import CreateRecipeScreen from '../screens/CreateRecipeScreen';
-import RecipeFavoriteButton from '../../profile/components/RecipeFavoriteButton';
+import CreateRecipeScreen from '@/screens/CreateRecipeScreen';
+import RecipeFavoriteButton from '@/components/RecipeFavoriteButton';
 import RecipeDetailScreen from '@/screens/RecipeDetailScreen';
 
 export type CommunityStackParamList = {
@@ -13,7 +13,7 @@ export type CommunityStackParamList = {
     recipeId: string;
     recipe?: any;
     mode?: 'discover' | 'community';
-  }; // <-- add this
+  };
   CommunityProfile: undefined;
   CreateRecipe: undefined;
 };
@@ -49,17 +49,6 @@ export default function CommunityStack() {
           ),
         })}
       />
-      {/* <Stack.Screen
-        name="CommunityRecipeDetail"
-        component={CommunityRecipeDetailScreen}
-        options={({ route }) => ({
-          headerShown: true,
-          title: route.params?.title || 'Recipe Detail',
-          headerRight: () => (
-            <RecipeFavoriteButton recipeId={route.params?.recipeId} />
-          ),
-        })}
-      /> */}
       <Stack.Screen name="CreateRecipe" component={CreateRecipeScreen} />
     </Stack.Navigator>
   );

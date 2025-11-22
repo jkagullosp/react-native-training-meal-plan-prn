@@ -1,8 +1,8 @@
-import React from "react";
-import { createStackNavigator } from "@react-navigation/stack";
-import DiscoverScreen from "@/screens/DiscoverScreen";
-import RecipeDetailScreen from "@/screens/RecipeDetailScreen";
-import RecipeFavoriteButton from "@/modules/profile/components/RecipeFavoriteButton";
+import React from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import DiscoverScreen from '@/screens/DiscoverScreen';
+import RecipeDetailScreen from '@/screens/RecipeDetailScreen';
+import RecipeFavoriteButton from '@/components/RecipeFavoriteButton';
 
 export type DiscoverStackParamList = {
   Discover: undefined;
@@ -16,7 +16,7 @@ export default function DiscoverStack() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        headerTintColor: "#2a2a2aff",
+        headerTintColor: '#2a2a2aff',
         headerBackTitleStyle: {
           fontSize: 15,
         },
@@ -31,7 +31,7 @@ export default function DiscoverStack() {
         component={RecipeDetailScreen}
         options={({ route }) => ({
           headerShown: true,
-          title: route.params?.title || "Recipe Detail",
+          title: route.params?.title || 'Recipe Detail',
           headerRight: () => (
             <RecipeFavoriteButton recipeId={route.params?.recipeId} />
           ),

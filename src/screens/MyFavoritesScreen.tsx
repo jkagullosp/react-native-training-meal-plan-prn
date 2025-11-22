@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
-import { FullRecipe } from '../../../types/recipe';
+import { useDiscoverStore } from '../modules/discover/store/useDiscoverStore';
+import { FullRecipe } from '../types/recipe';
 
 export default function MyFavoritesScreen({ navigation }: any) {
   const {

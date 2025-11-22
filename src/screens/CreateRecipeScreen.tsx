@@ -11,25 +11,23 @@ import {
   TextInput,
   ScrollView,
   Modal,
+  Platform,
 } from 'react-native';
-import { Platform } from 'react-native';
-import Input from '../../../components/Input';
+import Input from '../components/Input';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CreateRecipeHeader from '../components/CreateRecipeHeader';
-import { useCommunityStore } from '../store/useCommunityStore';
-import { useAuthStore } from '../../auth/store/useAuthStore';
+import CreateRecipeHeader from '@/components/CreateRecipeHeader';
+import { useAuthStore } from '@/stores/auth.store';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   pickImageFromDevice,
   uploadImageToSupabase,
-} from '../utils/ImageHelper';
-import { useDiscoverStore } from '../../discover/store/useDiscoverStore';
+} from '../modules/community-recipes/utils/ImageHelper';
 import { ImagePlus, CircleX } from 'lucide-react-native';
+import { useSubmitRecipe } from '@/hooks/useRecipesQuery';
 
 export default function CreateRecipeScreen({ navigation }: any) {
   const { user } = useAuthStore();
-  const { createCommunityRecipe } = useCommunityStore();
-  const { fetchRecipes } = useDiscoverStore();
+  const submitRecipeMutation = useSubmitRecipe(user?.id ?? '');
 
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState('');
@@ -115,7 +113,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
     }
 
     const asset = await pickImageFromDevice(fromCamera);
-    closeImageModal(); // move here after picker action completes
+    closeImageModal();
 
     if (asset && asset.base64 && asset.uri && user?.id) {
       setImages(prev => [...prev, { local_uri: asset.uri, is_primary: false }]);
@@ -189,8 +187,8 @@ export default function CreateRecipeScreen({ navigation }: any) {
       return;
     }
 
-    try {
-      await createCommunityRecipe(user.id, {
+    submitRecipeMutation.mutate(
+      {
         title,
         description,
         ingredients: ingredients
@@ -216,13 +214,25 @@ export default function CreateRecipeScreen({ navigation }: any) {
         fat: Number(fats) || null || undefined,
         protein: Number(protein) || null || undefined,
         carbs: Number(carbs) || null || undefined,
-      });
-      Alert.alert('Success', 'Recipe created!');
-      await fetchRecipes();
-      navigation.goBack();
-    } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to create recipe');
-    }
+      },
+      {
+        onSuccess: () => {
+          Alert.alert(
+            'Submitted for Review',
+            'Your recipe was submitted and is now pending admin approval.',
+            [
+            {
+                text: 'OK',
+                onPress: () => navigation.navigate('Community'),
+              },
+            ],
+          );
+        },
+        onError: (err: any) => {
+          Alert.alert('Error', err.message || 'Failed to submit recipe');
+        },
+      },
+    );
   };
 
   return (
@@ -565,8 +575,13 @@ export default function CreateRecipeScreen({ navigation }: any) {
           <TouchableOpacity
             style={styles.buttonContainer}
             onPress={handleCreate}
+            disabled={submitRecipeMutation.isPending}
           >
-            <Text style={styles.addImageButton}>Publish Recipe</Text>
+            <Text style={styles.addImageButton}>
+              {submitRecipeMutation.isPending
+                ? 'Publishing...'
+                : 'Publish Recipe'}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>

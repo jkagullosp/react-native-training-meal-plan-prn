@@ -9,4 +9,5 @@ export type Profile = {
   updated_at: string;
   is_admin: boolean;
   status: string;
+  suspended_until: string;
 };
