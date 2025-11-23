@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import {
   fetchRecipes,
@@ -48,9 +48,14 @@ export function useUserPendingRecipes(userId: string) {
 }
 
 export function useSubmitRecipe(userId: string) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ['submitRecipe'],
     mutationFn: (data: CreateRecipeInput) => submitRecipe(userId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userRecipes', userId] });
+      queryClient.invalidateQueries({ queryKey: ['recipes'] });
+    },
   });
 }
 

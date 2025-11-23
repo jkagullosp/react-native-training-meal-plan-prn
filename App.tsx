@@ -9,7 +9,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import {
   useOnboardingStore,
   loadOnboardingState,
-} from './src/stores/useOnboardingStore';
+} from './src/stores/onboarding.store';
 //import { useAuthStore } from './src/modules/auth/store/useAuthStore';
 import Toast from 'react-native-toast-message';
 import { testFirebaseInit } from './src/utils/firebaseHelper';

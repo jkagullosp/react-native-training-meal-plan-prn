@@ -16,9 +16,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/stores/auth.store';
-import Button from '../components/Button';
+import Button from '@/components/Button';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { profile_settings_texts } from '../constants/constants';
+import { profile_settings_texts } from '@/constants/constants';
 import { MoveLeft } from 'lucide-react-native';
 import { pickImageFromDevice, uploadImageToSupabase } from '@/utils/imageHelper';
 import { useUserProfile } from '@/hooks/useProfileQuery';

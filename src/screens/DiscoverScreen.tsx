@@ -8,13 +8,12 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import DiscoverHeader from '../components/DiscoverHeader';
-import { useRecipesQuery } from '../hooks/useRecipesQuery';
-import { useFetchTagsQuery } from '../hooks/useRecipesQuery';
-import SearchAndFilter from '../components/SearchAndFilter';
-import RecipeCard from '../components/RecipeCards';
-import { FullRecipe } from '../types/recipe';
-import FilterModal from '../components/FilterModal';
+import DiscoverHeader from '@/components/DiscoverHeader';
+import { useRecipesQuery, useFetchTagsQuery } from '@/hooks/useRecipesQuery';
+import SearchAndFilter from '@/components/SearchAndFilter';
+import RecipeCard from '@/components/RecipeCards';
+import { FullRecipe } from '@/types/recipe';
+import FilterModal from '@/components/FilterModal';
 import { useRecipeSearchAndFilter } from '@/hooks/useRecipeSearchAndFilter';
 
 type DiscoverScreenProps = {
@@ -58,9 +57,9 @@ export default function DiscoverScreen({
   };
 
   const displayRecipes =
-  mode === 'community'
-    ? filteredRecipes.filter(r => r.is_community)
-    : filteredRecipes.filter(r => !r.is_community);
+    mode === 'community'
+      ? filteredRecipes.filter(r => r.is_community)
+      : filteredRecipes.filter(r => !r.is_community);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>

@@ -202,7 +202,7 @@ class RecipeApi {
         let tagId: string | undefined = tagData?.id;
 
         if (!tagId) {
-          const { data: newTag, error: newTagError } = await supabase
+          const { data: newTag } = await supabase
             .from('tags')
             .insert([{ name: tagName }])
             .select('id')
