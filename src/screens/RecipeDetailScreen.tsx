@@ -16,7 +16,6 @@ import Instructions from '@/components/RecipeInstructions';
 import Author from '@/components/RecipeAuthor';
 import Ingredients from '@/components/RecipeIngredients';
 import AddMealModal from '../components/AddMealModal';
-import { useShoppingListStore } from '../modules/shopping-list/store/useShoppingListStore';
 import Toast from 'react-native-toast-message';
 import { FullRecipe } from '../types/recipe';
 import {
@@ -26,13 +25,17 @@ import {
 import { useAuthStore } from '@/stores/auth.store';
 import { useAddMealPlan, useMealQuery } from '@/hooks/useMealQuery';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAddMissingIngredientsMutation } from '@/hooks/useShopQuery';
 
 export default function RecipeDetailScreen({ navigation, route }: any) {
   const queryClient = useQueryClient();
   const { loading, user } = useAuthStore();
   const { mutate: addMealPlanMutation } = useAddMealPlan();
   const { refetch: refetchMeal } = useMealQuery(user?.id ?? '');
-  const { addMissingIngredients } = useShoppingListStore();
+  const addMissingIngredients = useAddMissingIngredientsMutation(
+    user?.id ?? '',
+  );
+
   const { refetch: refetchRecipes } = useRecipesQuery();
   const { mutate: submitRecipeRating, isPending: submitting } =
     useSubmitRecipeRating();
@@ -50,7 +53,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
   const [rating, setRating] = useState<number>(userRating?.rating || 0);
   const [currentImage, setCurrentImage] = useState(0);
 
-  const mode = route.params?.mode ?? 'discover';
+  //const mode = route.params?.mode ?? 'discover';
 
   useEffect(() => {
     navigation.setOptions({
@@ -261,7 +264,7 @@ export default function RecipeDetailScreen({ navigation, route }: any) {
               {
                 onSuccess: async () => {
                   try {
-                    await addMissingIngredients(user.id);
+                    addMissingIngredients.mutate();
                     await refetchMeal();
                     await refetchRecipes();
                     queryClient.invalidateQueries({ queryKey: ['meals'] });
