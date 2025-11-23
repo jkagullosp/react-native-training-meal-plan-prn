@@ -15,8 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { useAuthStore } from '../../../stores/auth.store';
-import { useProfileStore } from '../store/useProfileStore';
+import { useAuthStore } from '@/stores/auth.store';
 import Button from '../../../components/Button';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { profile_settings_texts } from '../../../constants/constants';
@@ -25,22 +24,19 @@ import {
   pickImageFromDevice,
   uploadImageToSupabase,
 } from '../../community-recipes/utils/ImageHelper';
+import { useUserProfile } from '@/hooks/useProfileQuery';
+import { profileService } from '@/services/profileService';
 
 export default function ProfileSettingsScreen({ navigation }: any) {
   const signOut = useAuthStore(state => state.signOut);
   const authUser = useAuthStore(state => state.user);
 
   const {
-    user,
-    loading,
+    data: user,
+    isLoading,
     error,
-    fetchProfile,
-    updateProfileImage,
-    updateDisplayName,
-    updateUsername,
-    updateBio,
-    changePassword,
-  } = useProfileStore();
+    refetch,
+  } = useUserProfile(authUser?.id ?? '');
 
   const [profileImage, setProfileImage] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -49,16 +45,9 @@ export default function ProfileSettingsScreen({ navigation }: any) {
   const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Modal state for image selection
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [previewImage, setPreviewImage] = useState<string>('');
-
-  useEffect(() => {
-    if (authUser?.id) {
-      fetchProfile(authUser.id);
-    }
-  }, [authUser, fetchProfile]);
 
   useEffect(() => {
     if (user) {
@@ -74,38 +63,50 @@ export default function ProfileSettingsScreen({ navigation }: any) {
     if (!authUser?.id) return;
     setSaving(true);
 
-    let success = true;
-    if (profileImage !== user?.profile_image) {
-      success =
-        (await updateProfileImage(authUser.id, profileImage)) && success;
-    }
-    if (displayName !== user?.display_name) {
-      success = (await updateDisplayName(authUser.id, displayName)) && success;
-    }
-    if (username !== user?.username) {
-      success = (await updateUsername(authUser.id, username)) && success;
-    }
-    if (bio !== user?.bio) {
-      success = (await updateBio(authUser.id, bio)) && success;
+    try {
+      if (profileImage !== user?.profile_image) {
+        await profileService.updateProfileImage(authUser.id, profileImage);
+      }
+      if (displayName !== user?.display_name) {
+        await profileService.updateDisplayName(authUser.id, displayName);
+      }
+      if (username !== user?.username) {
+        await profileService.updateUsername(authUser.id, username);
+      }
+      if (bio !== user?.bio) {
+        await profileService.updateBio(authUser.id, bio);
+      }
+      await refetch();
+      Toast.show({
+        type: 'success',
+        text1: 'Profile updated!',
+      });
+    } catch {
+      Toast.show({
+        type: 'error',
+        text1: 'Update failed',
+      });
     }
     setSaving(false);
-
-    Toast.show({
-      type: success ? 'success' : 'error',
-      text1: success ? 'Profile updated!' : 'Update failed',
-    });
   };
 
   const handleChangePassword = async () => {
     if (!authUser?.email || !newPassword) return;
     setSaving(true);
-    const success = await changePassword(authUser.email, newPassword);
+    try {
+      await profileService.changePassword(authUser.email, newPassword);
+      Toast.show({
+        type: 'success',
+        text1: 'Password changed!',
+      });
+      setNewPassword('');
+    } catch {
+      Toast.show({
+        type: 'error',
+        text1: 'Password change failed',
+      });
+    }
     setSaving(false);
-    Toast.show({
-      type: success ? 'success' : 'error',
-      text1: success ? 'Password changed!' : 'Password change failed',
-    });
-    if (success) setNewPassword('');
   };
 
   // Modal handlers
@@ -168,7 +169,7 @@ export default function ProfileSettingsScreen({ navigation }: any) {
             </View>
           </View>
 
-          {loading || saving ? (
+          {isLoading || saving ? (
             <ActivityIndicator size="large" color="#9f9f9fff" />
           ) : (
             <>
@@ -261,7 +262,13 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                 onPress={signOut}
                 style={{ marginTop: 24 }}
               />
-              {error ? <Text style={styles.error}>{error}</Text> : null}
+              {error ? (
+                <Text style={styles.error}>
+                  {typeof error === 'string'
+                    ? error
+                    : error?.message || 'An error occurred.'}
+                </Text>
+              ) : null}
             </>
           )}
         </ScrollView>

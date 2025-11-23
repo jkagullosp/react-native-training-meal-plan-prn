@@ -33,7 +33,7 @@ export default function DiscoverStack() {
           headerShown: true,
           title: route.params?.title || 'Recipe Detail',
           headerRight: () => (
-            <RecipeFavoriteButton recipeId={route.params?.recipeId} />
+            <RecipeFavoriteButton recipeId={route.params?.recipeId} recipeTitle={route.params?.title} />
           ),
         })}
       />
