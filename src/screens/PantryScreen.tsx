@@ -132,7 +132,6 @@ export default function PantryScreen() {
           </View>
         ))}
 
-        {/* Add Ingredient Modal */}
         <Modal
           visible={showAddModal}
           animationType="slide"
@@ -192,7 +191,6 @@ export default function PantryScreen() {
           </View>
         </Modal>
 
-        {/* Delete Confirmation Modal */}
         <Modal
           visible={deleteModal.show}
           animationType="fade"

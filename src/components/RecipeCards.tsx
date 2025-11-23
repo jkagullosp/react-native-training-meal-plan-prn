@@ -262,9 +262,15 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   communityCard: {
-    backgroundColor: '#F3E8FF',
-    borderColor: '#A78BFA',
-    borderWidth: 1,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 0,
   },
   recipeTitleText: {
     fontSize: 18,
@@ -272,7 +278,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   communityTitleText: {
-    color: '#6D28D9',
+    color: '#000',
   },
   recipeImage: {
     width: '100%',

@@ -3,39 +3,31 @@ import { ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import OnboardingNavigation from './src/navigation/OnboardingNavigation';
-import AuthNavigator from './src/navigation/stacks/AuthStack';
-import AppNavigator from './src/navigation/AppNavigator';
+import OnboardingNavigation from '@/navigation/OnboardingNavigation';
+import AuthNavigator from '@/navigation/stacks/AuthStack';
+import AppNavigator from '@/navigation/AppNavigator';
 import {
   useOnboardingStore,
   loadOnboardingState,
-} from './src/stores/onboarding.store';
-//import { useAuthStore } from './src/modules/auth/store/useAuthStore';
+} from '@/stores/onboarding.store';
 import Toast from 'react-native-toast-message';
-import { testFirebaseInit } from './src/utils/firebaseHelper';
+import { testFirebaseInit } from '@/utils/firebaseHelper';
 import {
   initNotificationChannel,
   requestAndSaveFcmToken,
   requestNotificationPermission,
   registerForegroundMessageHandler,
-} from './src/utils/notificationChannel';
+} from '@/utils/notificationChannel';
 import messaging from '@react-native-firebase/messaging';
-import { useAuthStore } from './src/stores/auth.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AdminNavigator from '@/navigation/AdminNavigator';
 
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
   const setHasOnboarded = useOnboardingStore(state => state.setHasOnboarded);
-
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
-
-  // const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  // const initialized = useAuthStore(state => state.initialized);
-  //const fetchProfile = useAuthStore(state => state.fetchProfile);
-
   const { initialized, initializeAuth, isAuthenticated, user } = useAuthStore();
-
   const queryClient = new QueryClient();
 
   useEffect(() => {

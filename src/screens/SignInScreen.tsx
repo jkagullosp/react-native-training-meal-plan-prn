@@ -15,6 +15,7 @@ import { auth_texts } from '@/constants/constants';
 import Button from '@/components/Button';
 import { authService } from '@/services/authService';
 import { formatDistanceToNowStrict, parseISO, isAfter } from 'date-fns';
+import { requestAppPermissions } from '@/utils/permissions';
 
 export default function SignInScreen({ navigation }: any) {
   const { signIn, loading } = useAuthStore();
@@ -69,6 +70,10 @@ export default function SignInScreen({ navigation }: any) {
         text2: signInError,
       });
       return;
+    }
+
+    if (!signInError) {
+      await requestAppPermissions();
     }
 
     Toast.show({

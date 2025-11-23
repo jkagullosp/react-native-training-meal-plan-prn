@@ -376,7 +376,6 @@ export default function CreateRecipeScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* Ingredients Section */}
           <View style={{ flexDirection: 'column', gap: 8 }}>
             <Text style={{ fontSize: 12 }}>Ingredients</Text>
             {ingredients.map((ingredient, idx) => (
@@ -434,7 +433,6 @@ export default function CreateRecipeScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
 
-          {/* Steps Section */}
           <View style={{ flexDirection: 'column', gap: 8 }}>
             <Text style={{ fontSize: 12 }}>Steps</Text>
             {steps.map((step, idx) => (
@@ -470,7 +468,6 @@ export default function CreateRecipeScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
 
-          {/* Tags Section */}
           <View style={{ flexDirection: 'column', gap: 8, marginBottom: 16 }}>
             <Text style={{ fontSize: 12 }}>Tags</Text>
             <View
