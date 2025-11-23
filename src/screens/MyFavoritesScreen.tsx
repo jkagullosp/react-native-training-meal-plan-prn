@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -7,34 +7,15 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { useDiscoverStore } from '../modules/discover/store/useDiscoverStore';
-import { FullRecipe } from '../types/recipe';
+import { useAuthStore } from '@/stores/auth.store';
+import { useUserFavoriteIds, useFavoriteRecipes } from '@/hooks/useProfileQuery';
 
 export default function MyFavoritesScreen({ navigation }: any) {
-  const {
-    user,
-    loading,
-    fetchUserFavorites,
-    userFavorites,
-    fetchFavoriteRecipes,
-  } = useDiscoverStore();
-  const [favoriteRecipes, setFavoriteRecipes] = useState<FullRecipe[]>([]);
+  const { user } = useAuthStore();
+  const { data: userFavorites = [], isLoading: loadingIds } = useUserFavoriteIds(user?.id ?? '');
+  const { data: favoriteRecipes = [], isLoading: loadingRecipes } = useFavoriteRecipes(userFavorites);
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserFavorites(user.id);
-    }
-  }, [user, fetchUserFavorites]);
-
-  useEffect(() => {
-    const loadFavorites = async () => {
-      const recipes = await fetchFavoriteRecipes();
-      setFavoriteRecipes(recipes);
-    };
-    loadFavorites();
-  }, [userFavorites, fetchFavoriteRecipes]);
-
-  if (loading) {
+  if (loadingIds || loadingRecipes) {
     return (
       <View style={styles.centered}>
         <Text>Loading...</Text>

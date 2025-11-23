@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useDiscoverStore } from '../modules/discover/store/useDiscoverStore';
 import { Heart } from 'lucide-react-native';
+import { useAuthStore } from '@/stores/auth.store';
+import {
+  useUserFavoriteIds,
+  useAddFavorite,
+  useRemoveFavorite,
+} from '@/hooks/useProfileQuery';
+import Toast from 'react-native-toast-message';
 
 export default function RecipeFavoriteButton({
   recipeId,
+  recipeTitle,
 }: {
   recipeId: string;
+  recipeTitle?: string;
 }) {
-  const { user, userFavorites, addFavorite, removeFavorite } =
-    useDiscoverStore();
+  const { user } = useAuthStore();
+  const { data: userFavorites = [] } = useUserFavoriteIds(user?.id ?? '');
+  const addFavorite = useAddFavorite();
+  const removeFavorite = useRemoveFavorite();
   const [optimisticFavorite, setOptimisticFavorite] = useState<boolean | null>(
     null,
   );
@@ -25,10 +35,14 @@ export default function RecipeFavoriteButton({
     if (!user?.id) return;
     if (isFavorite || optimisticFavorite === true) {
       setOptimisticFavorite(false);
-      await removeFavorite(user.id, recipeId);
+      await removeFavorite.mutateAsync({ userId: user.id, recipeId });
     } else {
       setOptimisticFavorite(true);
-      await addFavorite(user.id, recipeId);
+      await addFavorite.mutateAsync({ userId: user.id, recipeId });
+      Toast.show({
+        type: 'success',
+        text1: `${recipeTitle || 'Recipe'} was added to favorites!`,
+      });
     }
   };
 
