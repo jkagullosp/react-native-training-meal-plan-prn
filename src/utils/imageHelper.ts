@@ -1,6 +1,6 @@
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { Platform, PermissionsAndroid, Alert } from 'react-native';
-import { supabase } from '../../../client/supabase';
+import { supabase } from '@/client/supabase';
 import { decode } from 'base64-arraybuffer';
 
 /**

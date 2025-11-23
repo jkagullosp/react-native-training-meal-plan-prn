@@ -18,10 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CreateRecipeHeader from '@/components/CreateRecipeHeader';
 import { useAuthStore } from '@/stores/auth.store';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {
-  pickImageFromDevice,
-  uploadImageToSupabase,
-} from '../modules/community-recipes/utils/ImageHelper';
+import { pickImageFromDevice, uploadImageToSupabase } from '@/utils/imageHelper';
 import { ImagePlus, CircleX } from 'lucide-react-native';
 import { useSubmitRecipe } from '@/hooks/useRecipesQuery';
 

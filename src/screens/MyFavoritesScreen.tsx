@@ -8,12 +8,17 @@ import {
   Image,
 } from 'react-native';
 import { useAuthStore } from '@/stores/auth.store';
-import { useUserFavoriteIds, useFavoriteRecipes } from '@/hooks/useProfileQuery';
+import {
+  useUserFavoriteIds,
+  useFavoriteRecipes,
+} from '@/hooks/useProfileQuery';
 
 export default function MyFavoritesScreen({ navigation }: any) {
   const { user } = useAuthStore();
-  const { data: userFavorites = [], isLoading: loadingIds } = useUserFavoriteIds(user?.id ?? '');
-  const { data: favoriteRecipes = [], isLoading: loadingRecipes } = useFavoriteRecipes(userFavorites);
+  const { data: userFavorites = [], isLoading: loadingIds } =
+    useUserFavoriteIds(user?.id ?? '');
+  const { data: favoriteRecipes = [], isLoading: loadingRecipes } =
+    useFavoriteRecipes(userFavorites);
 
   if (loadingIds || loadingRecipes) {
     return (
@@ -43,6 +48,7 @@ export default function MyFavoritesScreen({ navigation }: any) {
               params: {
                 recipeId: recipe.id,
                 title: recipe.title,
+                recipe: recipe,
               },
             })
           }
