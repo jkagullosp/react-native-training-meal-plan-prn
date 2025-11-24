@@ -1,4 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import {
   fetchRecipes,
@@ -8,8 +12,23 @@ import {
   fetchUserPendingRecipe,
   submitRecipe,
   fetchApprovedUserRecipes,
+  fetchRecipesPaginated,
 } from '../services/recipeService';
 import { CreateRecipeInput } from '@/types/recipe';
+import { FullRecipe } from '@/types/recipe';
+
+export function useInfiniteRecipes(pageSize: number) {
+  return useInfiniteQuery<FullRecipe[], Error>({
+    queryKey: ['recipesInfinite', pageSize],
+    queryFn: ({ pageParam = 1 }) =>
+      fetchRecipesPaginated(pageParam as number, pageSize),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      // If lastPage has less than pageSize items, no more pages
+      return lastPage.length === pageSize ? allPages.length + 1 : undefined;
+    },
+  });
+}
 
 export function useRecipesQuery() {
   return useQuery({
