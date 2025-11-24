@@ -11,6 +11,7 @@ import {
 import Toast from 'react-native-toast-message';
 import { FullRecipe } from '@/types/recipe';
 import { FullMealPlan } from '@/types/meal';
+import { scheduleHybridMealNotification } from '@/utils/notificationChannel';
 
 type MealPlanModalProps = {
   visible: boolean;
@@ -97,7 +98,17 @@ export default function MealPlanModal({
                             mealType: selectedMealType,
                           },
                           {
-                            onSuccess: async () => {
+                            onSuccess: async (newMealPlan: FullMealPlan) => {
+                              if (newMealPlan?.id) {
+                                await scheduleHybridMealNotification({
+                                  userId: user.id,
+                                  mealPlanId: newMealPlan.id, // <-- always a valid UUID
+                                  mealDate: selectedDate,
+                                  mealType: selectedMealType,
+                                  recipeTitle: recipe.title,
+                                  notificationHoursBefore: 2,
+                                });
+                              }
                               await addMissingIngredients();
                               await refetchMeals();
                               await refetchRecipes();

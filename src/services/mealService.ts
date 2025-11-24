@@ -1,4 +1,5 @@
 import { mealApi } from '@/api/mealApi';
+import { FullMealPlan } from '@/types/meal';
 
 export async function fetchMealPlans(userId: string) {
   return await mealApi.fetchMealPlans(userId);
@@ -39,7 +40,7 @@ export async function addMealPlan({
   recipeId: string;
   mealDate: string;
   mealType: string;
-}): Promise<void> {
+}): Promise<FullMealPlan> {
   return await mealApi.addMealPlan(userId, recipeId, mealDate, mealType);
 }
 
@@ -54,5 +55,10 @@ export async function removeIngredientsForRecipe({
   mealDate: string;
   mealType: string;
 }): Promise<void> {
-  return await mealApi.removeIngredientsForRecipe(userId, recipeId, mealDate, mealType);
+  return await mealApi.removeIngredientsForRecipe(
+    userId,
+    recipeId,
+    mealDate,
+    mealType,
+  );
 }
