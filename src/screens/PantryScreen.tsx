@@ -13,20 +13,20 @@ import {
 import { useAuthStore } from '@/stores/auth.store';
 import Toast from 'react-native-toast-message';
 import { useFetchPantryQuery } from '@/hooks/usePantryQuery';
-import { useAddToPantryMutation, useDeletePantryItemMutation } from '@/hooks/usePantryQuery';
+import {
+  useAddToPantryMutation,
+  useDeletePantryItemMutation,
+} from '@/hooks/usePantryQuery';
 
 export default function PantryScreen() {
   const { user } = useAuthStore();
-  // const {
-  //   // pantry,
-  //   // loading,
-  //   //fetchPantry,
-  //   //fetchShoppingList,
-  //   //addMissingIngredients,
-  // } = useShoppingListStore();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data: pantry = [], isLoading: loading, refetch: refetchPantry } = useFetchPantryQuery(user?.id ?? '');
+  const {
+    data: pantry = [],
+    isLoading: loading,
+    refetch: refetchPantry,
+  } = useFetchPantryQuery(user?.id ?? '');
   const addToPantryMutation = useAddToPantryMutation(user?.id ?? '', pantry);
   const deletePantryItemMutation = useDeletePantryItemMutation(user?.id ?? '');
 
@@ -132,7 +132,6 @@ export default function PantryScreen() {
           </View>
         ))}
 
-        {/* Add Ingredient Modal */}
         <Modal
           visible={showAddModal}
           animationType="slide"
@@ -192,7 +191,6 @@ export default function PantryScreen() {
           </View>
         </Modal>
 
-        {/* Delete Confirmation Modal */}
         <Modal
           visible={deleteModal.show}
           animationType="fade"

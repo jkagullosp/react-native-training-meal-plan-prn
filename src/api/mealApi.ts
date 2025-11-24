@@ -32,19 +32,33 @@ class MealAPi {
     recipeId: string,
     mealDate: string,
     mealType: string,
-  ): Promise<void> {
+  ): Promise<FullMealPlan> {
+    // <-- change return type
     try {
-      const { error } = await supabase.from('meal_plans').insert([
-        {
-          user_id: userId,
-          recipe_id: recipeId,
-          meal_date: mealDate,
-          meal_type: mealType,
-        },
-      ]);
+      const { data, error } = await supabase
+        .from('meal_plans')
+        .insert([
+          {
+            user_id: userId,
+            recipe_id: recipeId,
+            meal_date: mealDate,
+            meal_type: mealType,
+          },
+        ])
+        .select(
+          `
+          *,
+          recipe:recipes(
+            *,
+            images:recipe_images(*)
+          )
+        `,
+        )
+        .single(); // <-- get the inserted row
 
-      if (error) throw error;
-      console.log('Meal plan inserted successfully');
+      if (error || !data) throw error;
+      console.log('Meal plan inserted successfully:', data);
+      return data as FullMealPlan;
     } catch (error) {
       throw handleApiError(error, 'Failed to add meal plan');
     }

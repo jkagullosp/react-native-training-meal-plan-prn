@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useAuthStore } from '@/stores/auth.store';
-import { ShoppingListItem } from '../types/shoppingListTypes';
+import { ShoppingListItem } from '@/types/shop';
 import Toast from 'react-native-toast-message';
 import {
   useShoppingListQuery,

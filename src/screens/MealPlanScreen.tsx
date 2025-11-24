@@ -7,9 +7,9 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MealPlanHeader from '../components/MealPlanHeader';
+import MealPlanHeader from '@/components/MealPlanHeader';
 import { format, addDays } from 'date-fns';
-import DailyNutrition from '../components/DailyNutrition';
+import DailyNutrition from '@/components/DailyNutrition';
 import {
   useMealQuery,
   useMealHistory,
@@ -38,18 +38,11 @@ export default function MealPlanScreen({ navigation }: any) {
     isLoading: mealsLoading,
     refetch: refetchMeals,
   } = useMealQuery(user?.id ?? '');
-  const {
-    data: history,
-    isLoading: mealHistoryLoading, // implement history loading
-    refetch: refetchHistory,
-  } = useMealHistory(user?.id ?? '');
-  const {
-    data: recipes,
-    isLoading: recipesLoading,
-    refetch: refetchRecipes,
-  } = useRecipesQuery(); //implement recipe loading
-  const { mutate: addMealPlanMutation, isPending: addingMeal } =
-    useAddMealPlan(); // implement adding meal
+  const { data: history, refetch: refetchHistory } = useMealHistory(
+    user?.id ?? '',
+  );
+  const { data: recipes, refetch: refetchRecipes } = useRecipesQuery();
+  const { mutate: addMealPlanMutation } = useAddMealPlan();
 
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);

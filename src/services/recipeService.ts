@@ -5,6 +5,10 @@ export async function fetchRecipes() {
   return await recipeApi.fetchRecipes();
 }
 
+export async function fetchRecipesPaginated(page: number, pageSize: number) {
+  return await recipeApi.fetchRecipesPaginated(page, pageSize);
+}
+
 export async function fetchTags() {
   return await recipeApi.fetchTags();
 }

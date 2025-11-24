@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchMealHistory,
   fetchMealPlans,
@@ -7,6 +7,7 @@ import {
   markMealDone,
   removeIngredientsForRecipe,
 } from '@/services/mealService';
+import { FullMealPlan } from '@/types/meal';
 
 export function useMealQuery(userId: string) {
   return useQuery({
@@ -17,7 +18,16 @@ export function useMealQuery(userId: string) {
 }
 
 export function useAddMealPlan() {
-  return useMutation({
+  return useMutation<
+    FullMealPlan,
+    Error,
+    {
+      userId: string;
+      recipeId: string;
+      mealDate: string;
+      mealType: string;
+    }
+  >({
     mutationFn: addMealPlan,
   });
 }
@@ -41,7 +51,9 @@ export function useMarkMealPLan() {
   return useMutation({
     mutationFn: markMealDone,
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['history', variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ['history', variables.userId],
+      });
     },
   });
 }
@@ -53,8 +65,11 @@ export function useRemoveIngredientsForRecipe(userId: string) {
       recipeId,
       mealDate,
       mealType,
-    }: { recipeId: string; mealDate: string; mealType: string }) =>
-      removeIngredientsForRecipe({ userId, recipeId, mealDate, mealType }),
+    }: {
+      recipeId: string;
+      mealDate: string;
+      mealType: string;
+    }) => removeIngredientsForRecipe({ userId, recipeId, mealDate, mealType }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shoppingList', userId] });
     },

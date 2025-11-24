@@ -1,115 +1,154 @@
 # KernelPRN
 
-A modern, scalable React Native app for meal planning, recipes, and nutrition tracking. Built with best practices: feature-based structure, service/API layers, Zustand for state, and React Query for data fetching.
+A modern, modular React Native app for meal planning, recipes, and nutrition tracking. The codebase follows a feature-first structure with a clear separation between API, service, and UI layers. It uses TypeScript, Zustand for client state, and React Query for server-state management.
 
 ---
 
-## 🚀 Features
+## 🚀 Highlights
 
-- User authentication (sign up, sign in, password reset)
-- Discover and search recipes
-- Community recipe sharing
-- Meal planning and daily nutrition
-- Favorites and shopping list
-- Onboarding flow
-- Profile management
-- Push notifications
-- Modular, maintainable codebase
+- Authentication (sign up, sign in, session persistence)
+- Discover and search recipes with filters and tags
+- Community recipe submission and admin workflow
+- Meal planning, daily nutrition breakdown, and history
+- Favorites and shopping list management
+- Onboarding flow and profile management
+- Push notifications and local notification channels
+- Secure token storage integration (Keychain/Keystore adapter)
 
 ---
 
-## 🗂️ Folder Structure
+## 🗂 Project Structure (src)
+
+Key folders and responsibilities:
 
 ```
 src/
-  api/            # API service layers (Supabase, etc.)
-  client/         # Supabase client setup
-  components/     # Shared UI components
+  api/            # Supabase query wrappers per feature (recipeApi, authApi, adminApi, etc.)
+  client/         # Supabase client configuration (`src/client/supabase.ts`)
+  components/     # Reusable UI components (cards, inputs, headers)
   constants/      # App-wide constants
-  hooks/          # Custom React hooks (React Query, etc.)
-  modules/        # Feature modules (auth, discover, meal-plan, etc.)
-  navigation/     # Navigation configs (stacks, tabs)
-  screens/        # Top-level screens
-  services/       # Business logic, service layer
-  stores/         # Zustand stores (global state)
-  types/          # TypeScript types/interfaces
-  utils/          # Utility functions/helpers
+  hooks/          # React Query hooks and custom hooks (useRecipesQuery, useAdminQuery...)
+  navigation/     # Navigation stacks, tabs and screen registrations
+  screens/        # Screen implementations (Discover, CreateRecipe, Admin screens...)
+  services/       # Business logic layer (authService, recipeService, adminService...)
+  stores/         # Zustand stores for ephemeral UI state (auth, onboarding)
+  types/          # TypeScript definitions and DTOs
+  utils/          # Helpers (image uploads, keychain adapter, notifications)
 ```
+
+See the `src/` folder for full details — the code is organized by feature and responsibility.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠 Tech Stack
 
-- React Native (Expo/CLI)
+- React Native (React Native CLI)
 - TypeScript
 - Zustand (state management)
-- React Query (server state)
-- Supabase (backend)
+- TanStack Query / React Query (server-state caching)
+- Supabase (database + auth)
+- react-native-keychain (secure token storage adapter)
 - Jest (testing)
 
 ---
 
-## ⚙️ Setup & Installation
+## Quick Start
 
-1. **Clone the repo:**
-   ```sh
-   git clone https://github.com/your-username/kernelprn.git
-   cd kernelprn
-   ```
-2. **Install dependencies:**
-   ```sh
-   npm install
-   # or
-   yarn install
-   ```
-3. **Set up environment variables:**
-   - Copy `.env.example` to `.env` and fill in your Supabase keys, etc.
-4. **Start the app:**
-   ```sh
-   npx react-native start
-   npx react-native run-ios # or run-android
-   ```
+1. Clone and install:
 
----
+```bash
+git clone https://github.com/your-username/kernelprn.git
+cd kernelprn
+npm install
+# or
+yarn install
+```
 
-## 🧩 Usage
+2. Environment variables
 
-- **Authentication:** Sign up, sign in, and manage your profile.
-- **Discover:** Browse and search recipes, filter by tags, ratings, etc.
-- **Community:** Share your own recipes and view others'.
-- **Meal Plan:** Plan your meals and track nutrition.
-- **Favorites & Shopping List:** Save recipes and manage your shopping list.
+- Copy `.env.example` to `.env` and add your Supabase project values (URL and anon/service keys) and other env values used by the app.
 
----
+3. iOS CocoaPods (macOS only):
 
-## 🧪 Testing
+```bash
+npx pod-install
+```
 
-Run tests with:
+4. Run the app
 
-```sh
-npm test
+```bash
+npx react-native start
+npx react-native run-ios   # or
+npx react-native run-android
 ```
 
 ---
 
-## 📦 Contributing
+## Important Files / How This App Works
 
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes
-4. Open a pull request
+- `src/client/supabase.ts` — creates the Supabase client. The client is polyfilled for React Native and configured for session persistence.
+- `src/utils/keychainAdapter.ts` — secure storage adapter using `react-native-keychain`. Supabase auth storage can be pointed to this adapter so access and refresh tokens are stored securely in Keychain/Keystore.
+- `src/api/*.ts` — lightweight API wrappers that construct Supabase queries and return typed results.
+- `src/services/*.ts` — perform higher-level logic (compose API calls, handle side-effects).
+- `src/hooks/*.ts` — React Query hooks (including `useInfiniteQuery` for recipes) and other custom hooks used across screens.
+- `src/screens/*.tsx` — screen implementations that use hooks and components.
+- `src/components/RecipeCards.tsx` — recipe card UI used in lists (Discover, Admin grids).
+
+If you add or change secure storage behavior, update `keychainAdapter.ts` and pass it into the Supabase client options.
 
 ---
 
-## 📄 License
+## Admin vs Community Recipe Flow
 
-[MIT](LICENSE)
+- Community recipes use the “submit for approval” flow (created with `is_community: true`, `approved: false`, `author_id` set).
+- Admin creation screens insert recipes with `is_community: false`, `author_id: null`, and `approved: true` so admin-created recipes appear immediately.
 
 ---
 
-## 🙏 Acknowledgements
+## Development Notes
 
-- [React Native](https://reactnative.dev/)
-- [Supabase](https://supabase.com/)
-- [Zustand](https://zustand-demo.pmnd.rs/)
-- [TanStack Query](https://tanstack.com/query/latest)
+- Infinite scroll: `useInfiniteQuery` is used for recipe lists with a `FlatList` and `onEndReached` to fetch next pages.
+- Secure storage: use `react-native-keychain` for production to secure auth tokens; the repo includes a `keychainAdapter` under `src/utils/`.
+- RLS / Supabase: the app uses row-level security; admin endpoints or policies may be required to access global stats (favorites/likes) from the client.
+
+---
+
+## Scripts
+
+- `npm start` — start Metro bundler
+- `npx react-native run-ios` / `run-android` — build & run on device or emulator
+- `npm test` — run unit tests
+
+---
+
+## Testing
+
+Unit and integration tests use Jest — run `npm test`. Add tests next to the code or in the `__tests__` folder.
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Implement your feature and add tests
+4. Commit and open a pull request
+
+Please follow the existing coding patterns (service + api + hooks) and add/update tests where possible.
+
+---
+
+## License
+
+MIT — see `LICENSE`.
+
+---
+
+## Acknowledgements
+
+- React Native
+- Supabase
+- Zustand
+- TanStack Query
+
+---

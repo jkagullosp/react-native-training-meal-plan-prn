@@ -10,14 +10,14 @@ import {
   Modal,
   Dimensions,
 } from 'react-native';
-import Stats from '../components/RecipeStats';
+import Stats from '@/components/RecipeStats';
 import Nutrition from '@/components/RecipeNutrition';
 import Instructions from '@/components/RecipeInstructions';
 import Author from '@/components/RecipeAuthor';
 import Ingredients from '@/components/RecipeIngredients';
-import AddMealModal from '../components/AddMealModal';
+import AddMealModal from '@/components/AddMealModal';
 import Toast from 'react-native-toast-message';
-import { FullRecipe } from '../types/recipe';
+import { FullRecipe } from '@/types/recipe';
 import {
   useRecipesQuery,
   useSubmitRecipeRating,

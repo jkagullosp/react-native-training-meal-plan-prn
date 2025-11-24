@@ -1,4 +1,5 @@
 import { adminApi } from '@/api/adminApi';
+import { CreateRecipeInput } from '@/types/recipe';
 
 export const adminService = {
   getAllUsers: () => adminApi.getAllUsers(),
@@ -15,4 +16,6 @@ export const adminService = {
   unBanUser: (userId: string) => adminApi.unbanUser(userId),
   approveRecipe: (recipeId: string) => adminApi.approveRecipe(recipeId),
   disapproveRecipe: (recipeId: string) => adminApi.disapproveRecipe(recipeId),
+  submitAdminRecipe: (userId: string, data: CreateRecipeInput) =>
+    adminApi.submitAdminRecipe(userId, data),
 };

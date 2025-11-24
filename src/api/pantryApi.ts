@@ -60,14 +60,14 @@ class PantryApi {
     exists: PantryItem,
     addQty: number,
     unit: string,
-    newIngredient: newIngredient,
+    ingredientData: newIngredient,
   ) {
     try {
       const { error } = await supabase
         .from('user_pantry')
         .update({
           quantity: exists.quantity + addQty,
-          unit: newIngredient.unit || exists.unit,
+          unit: ingredientData.unit || exists.unit,
         })
         .eq('id', exists.id);
 
@@ -83,20 +83,20 @@ class PantryApi {
     quantity: number,
     unit: string,
     addQty: number,
-    newIngredient: newIngredient,
+    ingredientData: newIngredient,
   ) {
     try {
       const { error } = await supabase.from('user_pantry').insert([
         {
           user_id: user.id,
-          ingredient_name: newIngredient.name.trim(),
+          ingredient_name: ingredientData.name.trim(),
           quantity: addQty,
-          unit: newIngredient.unit || '',
+          unit: ingredientData.unit || '',
         },
       ]);
 
       if (error) throw error;
-      console.log('Inserted to shopping list: ', newIngredient.name);
+      console.log('Inserted to shopping list: ', ingredientData.name);
     } catch (error) {
       throw handleApiError(error, 'Failed to insert to shopping list.');
     }

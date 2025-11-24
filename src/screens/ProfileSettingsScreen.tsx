@@ -16,9 +16,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/stores/auth.store';
-import Button from '../components/Button';
+import Button from '@/components/Button';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { profile_settings_texts } from '../constants/constants';
+import { profile_settings_texts } from '@/constants/constants';
 import { MoveLeft } from 'lucide-react-native';
 import { pickImageFromDevice, uploadImageToSupabase } from '@/utils/imageHelper';
 import { useUserProfile } from '@/hooks/useProfileQuery';
@@ -170,7 +170,6 @@ export default function ProfileSettingsScreen({ navigation }: any) {
             <ActivityIndicator size="large" color="#9f9f9fff" />
           ) : (
             <>
-              {/* Profile Image Preview & Modal Trigger */}
               <Text style={styles.label}>Profile Image</Text>
               <TouchableOpacity onPress={openImageModal}>
                 {previewImage ? (
@@ -209,7 +208,6 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                 />
               </TouchableOpacity>
 
-              {/* Display Name */}
               <Text style={styles.label}>Display Name</Text>
               <TextInput
                 style={styles.input}
@@ -218,7 +216,6 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                 placeholder="Display Name"
               />
 
-              {/* Username */}
               <Text style={styles.label}>Username</Text>
               <TextInput
                 style={styles.input}
@@ -228,7 +225,6 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                 autoCapitalize="none"
               />
 
-              {/* Bio */}
               <Text style={styles.label}>Bio</Text>
               <TextInput
                 style={[styles.input, { height: 60 }]}
@@ -238,7 +234,6 @@ export default function ProfileSettingsScreen({ navigation }: any) {
                 multiline
               />
 
-              {/* Change Password */}
               <Text style={styles.label}>Change Password</Text>
               <TextInput
                 style={styles.input}
@@ -269,7 +264,6 @@ export default function ProfileSettingsScreen({ navigation }: any) {
             </>
           )}
         </ScrollView>
-        {/* Modal for profile image selection */}
         <Modal
           visible={modalVisible}
           transparent

@@ -18,13 +18,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CreateRecipeHeader from '@/components/CreateRecipeHeader';
 import { useAuthStore } from '@/stores/auth.store';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { pickImageFromDevice, uploadImageToSupabase } from '@/utils/imageHelper';
+import {
+  pickImageFromDevice,
+  uploadImageToSupabase,
+} from '@/utils/imageHelper';
 import { ImagePlus, CircleX } from 'lucide-react-native';
-import { useSubmitRecipe } from '@/hooks/useRecipesQuery';
+import { useAdminSubmitRecipe } from '@/hooks/useAdminQuery';
 
 export default function CreateRecipeScreen({ navigation }: any) {
   const { user } = useAuthStore();
-  const submitRecipeMutation = useSubmitRecipe(user?.id ?? '');
+  const submitRecipeMutation = useAdminSubmitRecipe(user?.id ?? '');
 
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState('');
@@ -215,12 +218,12 @@ export default function CreateRecipeScreen({ navigation }: any) {
       {
         onSuccess: () => {
           Alert.alert(
-            'Submitted for Review',
-            'Your recipe was submitted and is now pending admin approval.',
+            'Submitted as admin',
+            'Your changes was made.',
             [
-            {
+              {
                 text: 'OK',
-                onPress: () => navigation.navigate('Community'),
+                onPress: () => navigation.navigate('Management'),
               },
             ],
           );

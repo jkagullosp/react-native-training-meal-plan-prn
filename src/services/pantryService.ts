@@ -32,32 +32,32 @@ export async function deductFromShoppingList(
 
 export async function addToPantry(
   userId: string,
-  newIngredient: newIngredient,
+  ingredientData: newIngredient,
   pantry: PantryItem[],
 ) {
-  if (!userId || !newIngredient.name) return;
+  if (!userId || !ingredientData.name) return;
 
   const exists = pantry?.find(
     item =>
       item.ingredient_name.toLowerCase() ===
-      newIngredient.name.trim().toLowerCase(),
+      ingredientData.name.trim().toLowerCase(),
   );
-  const addQty = Number(newIngredient.quantity) || 1;
+  const addQty = Number(ingredientData.quantity) || 1;
 
   if (exists) {
     await pantryApi.updatePantryItemQuantity(
       exists.id,
       exists.quantity + addQty,
-      newIngredient.unit || exists.unit || '',
+      ingredientData.unit || exists.unit || '',
     );
   } else {
-    await pantryApi.insertPantryItem(userId, newIngredient, addQty);
+    await pantryApi.insertPantryItem(userId, ingredientData, addQty);
   }
 
   await deductFromShoppingList(
     userId,
-    newIngredient.name.trim(),
+    ingredientData.name.trim(),
     addQty,
-    newIngredient.unit || '',
+    ingredientData.unit || '',
   );
 }

@@ -28,6 +28,37 @@ class RecipeApi {
       throw handleApiError(error, 'Recipe fetch failed.');
     }
   }
+
+  async fetchRecipesPaginated(
+    page: number,
+    pageSize: number,
+  ): Promise<FullRecipe[]> {
+    try {
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      const { data, error } = await supabase
+        .from('recipes')
+        .select(
+          `*,
+        images:recipe_images(*),
+        steps:recipe_steps(*),
+        ingredients(*),
+        tags:recipe_tags(
+          tag: tags(*)
+        ),
+        ratings:recipe_ratings(*)
+      `,
+        )
+        .eq('approved', true)
+        .range(from, to);
+
+      if (error || !data) throw error;
+      return data as FullRecipe[];
+    } catch (error) {
+      handleApiError(error, 'Failed to fetch Recipe Paginated');
+      return [];
+    }
+  }
   async fetchTags(): Promise<Tag[]> {
     try {
       const { data, error } = await supabase.from('tags').select('*');
@@ -202,7 +233,7 @@ class RecipeApi {
         let tagId: string | undefined = tagData?.id;
 
         if (!tagId) {
-          const { data: newTag, error: newTagError } = await supabase
+          const { data: newTag } = await supabase
             .from('tags')
             .insert([{ name: tagName }])
             .select('id')
