@@ -300,7 +300,7 @@ export default function AdminManagementScreen() {
             <Icon name="star" size={32} color="#e16235" />
             <Text
               style={styles.cardTitle}
-              numberOfLines={2}
+              numberOfLines={1}
               ellipsizeMode="tail"
             >
               {mostFavoritedRecipe?.title ?? '-'}

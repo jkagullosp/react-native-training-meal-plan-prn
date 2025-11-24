@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { adminService } from '@/services/adminService';
+import { CreateRecipeInput } from '@/types/recipe';
 
 export function useAllUsers() {
   return useQuery({
@@ -77,5 +78,13 @@ export function useDisapproveRecipe() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingRecipes'] });
     },
+  });
+}
+
+export function useAdminSubmitRecipe(userId: string) {
+  return useMutation({
+    mutationKey: ['adminSubmitRecipe'],
+    mutationFn: (data: CreateRecipeInput) =>
+      adminService.submitAdminRecipe(userId, data),
   });
 }

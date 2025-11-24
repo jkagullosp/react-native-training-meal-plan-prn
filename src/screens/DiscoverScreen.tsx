@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     backgroundColor: '#FAFAFA',
     flexDirection: 'column',
-    gap: 16,
+    gap: 12,
   },
 
   listContent: {
