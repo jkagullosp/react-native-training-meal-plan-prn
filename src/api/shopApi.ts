@@ -7,6 +7,7 @@ import {
   Ingredient,
 } from '@/types/shop';
 import { handleApiError } from './apiHelpers';
+import { withExponentialBackoff } from './exponentialBackoff';
 
 class ShopApi {
   async fetchMealPlans(
@@ -14,14 +15,16 @@ class ShopApi {
     weekDates: string[],
   ): Promise<MealPlan[]> {
     try {
-      const { data, error } = await supabase
-        .from('meal_plans')
-        .select('id, recipe_id, meal_date, meal_type')
-        .eq('user_id', userId)
-        .in('meal_date', weekDates);
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('meal_plans')
+          .select('id, recipe_id, meal_date, meal_type')
+          .eq('user_id', userId)
+          .in('meal_date', weekDates);
 
-      if (error) throw error;
-      return data as MealPlan[];
+        if (error) throw error;
+        return data as MealPlan[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch meal plans');
     }
@@ -32,15 +35,17 @@ class ShopApi {
     recipeIds: string[],
   ): Promise<ShoppingListItem[]> {
     try {
-      const { data, error } = await supabase
-        .from('shopping_list')
-        .select('*')
-        .eq('user_id', userId)
-        .in('recipe_id', recipeIds)
-        .order('created_at', { ascending: false });
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('shopping_list')
+          .select('*')
+          .eq('user_id', userId)
+          .in('recipe_id', recipeIds)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as ShoppingListItem[];
+        if (error) throw error;
+        return data as ShoppingListItem[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch shopping list');
     }
@@ -48,14 +53,16 @@ class ShopApi {
 
   async fetchRecipesByIds(recipeIds: string[]): Promise<Recipe[]> {
     try {
-      if (!recipeIds.length) return [];
-      const { data, error } = await supabase
-        .from('recipes')
-        .select('id, title')
-        .in('id', recipeIds);
+      return await withExponentialBackoff(async () => {
+        if (!recipeIds.length) return [];
+        const { data, error } = await supabase
+          .from('recipes')
+          .select('id, title')
+          .in('id', recipeIds);
 
-      if (error) throw error;
-      return (data as Recipe[]) || [];
+        if (error) throw error;
+        return (data as Recipe[]) || [];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch recipe by ids');
     }
@@ -63,13 +70,15 @@ class ShopApi {
 
   async fetchPantry(userId: string): Promise<PantryItem[]> {
     try {
-      const { data, error } = await supabase
-        .from('user_pantry')
-        .select('*')
-        .eq('user_id', userId);
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('user_pantry')
+          .select('*')
+          .eq('user_id', userId);
 
-      if (error || !data) throw error;
-      return data as PantryItem[];
+        if (error || !data) throw error;
+        return data as PantryItem[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch user pantry');
     }
@@ -77,13 +86,15 @@ class ShopApi {
 
   async fetchIngredients(recipeIds: string[]): Promise<Ingredient[]> {
     try {
-      const { data, error } = await supabase
-        .from('ingredients')
-        .select('*')
-        .in('recipe_id', recipeIds);
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('ingredients')
+          .select('*')
+          .in('recipe_id', recipeIds);
 
-      if (error || !data) throw error;
-      return data as Ingredient[];
+        if (error || !data) throw error;
+        return data as Ingredient[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch ingredients');
     }
@@ -91,13 +102,15 @@ class ShopApi {
 
   async fetchIngredientForDeduct(recipeId: string): Promise<Ingredient[]> {
     try {
-      const { data, error } = await supabase
-        .from('ingredients')
-        .select('name, quantity')
-        .eq('recipe_id', recipeId);
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('ingredients')
+          .select('name, quantity')
+          .eq('recipe_id', recipeId);
 
-      if (error || !data) throw error;
-      return data as Ingredient[];
+        if (error || !data) throw error;
+        return data as Ingredient[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch ingredients');
     }
@@ -108,14 +121,16 @@ class ShopApi {
     ingredient: Ingredient,
   ): Promise<PantryItem[]> {
     try {
-      const { data, error } = await supabase
-        .from('user_pantry')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('ingredient_name', ingredient.name);
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('user_pantry')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('ingredient_name', ingredient.name);
 
-      if (error || !data) throw error;
-      return data as PantryItem[];
+        if (error || !data) throw error;
+        return data as PantryItem[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch pantry for deduct');
     }
@@ -123,12 +138,14 @@ class ShopApi {
 
   async updatePantryQuantity(newQty: number, pantryItem: PantryItem[]) {
     try {
-      const { error } = await supabase
-        .from('user_pantry')
-        .update({ quantity: newQty })
-        .eq('id', pantryItem[0].id);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('user_pantry')
+          .update({ quantity: newQty })
+          .eq('id', pantryItem[0].id);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to update pantry quantity');
     }
@@ -136,12 +153,14 @@ class ShopApi {
 
   async removeFromPantry(pantryItem: PantryItem[]) {
     try {
-      const { error } = await supabase
-        .from('user_pantry')
-        .delete()
-        .eq('id', pantryItem[0].id);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('user_pantry')
+          .delete()
+          .eq('id', pantryItem[0].id);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to remove from pantry');
     }
@@ -149,13 +168,15 @@ class ShopApi {
 
   async fetchShoppingList(userId: string): Promise<ShoppingListItem[]> {
     try {
-      const { data, error } = await supabase
-        .from('shopping_list')
-        .select('*')
-        .eq('user_id', userId);
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('shopping_list')
+          .select('*')
+          .eq('user_id', userId);
 
-      if (error || !data) throw error;
-      return data as ShoppingListItem[];
+        if (error || !data) throw error;
+        return data as ShoppingListItem[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch shopping list');
     }
@@ -163,11 +184,13 @@ class ShopApi {
 
   async addToShoppingList(newIngredients: any): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('shopping_list')
-        .insert(newIngredients);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('shopping_list')
+          .insert(newIngredients);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to add to shopping list');
     }
@@ -175,12 +198,14 @@ class ShopApi {
 
   async removeOutdatedItems(outdatedItems: any): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('shopping_list')
-        .delete()
-        .in('id', outdatedItems);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('shopping_list')
+          .delete()
+          .in('id', outdatedItems);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to remove outdated items');
     }
@@ -188,12 +213,14 @@ class ShopApi {
 
   async updateShoppingListChecked(id: string, checked: boolean) {
     try {
-      const { error } = await supabase
-        .from('shopping_list')
-        .update({ is_checked: checked })
-        .eq('id', id);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('shopping_list')
+          .update({ is_checked: checked })
+          .eq('id', id);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed update shopping list checked');
     }
@@ -240,11 +267,13 @@ class ShopApi {
 
   async removeShoppingListByMealPlan(mealPlanId: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('shopping_list')
-        .delete()
-        .eq('meal_plan_id', mealPlanId);
-      if (error) throw error;
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('shopping_list')
+          .delete()
+          .eq('meal_plan_id', mealPlanId);
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(
         error,

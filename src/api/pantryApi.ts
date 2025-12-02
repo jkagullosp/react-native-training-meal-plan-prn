@@ -3,19 +3,22 @@ import { handleApiError } from './apiHelpers';
 import { newIngredient } from '@/types/pantry';
 import { PantryItem } from '@/types/shop';
 import { Profile } from '@/types/auth';
+import { withExponentialBackoff } from './exponentialBackoff';
 
 class PantryApi {
   async fetchShoppingListItems(userId: string, ingredientName: string) {
     try {
-      const { data, error } = await supabase
-        .from('shopping_list')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('ingredient_name', ingredientName)
-        .order('created_at', { ascending: true });
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('shopping_list')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('ingredient_name', ingredientName)
+          .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to deduct from shopping list');
     }
@@ -23,12 +26,14 @@ class PantryApi {
 
   async removeFromShoppingList(item: any) {
     try {
-      const { error } = await supabase
-        .from('shopping_list')
-        .delete()
-        .eq('id', item.id);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('shopping_list')
+          .delete()
+          .eq('id', item.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to remove from shopping list');
     }
@@ -40,13 +45,15 @@ class PantryApi {
     remaining: number,
   ) {
     try {
-      const { error } = await supabase
-        .from('shopping_list')
-        .update({ quantity: itemQty - remaining })
-        .eq('id', item.id);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('shopping_list')
+          .update({ quantity: itemQty - remaining })
+          .eq('id', item.id);
 
-      remaining = 0;
-      if (error) throw error;
+        remaining = 0;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to deduct quantity');
     }
@@ -60,15 +67,17 @@ class PantryApi {
     ingredientData: newIngredient,
   ) {
     try {
-      const { error } = await supabase
-        .from('user_pantry')
-        .update({
-          quantity: exists.quantity + addQty,
-          unit: ingredientData.unit || exists.unit,
-        })
-        .eq('id', exists.id);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('user_pantry')
+          .update({
+            quantity: exists.quantity + addQty,
+            unit: ingredientData.unit || exists.unit,
+          })
+          .eq('id', exists.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to add quantity to shopping list');
     }
@@ -82,16 +91,18 @@ class PantryApi {
     ingredientData: newIngredient,
   ) {
     try {
-      const { error } = await supabase.from('user_pantry').insert([
-        {
-          user_id: user.id,
-          ingredient_name: ingredientData.name.trim(),
-          quantity: addQty,
-          unit: ingredientData.unit || '',
-        },
-      ]);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase.from('user_pantry').insert([
+          {
+            user_id: user.id,
+            ingredient_name: ingredientData.name.trim(),
+            quantity: addQty,
+            unit: ingredientData.unit || '',
+          },
+        ]);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to insert to shopping list.');
     }
@@ -99,12 +110,14 @@ class PantryApi {
 
   async deletePantryItem(itemId: string) {
     try {
-      const { error } = await supabase
-        .from('user_pantry')
-        .delete()
-        .eq('id', itemId);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('user_pantry')
+          .delete()
+          .eq('id', itemId);
 
-      if (error) throw error;
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to delete from pantry');
     }
@@ -112,11 +125,13 @@ class PantryApi {
 
   async updatePantryItemQuantity(itemId: string, newQty: number, unit: string) {
     try {
-      const { error } = await supabase
-        .from('user_pantry')
-        .update({ quantity: newQty, unit })
-        .eq('id', itemId);
-      if (error) throw error;
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('user_pantry')
+          .update({ quantity: newQty, unit })
+          .eq('id', itemId);
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to update pantry item');
     }
@@ -128,16 +143,19 @@ class PantryApi {
     addQty: number,
   ) {
     try {
-      if (!userId) throw new Error('User ID is required to insert pantry item');
-      const { error } = await supabase.from('user_pantry').insert([
-        {
-          user_id: userId,
-          ingredient_name: ingredient.name.trim(),
-          quantity: addQty,
-          unit: ingredient.unit || '',
-        },
-      ]);
-      if (error) throw error;
+      return await withExponentialBackoff(async () => {
+        if (!userId)
+          throw new Error('User ID is required to insert pantry item');
+        const { error } = await supabase.from('user_pantry').insert([
+          {
+            user_id: userId,
+            ingredient_name: ingredient.name.trim(),
+            quantity: addQty,
+            unit: ingredient.unit || '',
+          },
+        ]);
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to insert pantry item');
     }
