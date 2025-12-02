@@ -1,3 +1,5 @@
+import Toast from 'react-native-toast-message';
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -13,7 +15,12 @@ export function handleApiError(error: unknown, context: string): ApiError {
   if (error instanceof ApiError) return error;
 
   const message = error instanceof Error ? error.message : String(error);
-  console.error(`[API Error - ${context}]:`, error);
+  //console.error(`[API Error - ${context}]:`, error);
+  Toast.show({
+    type: 'error',
+    text1: 'Error',
+    text2: `[${context}] ${message}`,
+  });
 
   return new ApiError(`[${context}] ${message}`, undefined, error);
 }

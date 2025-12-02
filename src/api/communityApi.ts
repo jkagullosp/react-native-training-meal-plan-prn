@@ -2,18 +2,20 @@ import { Profile } from '@/types/auth';
 import { RecipeLike } from '@/types/recipe';
 import { supabase } from '@/client/supabase';
 import { handleApiError } from './apiHelpers';
+import { withExponentialBackoff } from './exponentialBackoff';
 
 class CommunityApi {
   async fetchAuthor(authorId: string) {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authorId)
-        .maybeSingle();
-      if (error) throw error;
-      console.log('Fetched Authors: ', JSON.stringify(data, null, 2));
-      return data as Profile;
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authorId)
+          .maybeSingle();
+        if (error) throw error;
+        return data as Profile;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch authors');
     }
@@ -21,13 +23,14 @@ class CommunityApi {
 
   async fetchRecipeLikes(recipeId: string) {
     try {
-      const { data, error } = await supabase
-        .from('recipe_likes')
-        .select('*')
-        .eq('recipe_id', recipeId);
-      if (error) throw error;
-      console.log('Fetched recipe likes: ', JSON.stringify(data, null, 2));
-      return data as RecipeLike[];
+      return await withExponentialBackoff(async () => {
+        const { data, error } = await supabase
+          .from('recipe_likes')
+          .select('*')
+          .eq('recipe_id', recipeId);
+        if (error) throw error;
+        return data as RecipeLike[];
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch recipe likes');
     }
@@ -35,11 +38,12 @@ class CommunityApi {
 
   async likeRecipe(userId: string, recipeId: string) {
     try {
-      const { error } = await supabase
-        .from('recipe_likes')
-        .insert([{ user_id: userId, recipe_id: recipeId }]);
-      if (error) throw error;
-      console.log('Successfully liked recipe');
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('recipe_likes')
+          .insert([{ user_id: userId, recipe_id: recipeId }]);
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to like recipe');
     }
@@ -47,14 +51,15 @@ class CommunityApi {
 
   async unlikeRecipe(userId: string, recipeId: string) {
     try {
-      const { error } = await supabase
-        .from('recipe_likes')
-        .delete()
-        .eq('user_id', userId)
-        .eq('recipe_id', recipeId);
+      return await withExponentialBackoff(async () => {
+        const { error } = await supabase
+          .from('recipe_likes')
+          .delete()
+          .eq('user_id', userId)
+          .eq('recipe_id', recipeId);
 
-      if (error) throw error;
-      console.log('Succesfully unliked recipe');
+        if (error) throw error;
+      });
     } catch (error) {
       throw handleApiError(error, 'Failed to unlike recipe.');
     }

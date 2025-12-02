@@ -55,12 +55,10 @@ export async function requestAndSaveFcmToken(userId?: string | null) {
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (!enabled) {
-      console.log('FCM permission not granted');
       return null;
     }
 
     const token = await messaging().getToken();
-    console.log('FCM token:', token);
 
     if (token && userId) {
       // upsert token into push_tokens table
@@ -72,11 +70,9 @@ export async function requestAndSaveFcmToken(userId?: string | null) {
         },
         { onConflict: 'token' },
       );
-      console.log('Saved token to Supabase');
     }
 
     messaging().onTokenRefresh(async newToken => {
-      console.log('FCM token refreshed:', newToken);
       if (newToken && userId) {
         await supabase
           .from('push_tokens')
@@ -142,14 +138,8 @@ export async function scheduleHybridMealNotification({
 
     // Skip if notification time is in the past
     if (notificationTime.getTime() < Date.now()) {
-      console.log('Notification time is in the past, skipping');
       return { success: false, reason: 'past_time' };
     }
-
-    console.log(
-      `Scheduling notification for ${mealType}:`,
-      notificationTime.toISOString(),
-    );
 
     // 1. FALLBACK: Schedule local notification with Notifee
     const localNotificationId = await scheduleLocalNotification({
@@ -176,8 +166,6 @@ export async function scheduleHybridMealNotification({
     if (error) {
       console.error('Failed to store notification in DB:', error);
       // Local notification still works as fallback
-    } else {
-      console.log('Notification stored in DB:', data.id);
     }
 
     return {
@@ -244,8 +232,6 @@ async function scheduleLocalNotification({
     },
     trigger,
   );
-
-  console.log('Local notification scheduled:', notificationId);
   return notificationId;
 }
 
@@ -268,7 +254,6 @@ export async function cancelHybridNotification(
       .eq('user_id', userId)
       .eq('sent', false); // Only update unsent ones
 
-    console.log('Hybrid notification cancelled for meal plan:', mealPlanId);
     return { success: true };
   } catch (err) {
     console.error('cancelHybridNotification error:', err);
@@ -281,16 +266,11 @@ export async function cancelHybridNotification(
  */
 export async function getScheduledNotifications() {
   const notifications = await notifee.getTriggerNotifications();
-  console.log('Scheduled local notifications:', notifications.length);
   return notifications;
 }
 
 export function registerForegroundMessageHandler() {
   const unsubscribe = messaging().onMessage(async remoteMessage => {
-    console.log('🔔 RAW FCM MESSAGE RECEIVED!');
-    console.log('📱 App state: FOREGROUND');
-    console.log('📦 Full message:', JSON.stringify(remoteMessage, null, 2));
-
     try {
       const notification = {
         title: remoteMessage.notification?.title ?? 'Meal Reminder',
@@ -306,16 +286,11 @@ export function registerForegroundMessageHandler() {
         data: remoteMessage.data,
       };
 
-      console.log('📨 Displaying notification:', notification.title);
-
       await notifee.displayNotification(notification);
-
-      console.log('✅ Notifee successfully displayed notification');
     } catch (error) {
       console.error('❌ Notifee display error:', error);
     }
   });
 
-  console.log('✅ Foreground message handler registered');
   return unsubscribe;
 }

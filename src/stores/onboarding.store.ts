@@ -8,7 +8,6 @@ export const useOnboardingStore = create<OnboardingState>(set => ({
     set({ hasOnboarded: value });
     try {
       await AsyncStorage.setItem('hasOnboarded', value ? 'true' : 'false');
-      console.log('User onboarding status saved: ', JSON.stringify(value));
     } catch (error) {
       console.error('Failed to save onboarding status: ', error);
     }
@@ -18,7 +17,6 @@ export const useOnboardingStore = create<OnboardingState>(set => ({
 export const loadOnboardingState = async () => {
   try {
     const value = await AsyncStorage.getItem('hasOnboarded');
-    console.log('Loaded onboarding status: ', JSON.stringify(value));
     return value === 'true';
   } catch (error) {
     console.error('Failed to load onboarding status: ', error);

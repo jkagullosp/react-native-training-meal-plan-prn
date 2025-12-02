@@ -67,69 +67,6 @@ export default function MealPlanScreen({ navigation }: any) {
     return Array.from({ length: 7 }, (_, i) => addDays(today, i));
   }
 
-  // function uuidv4() {
-  //   // simple RFC4122 v4 UUID generator
-  //   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-  //     const r = (Math.random() * 16) | 0;
-  //     const v = c === 'x' ? r : (r & 0x3) | 0x8;
-  //     return v.toString(16);
-  //   });
-  // }
-
-  // useEffect(() => {
-  //   const testNotification = async () => {
-  //     if (!user?.id) return;
-
-  //     // Check if we already have a pending test notification
-  //     const { data: existing } = await supabase
-  //       .from('scheduled_meal_notifications')
-  //       .select('*')
-  //       .eq('user_id', user.id)
-  //       .eq('sent', false)
-  //       .gte('notification_time', new Date().toISOString());
-
-  //     if (existing && existing.length > 0) {
-  //       console.log('⏳ Already have pending notification, skipping');
-  //       console.log(
-  //         '   Scheduled for:',
-  //         new Date(existing[0].notification_time).toLocaleTimeString(),
-  //       );
-  //       return;
-  //     }
-
-  //     // Schedule for EXACTLY 2 minutes from now (gives more time to see it)
-  //     const testDate = new Date(Date.now() + 2 * 60 * 1000);
-
-  //     console.log('🧪 Creating test notification');
-  //     console.log('   Current time:', new Date().toLocaleTimeString());
-  //     console.log('   Notification time:', testDate.toLocaleTimeString());
-
-  //     const result = await scheduleHybridMealNotification({
-  //       userId: user.id,
-  //       mealPlanId: uuidv4(),
-  //       mealDate: testDate.toISOString(),
-  //       mealType: 'lunch',
-  //       recipeTitle: 'Test Chicken Adobo 🍗',
-  //       notificationHoursBefore: 0,
-  //     });
-
-  //     console.log('✅ Result:', result);
-
-  //     // Verify it was created
-  //     const { data } = await supabase
-  //       .from('scheduled_meal_notifications')
-  //       .select('*')
-  //       .eq('user_id', user.id)
-  //       .order('created_at', { ascending: false })
-  //       .limit(1);
-
-  //     console.log('📋 Created in DB:', data?.[0]);
-  //   };
-
-  //   // Run the test
-  //   testNotification();
-  // }, [user]);
-
   const onRefresh = async () => {
     if (user?.id) {
       setRefreshing(true);

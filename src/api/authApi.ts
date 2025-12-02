@@ -69,7 +69,6 @@ class AuthApi {
     try {
       const { data, error } = await supabase.auth.getUser();
       if (error) throw error;
-      console.log('current user: ', data.user);
       return data.user;
     } catch (error) {
       throw handleApiError(error, 'Failed to get user');
