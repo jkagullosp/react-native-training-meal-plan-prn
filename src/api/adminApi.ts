@@ -24,7 +24,6 @@ class AdminApi {
         .order('created_at', { ascending: false });
 
       if (error || !data) throw error;
-      console.log('Admin: Fetched Users: ', JSON.stringify(data, null, 2));
       return data as Profile[];
     } catch (error) {
       throw handleApiError(error, 'Admin: Failed to fetch users');
@@ -39,7 +38,6 @@ class AdminApi {
         .eq('id', userId);
 
       if (error) throw error;
-      console.log('Admin: Banned user - ', userId);
     } catch (error) {
       throw handleApiError(error, 'Admin: Faile to ban user');
     }
@@ -54,7 +52,6 @@ class AdminApi {
         .eq('id', userId);
 
       if (error) throw error;
-      console.log('Admin: Suspended user - ', userId, 'until', until);
     } catch (error) {
       throw handleApiError(error, 'Failed to suspend user');
     }
@@ -68,7 +65,6 @@ class AdminApi {
         .eq('id', userId);
 
       if (error) throw error;
-      console.log('Admin: Deleted user - ', userId);
     } catch (error) {
       throw handleApiError(error, 'Failed to delete user');
     }
@@ -83,10 +79,6 @@ class AdminApi {
         .order('created_at', { ascending: false });
 
       if (error || !data) throw error;
-      console.log(
-        'Admin: Recipes not pending: ',
-        JSON.stringify(data, null, 2),
-      );
       return data as FullRecipe[];
     } catch (error) {
       throw handleApiError(
@@ -105,10 +97,6 @@ class AdminApi {
         .order('created_at', { ascending: false });
 
       if (error || !data) throw error;
-      console.log(
-        'Admin: Fetched pending recipes: ',
-        JSON.stringify(data, null, 2),
-      );
       return data as FullRecipe[];
     } catch (error) {
       throw handleApiError(error, 'Admin: Failed to fetch pending recipes');
@@ -136,8 +124,6 @@ class AdminApi {
         .filter(([_, count]) => count === maxCount)
         .map(([id]) => id);
 
-      console.log('Most favorited recipe IDs:', mostFavoritedIds);
-
       // Fetch the first most favorited recipe (remove .eq('approved', true) if present)
       const { data: recipes, error: recipeError } = await supabase
         .from('recipes')
@@ -145,8 +131,6 @@ class AdminApi {
         .in('id', mostFavoritedIds)
         .order('created_at', { ascending: false })
         .limit(1);
-
-      console.log('Most favorited recipe data:', recipes);
 
       if (recipeError || !recipes || recipes.length === 0) return null;
       return recipes[0];
@@ -215,7 +199,6 @@ class AdminApi {
         .eq('id', userId);
 
       if (error) throw error;
-      console.log('Admin: unsuspended user: ', userId);
     } catch (error) {
       throw handleApiError(error, 'Failed to unsuspend user');
     }
@@ -228,7 +211,6 @@ class AdminApi {
         .update({ status: 'active' })
         .eq('id', userId);
       if (error) throw error;
-      console.log('Admin: unbanned user - ', userId);
     } catch (error) {
       throw handleApiError(error, 'Failed to unban user');
     }
@@ -242,7 +224,6 @@ class AdminApi {
         .eq('id', recipeId);
 
       if (error) throw error;
-      console.log('Admin: approved recipe', recipeId);
     } catch (error) {
       throw handleApiError(error, 'Failed to approve recipe');
     }
@@ -256,7 +237,6 @@ class AdminApi {
         .eq('id', recipeId);
 
       if (error) throw error;
-      console.log('Admin: disapproved recipe: ', recipeId);
     } catch (error) {
       throw handleApiError(error, 'Failed to disapprove recipe');
     }

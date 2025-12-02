@@ -44,18 +44,11 @@ serve(async req => {
       throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT format');
     }
 
-    console.log(
-      `🔐 Authenticating with Firebase project: ${serviceAccount.project_id}`,
-    );
-
     // Get FCM access token
     const accessToken = await getAccessToken({
       clientEmail: serviceAccount.client_email,
       privateKey: serviceAccount.private_key,
     });
-
-    console.log('✅ FCM access token obtained');
-    console.log('📋 Fetching pending notifications...');
 
     // Fetch pending notifications
     const { data: notifications, error: notifError } = await supabase.rpc(
@@ -66,8 +59,6 @@ serve(async req => {
       console.error('❌ Error fetching notifications:', notifError);
       throw notifError;
     }
-
-    console.log(`📬 Found ${notifications?.length || 0} pending notifications`);
 
     if (!notifications || notifications.length === 0) {
       return new Response(
@@ -87,10 +78,6 @@ serve(async req => {
 
     // Process each notification
     for (const notif of notifications) {
-      console.log(`\n🔔 Processing notification ${notif.id}`);
-      console.log(`   User: ${notif.user_id}`);
-      console.log(`   Meal: ${notif.meal_type} - ${notif.recipe_title}`);
-
       // Get user's FCM tokens
       const { data: tokens, error: tokenError } = await supabase
         .from('push_tokens')
@@ -107,17 +94,12 @@ serve(async req => {
       }
 
       if (!tokens || tokens.length === 0) {
-        console.log(`⚠️  No tokens found for user ${notif.user_id}`);
-        // Mark as sent so we don't retry
         await supabase
           .from('scheduled_meal_notifications')
           .update({ sent: true })
           .eq('id', notif.id);
         continue;
       }
-
-      console.log(`   Found ${tokens.length} device(s)`);
-
       // Get emoji for meal type
       const mealEmoji =
         {
@@ -145,13 +127,8 @@ serve(async req => {
           });
 
           if (fcmResult.success) {
-            console.log(`   ✅ Sent to ${tokenRecord.platform}`);
             successCount++;
           } else {
-            console.log(
-              `   ❌ Failed to ${tokenRecord.platform}:`,
-              fcmResult.error,
-            );
             failCount++;
           }
 
@@ -186,14 +163,8 @@ serve(async req => {
           `⚠️  Error marking notification ${notif.id} as sent:`,
           updateError,
         );
-      } else {
-        console.log(`   ✓ Marked as sent in database`);
       }
     }
-
-    console.log(
-      `\n📊 Summary: ${successCount} sent, ${failCount} failed out of ${results.length} total`,
-    );
 
     return new Response(
       JSON.stringify({

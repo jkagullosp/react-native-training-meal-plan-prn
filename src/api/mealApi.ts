@@ -20,7 +20,6 @@ class MealAPi {
         .order('meal_date', { ascending: true });
 
       if (error || !data) throw error;
-      console.log('Fetched meal plans: ', JSON.stringify(data, null, 2));
       return data as FullMealPlan[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch meal plans.');
@@ -57,7 +56,6 @@ class MealAPi {
         .single(); // <-- get the inserted row
 
       if (error || !data) throw error;
-      console.log('Meal plan inserted successfully:', data);
       return data as FullMealPlan;
     } catch (error) {
       throw handleApiError(error, 'Failed to add meal plan');
@@ -72,7 +70,6 @@ class MealAPi {
         .eq('id', mealPlanId);
 
       if (error) throw error;
-      console.log('Meal plan removed: ', mealPlanId);
     } catch (error) {
       throw handleApiError(error, 'Failed to remove meal plan');
     }
@@ -95,7 +92,6 @@ class MealAPi {
         .order('meal_date', { ascending: false });
 
       if (error || !data) throw error;
-      console.log('Fetched meal history: ', JSON.stringify(data, null, 2));
       return data as MealHistory[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch meal history');
@@ -119,7 +115,6 @@ class MealAPi {
       ]);
 
       if (error) throw error;
-      console.log('Marked meal done: ', recipeId);
     } catch (error) {
       throw handleApiError(error, 'Failed to mark meal as done');
     }

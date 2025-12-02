@@ -21,7 +21,6 @@ class ShopApi {
         .in('meal_date', weekDates);
 
       if (error) throw error;
-      console.log('Feteched meal plans: ', JSON.stringify(data, null, 2));
       return data as MealPlan[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch meal plans');
@@ -41,10 +40,6 @@ class ShopApi {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      console.log(
-        'Fetched shopping List Filter: ',
-        JSON.stringify(data, null, 2),
-      );
       return data as ShoppingListItem[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch shopping list');
@@ -60,7 +55,6 @@ class ShopApi {
         .in('id', recipeIds);
 
       if (error) throw error;
-      console.log('Fetched recipe by Ids', JSON.stringify(data, null, 2));
       return (data as Recipe[]) || [];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch recipe by ids');
@@ -75,7 +69,6 @@ class ShopApi {
         .eq('user_id', userId);
 
       if (error || !data) throw error;
-      console.log('Fetched user pantry: ', JSON.stringify(data, null, 2));
       return data as PantryItem[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch user pantry');
@@ -90,7 +83,6 @@ class ShopApi {
         .in('recipe_id', recipeIds);
 
       if (error || !data) throw error;
-      console.log('Fetched ingredients: ', JSON.stringify(data, null, 2));
       return data as Ingredient[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch ingredients');
@@ -105,7 +97,6 @@ class ShopApi {
         .eq('recipe_id', recipeId);
 
       if (error || !data) throw error;
-      console.log('Fetched ingredient: ', JSON.stringify(data, null, 2));
       return data as Ingredient[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch ingredients');
@@ -124,7 +115,6 @@ class ShopApi {
         .eq('ingredient_name', ingredient.name);
 
       if (error || !data) throw error;
-      console.log('Fetched pantry for deduct: ', JSON.stringify(data, null, 2));
       return data as PantryItem[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch pantry for deduct');
@@ -139,7 +129,6 @@ class ShopApi {
         .eq('id', pantryItem[0].id);
 
       if (error) throw error;
-      console.log('Updated pantry quantity');
     } catch (error) {
       throw handleApiError(error, 'Failed to update pantry quantity');
     }
@@ -153,7 +142,6 @@ class ShopApi {
         .eq('id', pantryItem[0].id);
 
       if (error) throw error;
-      console.log('Removed from pantry');
     } catch (error) {
       throw handleApiError(error, 'Failed to remove from pantry');
     }
@@ -167,7 +155,6 @@ class ShopApi {
         .eq('user_id', userId);
 
       if (error || !data) throw error;
-      console.log('Fetched shopping list', JSON.stringify(data, null, 2));
       return data as ShoppingListItem[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch shopping list');
@@ -181,7 +168,6 @@ class ShopApi {
         .insert(newIngredients);
 
       if (error) throw error;
-      console.log('Added to shopping list', newIngredients);
     } catch (error) {
       throw handleApiError(error, 'Failed to add to shopping list');
     }
@@ -195,10 +181,6 @@ class ShopApi {
         .in('id', outdatedItems);
 
       if (error) throw error;
-      console.log(
-        'Removed outdated items: ',
-        JSON.stringify(outdatedItems, null, 2),
-      );
     } catch (error) {
       throw handleApiError(error, 'Failed to remove outdated items');
     }
@@ -263,7 +245,6 @@ class ShopApi {
         .delete()
         .eq('meal_plan_id', mealPlanId);
       if (error) throw error;
-      console.log('Removede shoppinglist by meal plan: ', mealPlanId);
     } catch (error) {
       throw handleApiError(
         error,

@@ -11,14 +11,12 @@ import {
   loadOnboardingState,
 } from '@/stores/onboarding.store';
 import Toast from 'react-native-toast-message';
-import { testFirebaseInit } from '@/utils/firebaseHelper';
 import {
   initNotificationChannel,
   requestAndSaveFcmToken,
   requestNotificationPermission,
   registerForegroundMessageHandler,
 } from '@/utils/notificationChannel';
-import messaging from '@react-native-firebase/messaging';
 import { useAuthStore } from '@/stores/auth.store';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AdminNavigator from '@/navigation/AdminNavigator';
@@ -44,26 +42,11 @@ export default function App() {
   }, [setHasOnboarded]);
 
   useEffect(() => {
-    if (__DEV__) {
-      testFirebaseInit().catch(e => console.error('Firebase init error:', e));
-    }
     initNotificationChannel().catch(e =>
       console.error('Notification channel init error: ', e),
     );
 
     registerForegroundMessageHandler();
-
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('📬 Background message:', remoteMessage);
-    });
-
-    messaging()
-      .getInitialNotification()
-      .then(remoteMessage => {
-        if (remoteMessage) {
-          console.log('📬 Notification caused app to open:', remoteMessage);
-        }
-      });
   }, []);
 
   useEffect(() => {
@@ -77,8 +60,6 @@ export default function App() {
           await requestAndSaveFcmToken(user.id).catch(e =>
             console.error('save token err:', e),
           );
-        } else {
-          console.log('Notification permission denied');
         }
       })();
     }

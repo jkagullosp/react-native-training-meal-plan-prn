@@ -12,7 +12,6 @@ class CommunityApi {
         .eq('id', authorId)
         .maybeSingle();
       if (error) throw error;
-      console.log('Fetched Authors: ', JSON.stringify(data, null, 2));
       return data as Profile;
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch authors');
@@ -26,7 +25,6 @@ class CommunityApi {
         .select('*')
         .eq('recipe_id', recipeId);
       if (error) throw error;
-      console.log('Fetched recipe likes: ', JSON.stringify(data, null, 2));
       return data as RecipeLike[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch recipe likes');
@@ -39,7 +37,6 @@ class CommunityApi {
         .from('recipe_likes')
         .insert([{ user_id: userId, recipe_id: recipeId }]);
       if (error) throw error;
-      console.log('Successfully liked recipe');
     } catch (error) {
       throw handleApiError(error, 'Failed to like recipe');
     }
@@ -54,7 +51,6 @@ class CommunityApi {
         .eq('recipe_id', recipeId);
 
       if (error) throw error;
-      console.log('Succesfully unliked recipe');
     } catch (error) {
       throw handleApiError(error, 'Failed to unlike recipe.');
     }

@@ -110,8 +110,6 @@ class AuthService {
       if (!user) return null;
 
       const profile = await authApi.getProfile(user.id);
-      console.log("Current session: ", session);
-      console.log("Current user: ", user);
       return profile;
     } catch (error) {
       console.error('Failed to restore session:', error);

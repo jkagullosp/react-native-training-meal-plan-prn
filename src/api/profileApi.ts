@@ -13,7 +13,6 @@ class ProfileApi {
         .maybeSingle();
 
       if (error || !data) throw error;
-      console.log('Fetched user profile', JSON.stringify(data, null, 2));
       return data as Profile;
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch user profile');
@@ -113,7 +112,6 @@ class ProfileApi {
         .eq('id', userId);
 
       if (error) throw error;
-      console.log('Updated profile image');
     } catch (error) {
       throw handleApiError(error, 'Failed to update profile image.');
     }

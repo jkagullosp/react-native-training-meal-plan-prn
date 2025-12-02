@@ -22,7 +22,6 @@ class RecipeApi {
         .eq('approved', true);
 
       if (error || !data) throw error;
-      console.log('(API Layer) Recipes: ', JSON.stringify(data, null, 2));
       return data as FullRecipe[];
     } catch (error) {
       throw handleApiError(error, 'Recipe fetch failed.');
@@ -64,7 +63,6 @@ class RecipeApi {
       const { data, error } = await supabase.from('tags').select('*');
 
       if (error || !data) throw error;
-      console.log('(API Layer) Tags: ', JSON.stringify(data, null, 2));
       return data as Tag[];
     } catch (error) {
       throw handleApiError(error, 'Tags fetch failed.');
@@ -79,10 +77,6 @@ class RecipeApi {
         .maybeSingle();
 
       if (error || !data) throw error;
-      console.log(
-        '(Api Layer) Fetched Author: ',
-        JSON.stringify(data, null, 2),
-      );
       return data as Profile;
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch recipe authors.');
@@ -107,10 +101,6 @@ class RecipeApi {
         .eq('author_id', userId);
 
       if (error || !data) throw error;
-      console.log(
-        '(Api Layer) Fetched user recipes: ',
-        JSON.stringify(data, null, 2),
-      );
       return data as FullRecipe[];
     } catch (error) {
       throw handleApiError(error, 'Failed to fetch user recipes');
@@ -154,7 +144,6 @@ class RecipeApi {
 
     if (updateError) throw updateError;
 
-    console.log('Submitted rating: ', avg, count);
     return { avg, count };
   }
 

@@ -15,7 +15,6 @@ class PantryApi {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      console.log('Deducted from shopping list: ', ingredientName);
       return data;
     } catch (error) {
       throw handleApiError(error, 'Failed to deduct from shopping list');
@@ -30,7 +29,6 @@ class PantryApi {
         .eq('id', item.id);
 
       if (error) throw error;
-      console.log('Removed from shopping list: ', item.id);
     } catch (error) {
       throw handleApiError(error, 'Failed to remove from shopping list');
     }
@@ -49,7 +47,6 @@ class PantryApi {
 
       remaining = 0;
       if (error) throw error;
-      console.log('Deducted quantity: ', itemQty);
     } catch (error) {
       throw handleApiError(error, 'Failed to deduct quantity');
     }
@@ -72,7 +69,6 @@ class PantryApi {
         .eq('id', exists.id);
 
       if (error) throw error;
-      console.log('Added quantity and unit: ', quantity, unit);
     } catch (error) {
       throw handleApiError(error, 'Failed to add quantity to shopping list');
     }
@@ -96,7 +92,6 @@ class PantryApi {
       ]);
 
       if (error) throw error;
-      console.log('Inserted to shopping list: ', ingredientData.name);
     } catch (error) {
       throw handleApiError(error, 'Failed to insert to shopping list.');
     }
@@ -110,7 +105,6 @@ class PantryApi {
         .eq('id', itemId);
 
       if (error) throw error;
-      console.log('Deleted pantry item: ', itemId);
     } catch (error) {
       throw handleApiError(error, 'Failed to delete from pantry');
     }
