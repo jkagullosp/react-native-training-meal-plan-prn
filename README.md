@@ -84,6 +84,100 @@ npx react-native run-android
 
 ---
 
+## 📜 Architecture Decision Records (ADR)
+
+### ADR-001: State Management
+
+- **Decision:** Use Zustand for client-side state management.
+- **Reasoning:** Zustand provides a lightweight, flexible, and scalable solution for managing ephemeral UI state. It integrates well with React Query for server-state management.
+- **Alternatives Considered:** Redux, Context API.
+
+### ADR-002: API Layer
+
+- **Decision:** Use Supabase for database and authentication.
+- **Reasoning:** Supabase offers a scalable backend-as-a-service solution with built-in authentication and real-time capabilities. The API layer is implemented as lightweight wrappers for Supabase queries.
+- **Alternatives Considered:** Firebase, custom Node.js backend.
+
+### ADR-003: Secure Storage
+
+- **Decision:** Use `react-native-keychain` for secure token storage.
+- **Reasoning:** Ensures secure storage of authentication tokens in Keychain (iOS) and Keystore (Android).
+- **Alternatives Considered:** AsyncStorage (less secure).
+
+---
+
+## 📘 API Documentation
+
+### Example: `getAllUsers` API
+
+**Description:** Fetches all non-admin user profiles from the database.
+
+**Endpoint:** `supabase.from('profiles').select('*')`
+
+**Code Example:**
+
+```typescript
+async getAllUsers(): Promise<Profile[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('is_admin', false)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as Profile[];
+}
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": "user-123",
+    "name": "John Doe",
+    "is_admin": false,
+    "created_at": "2025-12-01T12:00:00Z"
+  },
+  {
+    "id": "user-456",
+    "name": "Jane Smith",
+    "is_admin": false,
+    "created_at": "2025-12-01T12:05:00Z"
+  }
+]
+```
+
+### Example: `banUser` API
+
+**Description:** Bans a user by updating their profile status to `banned`.
+
+**Endpoint:** `supabase.from('profiles').update({ status: 'banned' })`
+
+**Code Example:**
+
+```typescript
+async banUser(userId: string) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ status: 'banned' })
+    .eq('id', userId);
+
+  if (error) throw error;
+}
+```
+
+**Response:**
+
+```json
+{
+  "status": "success",
+  "message": "User banned successfully."
+}
+```
+
+---
+
 ## Important Files / How This App Works
 
 - `src/client/supabase.ts` — creates the Supabase client. The client is polyfilled for React Native and configured for session persistence.
