@@ -20,6 +20,7 @@ import {
 import { useAuthStore } from '@/stores/auth.store';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AdminNavigator from '@/navigation/AdminNavigator';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
@@ -84,10 +85,12 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <NavigationContainer>
-            {content}
-            <Toast />
-          </NavigationContainer>
+          <ErrorBoundary>
+            <NavigationContainer>
+              {content}
+              <Toast />
+            </NavigationContainer>
+          </ErrorBoundary>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
