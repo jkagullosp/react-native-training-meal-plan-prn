@@ -22,12 +22,21 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AdminNavigator from '@/navigation/AdminNavigator';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      staleTime: 1000 * 60,
+    },
+    mutations: { retry: false },
+  },
+});
+
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
   const setHasOnboarded = useOnboardingStore(state => state.setHasOnboarded);
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
   const { initialized, initializeAuth, isAuthenticated, user } = useAuthStore();
-  const queryClient = new QueryClient();
 
   useEffect(() => {
     initializeAuth();

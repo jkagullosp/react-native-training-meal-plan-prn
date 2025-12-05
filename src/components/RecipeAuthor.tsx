@@ -1,31 +1,47 @@
+import React, { useMemo, useCallback } from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
 import { Star, BadgeCheck } from 'lucide-react-native';
 import { useAuthorQuery } from '@/hooks/useRecipesQuery';
+import { FullRecipe } from '@/types/recipe';
 
-export default function Author({ route }: any) {
-  const { recipe } = route.params;
+type Props =
+  | { route: { params: { recipe: FullRecipe } } }
+  | { recipe: FullRecipe };
+
+/**
+ * RecipeAuthor
+ * Renders the recipe author avatar, display name and rating summary.
+ *
+ * Accepts either a `route` with params.recipe (for screen usage) or a direct `recipe` prop.
+ */
+function RecipeAuthor(props: Props) {
+  const recipe: FullRecipe =
+    'route' in props ? props.route.params.recipe : (props as any).recipe;
+
   const {
     data: authorProfile,
     isLoading,
     error,
-  } = useAuthorQuery(recipe.author_id);
+  } = useAuthorQuery(recipe?.author_id);
 
-  const ratings = recipe.ratings || [];
+  const ratings = useMemo(() => recipe?.ratings ?? [], [recipe?.ratings]);
   const ratingCount = ratings.length;
-  const avgRating =
-    ratings.length > 0
-      ? ratings.reduce((sum: any, r: { rating: any; }) => sum + r.rating, 0) / ratings.length
-      : 0;
+  const avgRating = useMemo(
+    () =>
+      ratingCount > 0
+        ? ratings.reduce((sum, r) => sum + (r.rating ?? 0), 0) / ratingCount
+        : 0,
+    [ratings, ratingCount],
+  );
 
-  const getInitials = (name: string) => {
+  const getInitials = useCallback((name?: string) => {
+    if (!name) return '';
     return name
-      ? name
-          .split(' ')
-          .map(n => n[0])
-          .join('')
-          .toUpperCase()
-      : '';
-  };
+      .split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .toUpperCase();
+  }, []);
 
   if (!recipe) {
     return (
@@ -35,6 +51,7 @@ export default function Author({ route }: any) {
     );
   }
 
+  // Kernel / fallback when no author_id
   if (!recipe.author_id) {
     return (
       <View style={styles.container}>
@@ -52,9 +69,7 @@ export default function Author({ route }: any) {
           <View style={styles.ratingRow}>
             <Star size={16} color={'#e3c100ff'} />
             <Text style={styles.averageRating}>{avgRating.toFixed(1)}</Text>
-            <Text style={styles.ratingCount}>
-              ({ratingCount} ratings)
-            </Text>
+            <Text style={styles.ratingCount}>({ratingCount} ratings)</Text>
           </View>
         </View>
       </View>
@@ -87,14 +102,14 @@ export default function Author({ route }: any) {
       ) : (
         <View style={styles.initialsAvatar}>
           <Text style={styles.initialsText}>
-            {getInitials(authorProfile?.display_name || 'U')}
+            {getInitials(authorProfile?.display_name ?? 'U')}
           </Text>
         </View>
       )}
       <View style={styles.reviewsContainer}>
         <View>
           <Text style={styles.authorText}>
-            Recipe by {authorProfile?.display_name || 'Unknown'}
+            Recipe by {authorProfile?.display_name ?? 'Unknown'}
           </Text>
         </View>
         <View style={styles.ratingRow}>
@@ -106,6 +121,36 @@ export default function Author({ route }: any) {
     </View>
   );
 }
+
+/**
+ * Small Avatar subcomponent (exposed for compound usage)
+ */
+function AuthorAvatar({
+  profileImage,
+  displayName,
+}: {
+  profileImage?: string;
+  displayName?: string;
+}) {
+  if (profileImage) {
+    return <Image source={{ uri: profileImage }} style={styles.image} />;
+  }
+  return (
+    <View style={styles.initialsAvatar}>
+      <Text style={styles.initialsText}>
+        {(displayName || 'U').slice(0, 1).toUpperCase()}
+      </Text>
+    </View>
+  );
+}
+
+const MemoizedRecipeAuthor = React.memo(RecipeAuthor) as typeof RecipeAuthor & {
+  Avatar?: typeof AuthorAvatar;
+};
+
+MemoizedRecipeAuthor.Avatar = AuthorAvatar;
+
+export default MemoizedRecipeAuthor;
 
 const styles = StyleSheet.create({
   container: {
@@ -144,15 +189,17 @@ const styles = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 6,
   },
   averageRating: {
     color: '#e3c100ff',
     fontWeight: 'bold',
+    marginLeft: 6,
   },
   ratingCount: {
     color: '#5f5f5fff',
     fontWeight: '400',
+    marginLeft: 6,
   },
   authorText: {
     fontWeight: '600',
@@ -160,7 +207,7 @@ const styles = StyleSheet.create({
   kernelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 6,
   },
   kernelText: {
     color: '#E16235',
