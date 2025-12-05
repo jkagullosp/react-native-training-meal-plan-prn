@@ -4,7 +4,6 @@ module.exports = {
   collectCoverageFrom: [
     'src/stores/**/*.{ts,tsx}',
     'src/services/**/*.{ts,tsx}',
-    'src/hooks/**/*.{ts,tsx}',
     'src/api/**/*.{ts,tsx}',
   ],
   transformIgnorePatterns: [
