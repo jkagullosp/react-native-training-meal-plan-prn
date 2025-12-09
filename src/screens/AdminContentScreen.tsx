@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  ScrollView,
+  FlatList,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
@@ -16,7 +16,25 @@ import {
   useDisapproveRecipe,
 } from '@/hooks/useAdminQuery';
 
-function PendingRecipeCard({ recipe, onApprove, onDisapprove }: any) {
+const PENDING_ITEM_HEIGHT = 220;
+
+type PendingRecipe = {
+  id: string;
+  title: string;
+  author_id?: string | null;
+  created_at?: string | number;
+  description?: string;
+};
+
+function PendingRecipeCard({
+  recipe,
+  onApprove,
+  onDisapprove,
+}: {
+  recipe: PendingRecipe;
+  onApprove: () => void;
+  onDisapprove: () => void;
+}) {
   return (
     <View style={styles.recipeCard}>
       <Text style={styles.recipeTitle}>{recipe.title}</Text>
@@ -24,7 +42,8 @@ function PendingRecipeCard({ recipe, onApprove, onDisapprove }: any) {
         Submitted by: {recipe.author_id ?? 'Unknown'}
       </Text>
       <Text style={styles.recipeMeta}>
-        Created: {new Date(recipe.created_at).toLocaleString()}
+        Created:{' '}
+        {recipe.created_at ? new Date(recipe.created_at).toLocaleString() : '-'}
       </Text>
       <Text style={styles.recipeDesc}>{recipe.description}</Text>
       <View style={styles.recipeActions}>
@@ -61,6 +80,8 @@ function PendingRecipeCard({ recipe, onApprove, onDisapprove }: any) {
   );
 }
 
+const MemoPendingRecipeCard = React.memo(PendingRecipeCard);
+
 export default function AdminContentScreen() {
   const {
     data: pendingRecipes,
@@ -68,18 +89,57 @@ export default function AdminContentScreen() {
     refetch: refetchPendingRecipes,
   } = usePendingRecipes();
 
-  const { mutate: approveRecipe } = useApproveRecipe();
-  const { mutate: disapproveRecipe } = useDisapproveRecipe();
+  const approveMutation = useApproveRecipe();
+  const disapproveMutation = useDisapproveRecipe();
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const pendingRecipeCount = pendingRecipes?.length ?? 0;
-
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetchPendingRecipes();
     setRefreshing(false);
-  };
+  }, [refetchPendingRecipes]);
+
+  const handleApprove = useCallback(
+    (id: string) => {
+      approveMutation.mutate(id, {
+        onSuccess: () => {
+          refetchPendingRecipes();
+          Toast.show({ type: 'success', text1: 'Recipe approved!' });
+        },
+        onError: () => {
+          Toast.show({ type: 'error', text1: 'Failed to approve recipe' });
+        },
+      });
+    },
+    [approveMutation, refetchPendingRecipes],
+  );
+
+  const handleDisapprove = useCallback(
+    (id: string) => {
+      disapproveMutation.mutate(id, {
+        onSuccess: () => {
+          refetchPendingRecipes();
+          Toast.show({ type: 'success', text1: 'Recipe disapproved!' });
+        },
+        onError: () => {
+          Toast.show({ type: 'error', text1: 'Failed to disapprove recipe' });
+        },
+      });
+    },
+    [disapproveMutation, refetchPendingRecipes],
+  );
+
+  const renderPending = useCallback(
+    ({ item }: { item: PendingRecipe }) => (
+      <MemoPendingRecipeCard
+        recipe={item}
+        onApprove={() => handleApprove(item.id)}
+        onDisapprove={() => handleDisapprove(item.id)}
+      />
+    ),
+    [handleApprove, handleDisapprove],
+  );
 
   if (pendingRecipesLoading) {
     return (
@@ -91,63 +151,33 @@ export default function AdminContentScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView
+      <FlatList<PendingRecipe>
+        data={(pendingRecipes ?? []).map(r => ({
+          ...r,
+          description: r.description ?? undefined,
+        }))}
+        renderItem={renderPending}
+        keyExtractor={(p: PendingRecipe) => p.id}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-      >
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>Recipe Approvals</Text>
-          <View style={styles.countBadge}>
-            <Text style={styles.titleCount}>{pendingRecipeCount}</Text>
-          </View>
-        </View>
-        <View style={styles.cardsContainer}>
-          {pendingRecipes?.length === 0 ? (
+        removeClippedSubviews={true}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={11}
+        updateCellsBatchingPeriod={50}
+        getItemLayout={(_, index) => ({
+          length: PENDING_ITEM_HEIGHT,
+          offset: PENDING_ITEM_HEIGHT * index,
+          index,
+        })}
+        ListEmptyComponent={
+          <View style={styles.empty}>
             <Text style={styles.noPendingText}>No pending recipes.</Text>
-          ) : (
-            pendingRecipes?.map(recipe => (
-              <PendingRecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                onApprove={() =>
-                  approveRecipe(recipe.id, {
-                    onSuccess: () => {
-                      Toast.show({
-                        type: 'success',
-                        text1: 'Recipe approved!',
-                      });
-                    },
-                    onError: () => {
-                      Toast.show({
-                        type: 'error',
-                        text1: 'Failed to approve recipe',
-                      });
-                    },
-                  })
-                }
-                onDisapprove={() =>
-                  disapproveRecipe(recipe.id, {
-                    onSuccess: () => {
-                      Toast.show({
-                        type: 'success',
-                        text1: 'Recipe disapproved!',
-                      });
-                    },
-                    onError: () => {
-                      Toast.show({
-                        type: 'error',
-                        text1: 'Failed to disapprove recipe',
-                      });
-                    },
-                  })
-                }
-              />
-            ))
-          )}
-        </View>
-      </ScrollView>
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -158,59 +188,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f7f7',
   },
   scrollContent: {
-    flexGrow: 1,
-    padding: 0,
-  },
-  headerContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    margin: 16,
-    marginBottom: 0,
-    paddingVertical: 24,
-    paddingHorizontal: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  countBadge: {
-    backgroundColor: '#e16235',
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleCount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  cardsContainer: {
     paddingHorizontal: 16,
     paddingTop: 18,
     paddingBottom: 32,
-  },
-  noPendingText: {
-    marginTop: 32,
-    color: '#888',
-    fontSize: 16,
-    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  empty: {
+    padding: 24,
+    alignItems: 'center',
+  },
+  noPendingText: {
+    marginTop: 32,
+    color: '#888',
+    fontSize: 16,
+    textAlign: 'center',
   },
   recipeCard: {
     backgroundColor: '#fff',

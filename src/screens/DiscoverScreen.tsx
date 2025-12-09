@@ -41,7 +41,6 @@ export default function DiscoverScreen({
 
   const recipes = data?.pages.flat() ?? [];
 
-  // Search + filter logic
   const {
     search,
     setSearch,
@@ -76,7 +75,6 @@ export default function DiscoverScreen({
     [mode, filteredRecipes],
   );
 
-  // Render header above list (memoized)
   const headerComponent = useMemo(
     () => (
       <View style={styles.headerWrapper}>
@@ -163,13 +161,11 @@ export default function DiscoverScreen({
             <Text style={styles.emptyText}>No recipes found.</Text>
           </View>
         }
-        // Performance tuning for long lists / infinite scroll
         removeClippedSubviews={true}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={21}
         updateCellsBatchingPeriod={50}
-        // optionally provide getItemLayout if item height is fixed to improve performance
       />
 
       <FilterModal

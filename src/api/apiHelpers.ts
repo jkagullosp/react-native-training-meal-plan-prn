@@ -15,7 +15,6 @@ export function handleApiError(error: unknown, context: string): ApiError {
   if (error instanceof ApiError) return error;
 
   const message = error instanceof Error ? error.message : String(error);
-  //console.error(`[API Error - ${context}]:`, error);
   Toast.show({
     type: 'error',
     text1: 'Error',
