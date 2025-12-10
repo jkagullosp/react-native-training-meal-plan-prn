@@ -14,6 +14,20 @@ jest.mock('react-native-toast-message', () => ({
   show: jest.fn(),
 }));
 
+// ---- Mock AsyncStorage ----
+// Use the official async-storage jest mock so native module is not required in tests
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);
+
+// ---- Mock NetInfo ----
+jest.mock('@react-native-community/netinfo', () => ({
+  fetch: jest.fn(() =>
+    Promise.resolve({ isConnected: true, isInternetReachable: true }),
+  ),
+  addEventListener: jest.fn(() => jest.fn()),
+}));
+
 // ---- IMPORTANT: Mock exponential backoff (fixes hanging tests) ----
 jest.mock('@/api/exponentialBackoff', () => ({
   withExponentialBackoff: fn => fn(), // run immediately, no retry, no timers
