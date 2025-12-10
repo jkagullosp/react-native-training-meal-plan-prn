@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -41,7 +41,6 @@ export default function DiscoverScreen({
 
   const recipes = data?.pages.flat() ?? [];
 
-  // Search + filter logic
   const {
     search,
     setSearch,
@@ -60,31 +59,55 @@ export default function DiscoverScreen({
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetch();
     await refetchTags();
     setRefreshing(false);
-  };
+  }, [refetch, refetchTags]);
 
   // Mode filter (discover vs community)
-  const displayRecipes =
-    mode === 'community'
-      ? filteredRecipes.filter(r => r.is_community)
-      : filteredRecipes.filter(r => !r.is_community);
+  const displayRecipes = useMemo(
+    () =>
+      mode === 'community'
+        ? filteredRecipes.filter(r => r.is_community)
+        : filteredRecipes.filter(r => !r.is_community),
+    [mode, filteredRecipes],
+  );
 
-  // Render header above list
-  const renderHeader = () => (
-    <View style={styles.headerWrapper}>
-      <DiscoverHeader navigation={navigation} variant={mode} />
-      <SearchAndFilter
-        search={search}
-        setSearch={setSearch}
-        onOpenFilter={() => setFilterModalVisible(true)}
+  const headerComponent = useMemo(
+    () => (
+      <View style={styles.headerWrapper}>
+        <DiscoverHeader navigation={navigation} variant={mode} />
+        <SearchAndFilter
+          search={search}
+          setSearch={setSearch}
+          onOpenFilter={() => setFilterModalVisible(true)}
+          variant={mode}
+        />
+      </View>
+    ),
+    [navigation, mode, search, setSearch],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => (
+      <RecipeCard
+        recipe={item}
+        onPress={() =>
+          navigation.navigate('RecipeDetail', {
+            recipeId: item.id,
+            recipe: item,
+            mode,
+          })
+        }
         variant={mode}
       />
-    </View>
+    ),
+    [navigation, mode],
   );
+
+  const keyExtractor = useCallback((item: any) => item.id, []);
 
   if (error) {
     return (
@@ -115,21 +138,9 @@ export default function DiscoverScreen({
     <SafeAreaView style={styles.container} edges={['top']}>
       <FlatList
         data={displayRecipes}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <RecipeCard
-            recipe={item}
-            onPress={() =>
-              navigation.navigate('RecipeDetail', {
-                recipeId: item.id,
-                recipe: item,
-                mode,
-              })
-            }
-            variant={mode}
-          />
-        )}
-        ListHeaderComponent={renderHeader}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        ListHeaderComponent={headerComponent}
         contentContainerStyle={styles.listContent}
         onEndReached={() => {
           if (hasNextPage && !isFetchingNextPage) fetchNextPage();
@@ -150,6 +161,11 @@ export default function DiscoverScreen({
             <Text style={styles.emptyText}>No recipes found.</Text>
           </View>
         }
+        removeClippedSubviews={true}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={21}
+        updateCellsBatchingPeriod={50}
       />
 
       <FilterModal

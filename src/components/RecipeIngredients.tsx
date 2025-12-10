@@ -1,9 +1,38 @@
-import React from "react";
-import { View, StyleSheet, Text } from "react-native";
-import { RecipeIngredient } from "@/types/recipe";
+import React, { memo, useMemo } from 'react';
+import { View, StyleSheet, Text } from 'react-native';
+import { RecipeIngredient } from '@/types/recipe';
 
-export default function Ingredients({ route }: any) {
+const IngredientRow = memo(
+  ({ ingredient }: { ingredient: RecipeIngredient }) => (
+    <View style={styles.ingredientRow}>
+      <Text style={styles.ingredientIndex}>•</Text>
+      <Text style={styles.ingredientName}>{ingredient.name}</Text>
+      <Text style={styles.ingredientQuantity}>
+        ({ingredient.quantity_value})
+      </Text>
+      <Text style={styles.ingredientQuantity}>{ingredient.unit}</Text>
+    </View>
+  ),
+);
+
+const ingredientRowAreEqual = (prev: any, next: any) =>
+  prev.ingredient.id === next.ingredient.id &&
+  prev.ingredient.name === next.ingredient.name &&
+  prev.ingredient.quantity_value === next.ingredient.quantity_value &&
+  prev.ingredient.unit === next.ingredient.unit;
+
+const MemoIngredientRow = memo(IngredientRow, ingredientRowAreEqual);
+
+function Ingredients({ route }: any) {
   const { recipe } = route.params;
+
+  const memoizedIngredients = useMemo(
+    () =>
+      recipe?.ingredients?.map((ingredient: RecipeIngredient) => (
+        <MemoIngredientRow key={ingredient.id} ingredient={ingredient} />
+      )),
+    [recipe?.ingredients],
+  );
 
   if (!recipe) {
     return (
@@ -16,18 +45,7 @@ export default function Ingredients({ route }: any) {
   return (
     <View style={styles.orderedListContainer}>
       {recipe.ingredients && recipe.ingredients.length > 0 ? (
-        recipe.ingredients.map((ingredient: RecipeIngredient) => (
-          <View key={ingredient.id} style={styles.ingredientRow}>
-            <Text style={styles.ingredientIndex}>•</Text>
-            <Text style={styles.ingredientName}>{ingredient.name}</Text>
-            <Text style={styles.ingredientQuantity}>
-              ({ingredient.quantity_value})
-            </Text>
-            <Text style={styles.ingredientQuantity}>
-              {ingredient.unit}
-            </Text>
-          </View>
-        ))
+        memoizedIngredients
       ) : (
         <Text style={styles.noIngredients}>No ingredients listed.</Text>
       )}
@@ -35,58 +53,65 @@ export default function Ingredients({ route }: any) {
   );
 }
 
+// Memoize the whole screen so it re-renders only if route.params.recipe changes
+export default memo(Ingredients, (prev, next) => {
+  return (
+    JSON.stringify(prev.route.params.recipe) ===
+    JSON.stringify(next.route.params.recipe)
+  );
+});
+
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    backgroundColor: "#EDEDED",
+    flexDirection: 'row',
+    backgroundColor: '#EDEDED',
     padding: 12,
     borderRadius: 16,
-    justifyContent: "space-around",
+    justifyContent: 'space-around',
   },
   stat: {
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
     gap: 6,
   },
   type: {
     fontSize: 14,
-    color: "#E16235",
-    fontWeight: "bold",
+    color: '#E16235',
+    fontWeight: 'bold',
   },
   value: {
     fontSize: 14,
-    color: "#5f5f5fff",
+    color: '#5f5f5fff',
   },
-  orderedListContainer: {
-  },
+  orderedListContainer: {},
   listTitle: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 12,
-    color: "#E16235",
+    color: '#E16235',
   },
   ingredientRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
   ingredientIndex: {
-    fontWeight: "bold",
-    color: "#E16235",
+    fontWeight: 'bold',
+    color: '#E16235',
     marginRight: 8,
     fontSize: 16,
   },
   ingredientName: {
     fontSize: 16,
-    color: "#333",
+    color: '#333',
     marginRight: 3,
   },
   ingredientQuantity: {
     fontSize: 16,
-    color: "#888",
+    color: '#888',
   },
   noIngredients: {
-    color: "#888",
-    fontStyle: "italic",
+    color: '#888',
+    fontStyle: 'italic',
   },
 });

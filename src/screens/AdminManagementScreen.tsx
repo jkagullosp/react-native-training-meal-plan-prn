@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Platform,
   ActivityIndicator,
   RefreshControl,
   Dimensions,
-  ViewStyle,
   Alert,
 } from 'react-native';
 import { formatDistanceToNowStrict, parseISO, isAfter } from 'date-fns';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/auth.store';
+
 import {
   LogOut,
   User,
@@ -25,7 +25,9 @@ import {
   PlayCircle,
   UserCheck,
 } from 'lucide-react-native';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 import {
   useAllUsers,
   useFetchAllRecipesNotPending,
@@ -34,6 +36,7 @@ import {
   useRecipesApprovedLast30Days,
   useSuspendUser,
 } from '@/hooks/useAdminQuery';
+
 import { adminService } from '@/services/adminService';
 import Toast from 'react-native-toast-message';
 
@@ -49,7 +52,7 @@ const SUSPEND_OPTIONS = [
   { label: '1 day', ms: 24 * 60 * 60 * 1000 },
 ];
 
-const statusBadge = (status: string): ViewStyle => ({
+const getStatusBadgeStyle = (status: string) => ({
   backgroundColor:
     status === 'active'
       ? '#e0f7e9'
@@ -59,12 +62,33 @@ const statusBadge = (status: string): ViewStyle => ({
   borderRadius: 8,
   paddingHorizontal: 10,
   paddingVertical: 4,
-  alignSelf: 'flex-start',
+  alignSelf: 'flex-start' as 'flex-start',
   marginLeft: 8,
 });
 
+const PIcon = ({
+  ios,
+  android,
+  color,
+  size,
+}: {
+  ios: string;
+  android: React.ReactNode;
+  size: number;
+  color: string;
+}) =>
+  Platform.OS === 'ios' ? (
+    <Icon name={ios} size={size} color={color} />
+  ) : (
+    android
+  );
+
+// approximate fixed height used for getItemLayout to improve FlatList perf
+const USER_CARD_HEIGHT = 160;
+
 export default function AdminManagementScreen() {
   const { user, signOut } = useAuthStore();
+
   const {
     data: allUsers,
     isLoading: usersLoading,
@@ -73,170 +97,283 @@ export default function AdminManagementScreen() {
 
   const { data: recipesNotPending, refetch: refetchRecipesNotPending } =
     useFetchAllRecipesNotPending();
+
   const { data: mostFavoritedRecipe } = useMostFavoritedRecipe();
   const { data: mostLikedRecipe } = useMostLikedRecipe();
   const { data: recipesApprovedLast30Days } = useRecipesApprovedLast30Days();
 
-  const { mutate: suspendUser } = useSuspendUser();
+  const { mutate: suspendUserMutation } = useSuspendUser();
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const usersCount = allUsers?.length ?? 0;
-  const recipeCount = recipesNotPending?.length ?? 0;
-  const recipesApprovedCount = recipesApprovedLast30Days?.length ?? 0;
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([refetchAllUsers(), refetchRecipesNotPending()]);
     setRefreshing(false);
-  };
+  }, [refetchAllUsers, refetchRecipesNotPending]);
 
-  const handleSuspend = (userId: string) => {
-    Alert.alert(
-      'Suspend User',
-      'Select suspension duration:',
-      [
-        ...SUSPEND_OPTIONS.map(opt => ({
-          text: opt.label,
-          onPress: () => {
-            suspendUser(
-              { userId, durationMs: opt.ms },
-              {
-                onSuccess: () => {
-                  refetchAllUsers();
-                  Toast.show({
-                    type: 'success',
-                    text1: 'User suspended!',
-                    text2: `Suspended for ${opt.label}.`,
-                  });
-                },
-                onError: () => {
-                  Toast.show({
-                    type: 'error',
-                    text1: 'Failed to suspend user',
-                  });
-                },
-              },
-            );
-          },
-        })),
+  const confirm = useCallback(
+    ({
+      title,
+      message,
+      actionText,
+      destructive,
+      onConfirm,
+    }: {
+      title: string;
+      message: string;
+      actionText: string;
+      destructive?: boolean;
+      onConfirm: () => void;
+    }) => {
+      Alert.alert(title, message, [
         { text: 'Cancel', style: 'cancel' },
-      ],
-      { cancelable: true },
-    );
-  };
+        {
+          text: actionText,
+          style: destructive ? 'destructive' : 'default',
+          onPress: onConfirm,
+        },
+      ]);
+    },
+    [],
+  );
 
-  const handleBan = (userId: string) => {
-    Alert.alert('Ban User', 'Are you sure you want to ban this user?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Ban',
-        style: 'destructive',
-        onPress: async () => {
+  const handleSuspend = useCallback(
+    (userId: string) => {
+      Alert.alert(
+        'Suspend User',
+        'Select suspension duration:',
+        [
+          ...SUSPEND_OPTIONS.map(opt => ({
+            text: opt.label,
+            onPress: () => {
+              suspendUserMutation(
+                { userId, durationMs: opt.ms },
+                {
+                  onSuccess: () => {
+                    refetchAllUsers();
+                    Toast.show({
+                      type: 'success',
+                      text1: 'User suspended!',
+                      text2: `Suspended for ${opt.label}.`,
+                    });
+                  },
+                  onError: () => {
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Failed to suspend user',
+                    });
+                  },
+                },
+              );
+            },
+          })),
+          { text: 'Cancel', style: 'cancel' },
+        ],
+        { cancelable: true },
+      );
+    },
+    [suspendUserMutation, refetchAllUsers],
+  );
+
+  const handleBan = useCallback(
+    (userId: string) =>
+      confirm({
+        title: 'Ban User',
+        message: 'Are you sure you want to ban this user?',
+        actionText: 'Ban',
+        destructive: true,
+        onConfirm: async () => {
           try {
             await adminService.banUser(userId);
             refetchAllUsers();
-            Toast.show({
-              type: 'success',
-              text1: 'User banned!',
-            });
+            Toast.show({ type: 'success', text1: 'User banned!' });
           } catch {
-            Toast.show({
-              type: 'error',
-              text1: 'Failed to ban user',
-            });
+            Toast.show({ type: 'error', text1: 'Failed to ban user' });
           }
         },
-      },
-    ]);
-  };
+      }),
+    [confirm, refetchAllUsers],
+  );
 
-  const handleDelete = (userId: string) => {
-    Alert.alert(
-      'Delete User',
-      'Are you sure you want to delete this user? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await adminService.deleteUser(userId);
-              refetchAllUsers();
-              Toast.show({
-                type: 'success',
-                text1: 'User deleted!',
-              });
-            } catch {
-              Toast.show({
-                type: 'error',
-                text1: 'Failed to delete user',
-              });
-            }
-          },
+  const handleDelete = useCallback(
+    (userId: string) =>
+      confirm({
+        title: 'Delete User',
+        message:
+          'Are you sure you want to delete this user? This action cannot be undone.',
+        actionText: 'Delete',
+        destructive: true,
+        onConfirm: async () => {
+          try {
+            await adminService.deleteUser(userId);
+            refetchAllUsers();
+            Toast.show({ type: 'success', text1: 'User deleted!' });
+          } catch {
+            Toast.show({ type: 'error', text1: 'Failed to delete user' });
+          }
         },
-      ],
-    );
-  };
+      }),
+    [confirm, refetchAllUsers],
+  );
 
-  const handleUnsuspend = (userId: string) => {
-    Alert.alert(
-      'Unsuspend User',
-      'Are you sure you want to unsuspend this user?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Unsuspend',
-          style: 'default',
-          onPress: async () => {
-            try {
-              await adminService.unSuspendUser(userId);
-              refetchAllUsers();
-              Toast.show({
-                type: 'success',
-                text1: 'User unsuspended!',
-              });
-            } catch {
-              Toast.show({
-                type: 'error',
-                text1: 'Failed to unsuspend user',
-              });
-            }
-          },
+  const handleUnsuspend = useCallback(
+    (userId: string) =>
+      confirm({
+        title: 'Unsuspend User',
+        message: 'Are you sure you want to unsuspend this user?',
+        actionText: 'Unsuspend',
+        onConfirm: async () => {
+          try {
+            await adminService.unSuspendUser(userId);
+            refetchAllUsers();
+            Toast.show({ type: 'success', text1: 'User unsuspended!' });
+          } catch {
+            Toast.show({ type: 'error', text1: 'Failed to unsuspend user' });
+          }
         },
-      ],
-    );
-  };
+      }),
+    [confirm, refetchAllUsers],
+  );
 
-  const handleUnban = (userId: string) => {
-    Alert.alert('Unban User', 'Are you sure you want to unban this user?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Unban',
-        style: 'default',
-        onPress: async () => {
+  const handleUnban = useCallback(
+    (userId: string) =>
+      confirm({
+        title: 'Unban User',
+        message: 'Are you sure you want to unban this user?',
+        actionText: 'Unban',
+        onConfirm: async () => {
           try {
             await adminService.unBanUser(userId);
             refetchAllUsers();
-            Toast.show({
-              type: 'success',
-              text1: 'User unbanned!',
-            });
+            Toast.show({ type: 'success', text1: 'User unbanned!' });
           } catch {
-            Toast.show({
-              type: 'error',
-              text1: 'Failed to unban user',
-            });
+            Toast.show({ type: 'error', text1: 'Failed to unban user' });
           }
         },
-      },
-    ]);
-  };
+      }),
+    [confirm, refetchAllUsers],
+  );
+
+  const renderUser = useCallback(
+    ({ item: u }: { item: any }) => {
+      const isSuspended =
+        u.status === 'suspended' &&
+        u.suspended_until &&
+        isAfter(parseISO(u.suspended_until), new Date());
+
+      return (
+        <View style={styles.userCard}>
+          <View style={styles.userInfoRow}>
+            <PIcon
+              ios="account-circle"
+              android={<User size={32} color="#e16235" />}
+              size={32}
+              color="#e16235"
+            />
+
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={styles.displayName}>{u.display_name}</Text>
+              <Text style={styles.username}>@{u.username}</Text>
+            </View>
+
+            <View style={getStatusBadgeStyle(u.status)}>
+              <Text style={styles.statusText}>
+                {u.status.charAt(0).toUpperCase() + u.status.slice(1)}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.actionRow}>
+            {u.status === 'suspended' ? (
+              <>
+                {isSuspended && (
+                  <Text style={styles.suspendTimer}>
+                    Suspended for{' '}
+                    {formatDistanceToNowStrict(parseISO(u.suspended_until), {
+                      addSuffix: true,
+                    })}
+                  </Text>
+                )}
+
+                <TouchableOpacity
+                  style={styles.actionBtn}
+                  onPress={() => handleUnsuspend(u.id)}
+                >
+                  <PIcon
+                    ios="play-circle"
+                    android={<PlayCircle size={22} color="#4caf50" />}
+                    size={22}
+                    color="#4caf50"
+                  />
+                  <Text style={[styles.actionText, { color: '#4caf50' }]}>
+                    Unsuspend
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => handleSuspend(u.id)}
+              >
+                <PIcon
+                  ios="pause-circle"
+                  android={<PauseCircle size={22} color="#e1a135" />}
+                  size={22}
+                  color="#e1a135"
+                />
+                <Text style={styles.actionText}>Suspend</Text>
+              </TouchableOpacity>
+            )}
+
+            {u.status === 'banned' ? (
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => handleUnban(u.id)}
+              >
+                <PIcon
+                  ios="account-check"
+                  android={<UserCheck size={22} color="#4caf50" />}
+                  size={22}
+                  color="#4caf50"
+                />
+                <Text style={[styles.actionText, { color: '#4caf50' }]}>
+                  Unban
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => handleBan(u.id)}
+              >
+                <PIcon
+                  ios="block-helper"
+                  android={<Ban size={22} color="#e16235" />}
+                  size={22}
+                  color="#e16235"
+                />
+                <Text style={styles.actionText}>Ban</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => handleDelete(u.id)}
+            >
+              <PIcon
+                ios="account-remove"
+                android={<UserX size={22} color="#d32f2f" />}
+                size={22}
+                color="#d32f2f"
+              />
+              <Text style={styles.actionText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    },
+    [handleSuspend, handleUnsuspend, handleBan, handleUnban, handleDelete],
+  );
 
   if (usersLoading) {
     return (
@@ -248,198 +385,106 @@ export default function AdminManagementScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView
+      <FlatList
+        data={allUsers ?? []}
+        renderItem={renderUser}
+        keyExtractor={(u: any) => u.id}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-      >
-        <View style={styles.headerContainer}>
-          <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>Kernel Admin{'\n'}Dashboard</Text>
-            {Platform.OS === 'ios' ? (
-              <TouchableOpacity
-                onPress={handleSignOut}
-                style={styles.logoutButton}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Icon name="logout" size={28} color="#E16235" />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={handleSignOut}
-                style={styles.logoutButton}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <LogOut size={28} color="#E16235" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-        <Text style={styles.admin}>Admin: {user?.display_name}</Text>
-        <View style={styles.grid}>
-          <View style={styles.card}>
-            {Platform.OS === 'ios' ? (
-              <Icon name="account" size={32} color="#e16235" />
-            ) : (
-              <User size={32} color="#e16235" />
-            )}
-            <Text style={styles.cardNumber}>{usersCount}</Text>
-            <Text style={styles.cardLabel}>Users</Text>
-          </View>
-          <View style={styles.card}>
-            {Platform.OS === 'ios' ? (
-              <Icon name="chef-hat" size={32} color="#e16235" />
-            ) : (
-              <CookingPot size={32} color="#e16235" />
-            )}
-            <Text style={styles.cardNumber}>{recipeCount}</Text>
-            <Text style={styles.cardLabel}>Recipes</Text>
-          </View>
-          <View style={styles.card}>
-            <Icon name="star" size={32} color="#e16235" />
-            <Text
-              style={styles.cardTitle}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {mostFavoritedRecipe?.title ?? '-'}
-            </Text>
-            <Text style={styles.cardLabel}>Most Favorited</Text>
-          </View>
-          <View style={styles.card}>
-            <Icon name="heart" size={32} color="#e16235" />
-            <Text
-              style={styles.cardTitle}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {mostLikedRecipe?.title ?? '-'}
-            </Text>
-            <Text style={styles.cardLabel}>Most Liked</Text>
-          </View>
-          <View style={styles.cardWide}>
-            <Icon name="calendar-check" size={32} color="#e16235" />
-            <Text style={styles.cardNumber}>{recipesApprovedCount}</Text>
-            <Text style={styles.cardLabel}>Approved (30d)</Text>
-          </View>
-        </View>
-        <Text style={styles.sectionTitle}>Users</Text>
-        <View style={styles.userGrid}>
-          {allUsers?.map(users => (
-            <View key={users.id} style={styles.userCard}>
-              <View style={styles.userInfoRow}>
-                {Platform.OS === 'ios' ? (
-                  <Icon name="account-circle" size={32} color="#e16235" />
-                ) : (
-                  <View>
-                    <User size={32} color="#e16235" />
-                  </View>
-                )}
-                <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.displayName}>{users.display_name}</Text>
-                  <Text style={styles.username}>@{users.username}</Text>
-                </View>
-                <View style={statusBadge(users.status)}>
-                  <Text style={styles.statusText}>
-                    {users.status.charAt(0).toUpperCase() +
-                      users.status.slice(1)}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.actionRow}>
-                {users.status === 'suspended' ? (
-                  <>
-                    {users.suspended_until &&
-                      isAfter(parseISO(users.suspended_until), new Date()) && (
-                        <Text style={styles.suspendTimer}>
-                          Suspended for{' '}
-                          {formatDistanceToNowStrict(
-                            parseISO(users.suspended_until),
-                            { addSuffix: true },
-                          )}
-                        </Text>
-                      )}
-                    <TouchableOpacity
-                      style={styles.actionBtn}
-                      onPress={() => handleUnsuspend(users.id)}
-                    >
-                      {Platform.OS === 'ios' ? (
-                        <Icon name="play-circle" size={22} color="#4caf50" />
-                      ) : (
-                        <View>
-                          <PlayCircle size={22} color="#4caf50" />
-                        </View>
-                      )}
-                      <Text style={[styles.actionText, { color: '#4caf50' }]}>
-                        Unsuspend
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.actionBtn}
-                    onPress={() => handleSuspend(users.id)}
-                  >
-                    {Platform.OS === 'ios' ? (
-                      <Icon name="pause-circle" size={22} color="#e1a135" />
-                    ) : (
-                      <View>
-                        <PauseCircle size={22} color="#e1a135" />
-                      </View>
-                    )}
-                    <Text style={styles.actionText}>Suspend</Text>
-                  </TouchableOpacity>
-                )}
-                {users.status === 'banned' ? (
-                  <TouchableOpacity
-                    style={styles.actionBtn}
-                    onPress={() => handleUnban(users.id)}
-                  >
-                    {Platform.OS === 'ios' ? (
-                      <Icon name="account-check" size={22} color="#4caf50" />
-                    ) : (
-                      <View>
-                        <UserCheck size={22} color="#4caf50" />
-                      </View>
-                    )}
-                    <Text style={[styles.actionText, { color: '#4caf50' }]}>
-                      Unban
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.actionBtn}
-                    onPress={() => handleBan(users.id)}
-                  >
-                    {Platform.OS === 'ios' ? (
-                      <Icon name="block-helper" size={22} color="#e16235" />
-                    ) : (
-                      <View>
-                        <Ban size={22} color="#e16235" />
-                      </View>
-                    )}
-                    <Text style={styles.actionText}>Ban</Text>
-                  </TouchableOpacity>
-                )}
+        // performance tuning
+        removeClippedSubviews={true}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={11}
+        updateCellsBatchingPeriod={50}
+        // getItemLayout assumes fixed user card height to speed scrollToIndex / initial render
+        getItemLayout={(_, index) => ({
+          length: USER_CARD_HEIGHT,
+          offset: USER_CARD_HEIGHT * index,
+          index,
+        })}
+        ListHeaderComponent={
+          <>
+            <View style={styles.headerContainer}>
+              <View style={styles.headerRow}>
+                <Text style={styles.headerTitle}>
+                  Kernel Admin{'\n'}Dashboard
+                </Text>
+
                 <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() => handleDelete(users.id)}
+                  onPress={signOut}
+                  style={styles.logoutButton}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  {Platform.OS === 'ios' ? (
-                    <Icon name="account-remove" size={22} color="#d32f2f" />
-                  ) : (
-                    <View>
-                      <UserX size={22} color="#d32f2f" />
-                    </View>
-                  )}
-                  <Text style={styles.actionText}>Delete</Text>
+                  <PIcon
+                    ios="logout"
+                    android={<LogOut size={28} color="#E16235" />}
+                    size={28}
+                    color="#E16235"
+                  />
                 </TouchableOpacity>
               </View>
             </View>
-          ))}
-        </View>
-      </ScrollView>
+
+            <Text style={styles.admin}>Admin: {user?.display_name}</Text>
+
+            {/* Stats Grid */}
+            <View style={styles.grid}>
+              <View style={styles.card}>
+                <PIcon
+                  ios="account"
+                  android={<User size={32} color="#e16235" />}
+                  size={32}
+                  color="#e16235"
+                />
+                <Text style={styles.cardNumber}>{allUsers?.length ?? 0}</Text>
+                <Text style={styles.cardLabel}>Users</Text>
+              </View>
+
+              <View style={styles.card}>
+                <PIcon
+                  ios="chef-hat"
+                  android={<CookingPot size={32} color="#e16235" />}
+                  size={32}
+                  color="#e16235"
+                />
+                <Text style={styles.cardNumber}>
+                  {recipesNotPending?.length ?? 0}
+                </Text>
+                <Text style={styles.cardLabel}>Recipes</Text>
+              </View>
+
+              <View style={styles.card}>
+                <Icon name="star" size={32} color="#e16235" />
+                <Text style={styles.cardTitle} numberOfLines={1}>
+                  {mostFavoritedRecipe?.title ?? '-'}
+                </Text>
+                <Text style={styles.cardLabel}>Most Favorited</Text>
+              </View>
+
+              <View style={styles.card}>
+                <Icon name="heart" size={32} color="#e16235" />
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  {mostLikedRecipe?.title ?? '-'}
+                </Text>
+                <Text style={styles.cardLabel}>Most Liked</Text>
+              </View>
+
+              <View style={styles.cardWide}>
+                <Icon name="calendar-check" size={32} color="#e16235" />
+                <Text style={styles.cardNumber}>
+                  {recipesApprovedLast30Days?.length ?? 0}
+                </Text>
+                <Text style={styles.cardLabel}>Approved (30d)</Text>
+              </View>
+            </View>
+
+            <Text style={styles.sectionTitle}>Users</Text>
+          </>
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -599,16 +644,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
     marginTop: 2,
-  },
-  emailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  email: {
-    fontSize: 13,
-    color: '#888',
-    marginLeft: 4,
   },
   statusText: {
     fontSize: 12,

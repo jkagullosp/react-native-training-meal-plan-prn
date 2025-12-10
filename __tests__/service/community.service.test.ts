@@ -38,11 +38,15 @@ describe('communityService', () => {
   });
 
   it('likes a recipe', async () => {
-    await expect(communityService.likeRecipe('user1', 'recipe456')).resolves.toBeUndefined();
+    await expect(
+      communityService.likeRecipe('user1', 'recipe456'),
+    ).resolves.toBeUndefined();
   });
 
   it('unlikes a recipe', async () => {
-    await expect(communityService.unlikeRecipe('user1', 'recipe456')).resolves.toBeUndefined();
+    await expect(
+      communityService.unlikeRecipe('user1', 'recipe456'),
+    ).resolves.toBeUndefined();
   });
 
   it('handles fetchAuthor error', async () => {
@@ -54,18 +58,24 @@ describe('communityService', () => {
   it('handles fetchRecipeLikes error', async () => {
     const { communityApi } = require('@/api/communityApi');
     communityApi.fetchRecipeLikes.mockRejectedValueOnce(new Error('fail'));
-    await expect(communityService.getRecipeLikes('badid')).rejects.toThrow('fail');
+    await expect(communityService.getRecipeLikes('badid')).rejects.toThrow(
+      'fail',
+    );
   });
 
   it('handles likeRecipe error', async () => {
     const { communityApi } = require('@/api/communityApi');
     communityApi.likeRecipe.mockRejectedValueOnce(new Error('fail'));
-    await expect(communityService.likeRecipe('user1', 'badid')).rejects.toThrow('fail');
+    await expect(communityService.likeRecipe('user1', 'badid')).rejects.toThrow(
+      'fail',
+    );
   });
 
   it('handles unlikeRecipe error', async () => {
     const { communityApi } = require('@/api/communityApi');
     communityApi.unlikeRecipe.mockRejectedValueOnce(new Error('fail'));
-    await expect(communityService.unlikeRecipe('user1', 'badid')).rejects.toThrow('fail');
+    await expect(
+      communityService.unlikeRecipe('user1', 'badid'),
+    ).rejects.toThrow('fail');
   });
 });

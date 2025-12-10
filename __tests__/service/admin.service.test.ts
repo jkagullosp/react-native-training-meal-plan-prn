@@ -4,11 +4,21 @@ import { CreateRecipeInput } from '@/types/recipe';
 jest.mock('@/api/adminApi', () => ({
   adminApi: {
     getAllUsers: jest.fn().mockResolvedValue([{ id: '1', username: 'admin' }]),
-    fetchRecipesNotPending: jest.fn().mockResolvedValue([{ id: 'r1', title: 'Recipe' }]),
-    fetchMostFavoritedRecipe: jest.fn().mockResolvedValue({ id: 'r2', title: 'Most Favorited' }),
-    fetchMostLikedRecipe: jest.fn().mockResolvedValue({ id: 'r3', title: 'Most Liked' }),
-    fetchPendingRecipes: jest.fn().mockResolvedValue([{ id: 'r4', title: 'Pending' }]),
-    getRecipesApprovedLast30Days: jest.fn().mockResolvedValue([{ id: 'r5', title: 'Recent' }]),
+    fetchRecipesNotPending: jest
+      .fn()
+      .mockResolvedValue([{ id: 'r1', title: 'Recipe' }]),
+    fetchMostFavoritedRecipe: jest
+      .fn()
+      .mockResolvedValue({ id: 'r2', title: 'Most Favorited' }),
+    fetchMostLikedRecipe: jest
+      .fn()
+      .mockResolvedValue({ id: 'r3', title: 'Most Liked' }),
+    fetchPendingRecipes: jest
+      .fn()
+      .mockResolvedValue([{ id: 'r4', title: 'Pending' }]),
+    getRecipesApprovedLast30Days: jest
+      .fn()
+      .mockResolvedValue([{ id: 'r5', title: 'Recent' }]),
     suspendUser: jest.fn().mockResolvedValue(undefined),
     banUser: jest.fn().mockResolvedValue(undefined),
     deleteUser: jest.fn().mockResolvedValue(undefined),
@@ -96,6 +106,8 @@ describe('adminService', () => {
       tags: [],
       images: [],
     };
-    await expect(adminService.submitAdminRecipe('1', input)).resolves.toBeUndefined();
+    await expect(
+      adminService.submitAdminRecipe('1', input),
+    ).resolves.toBeUndefined();
   });
 });

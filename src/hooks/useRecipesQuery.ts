@@ -24,9 +24,9 @@ export function useInfiniteRecipes(pageSize: number) {
       fetchRecipesPaginated(pageParam as number, pageSize),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
-      // If lastPage has less than pageSize items, no more pages
       return lastPage.length === pageSize ? allPages.length + 1 : undefined;
     },
+    staleTime: 1000 * 60 * 2,
   });
 }
 
@@ -34,6 +34,7 @@ export function useRecipesQuery() {
   return useQuery({
     queryKey: ['recipes'],
     queryFn: fetchRecipes,
+    staleTime: 1000 * 60 * 2,
   });
 }
 
@@ -53,8 +54,49 @@ export function useAuthorQuery(authorId: string) {
 }
 
 export function useSubmitRecipeRating() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: submitRating,
+    onMutate: async (vars: {
+      userId: string;
+      recipeId: string;
+      rating: number;
+    }) => {
+      const { recipeId, rating } = vars;
+      await queryClient.cancelQueries({ queryKey: ['recipes'] });
+
+      const previous = queryClient.getQueryData<FullRecipe[] | undefined>([
+        'recipes',
+      ]);
+
+      if (previous) {
+        queryClient.setQueryData<FullRecipe[]>(
+          ['recipes'],
+          previous.map(r => {
+            if (r.id !== recipeId) return r;
+            const count = r.rating_count ?? 0;
+            const avg = r.avg_rating ?? 0;
+            const newCount = count + 1;
+            const newAvg =
+              Math.round(((avg * count + rating) / newCount) * 10) / 10;
+            return { ...r, rating_count: newCount, avg_rating: newAvg };
+          }),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_err, _vars, context: any) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['recipes'], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      queryClient.invalidateQueries({ queryKey: ['recipesInfinite'] });
+      queryClient.invalidateQueries({ queryKey: ['userRecipes'] });
+    },
   });
 }
 
@@ -83,5 +125,6 @@ export function useApprovedUserRecipes(userId: string) {
     queryKey: ['userRecipes', userId],
     queryFn: () => fetchApprovedUserRecipes(userId),
     enabled: !!userId,
+    staleTime: 1000 * 60 * 2,
   });
 }
