@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { authService } from '../services/authService';
 import { Profile } from '../types/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PERSIST_KEY } from '@/utils/offlinePersistor';
+import { clearMutationQueue } from '@/hooks/mutationQueue';
 
 type AuthState = {
   user: Profile | null;
@@ -72,16 +75,20 @@ export const useAuthStore = create<AuthState>(set => ({
 
   signOut: async () => {
     set({ loading: true });
-
-    const result = await authService.signOut();
-
-    set({
-      user: null,
-      isAuthenticated: false,
-      loading: false,
-    });
-
-    return result;
+    try {
+      await clearMutationQueue();
+      await AsyncStorage.removeItem(PERSIST_KEY);
+      try {
+        await AsyncStorage.removeItem(PERSIST_KEY);
+      } catch (e) {
+        console.warn('Failed to clear persisted query cache on signOut', e);
+      }
+      set({ user: null, isAuthenticated: false, loading: false });
+      return { error: null };
+    } catch (err: any) {
+      set({ loading: false });
+      return { error: err?.message ?? 'Sign out failed' };
+    }
   },
 
   initializeAuth: async () => {

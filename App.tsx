@@ -18,19 +18,49 @@ import {
   registerForegroundMessageHandler,
 } from '@/utils/notificationChannel';
 import { useAuthStore } from '@/stores/auth.store';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  onlineManager,
+} from '@tanstack/react-query';
 import AdminNavigator from '@/navigation/AdminNavigator';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import NetInfo from '@react-native-community/netinfo';
+import { setupQueryPersistence } from '@/utils/offlinePersistor';
+import {
+  startMutationQueue,
+  registerMutationHandler,
+} from '@/hooks/mutationQueue';
+import { adminService } from '@/services/adminService';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false,
+      retry: 3,
+      retryDelay: (failureCount: number) => {
+        const base = 1000;
+        const capped = Math.min(base * 2 ** (failureCount - 1), 30_000);
+        const jitter = Math.floor(Math.random() * 300);
+        return capped + jitter;
+      },
       staleTime: 1000 * 60,
     },
-    mutations: { retry: false },
+    mutations: {
+      retry: 2,
+      retryDelay: (failureCount: number) => {
+        const base = 1000;
+        return Math.min(base * 2 ** (failureCount - 1), 30_000);
+      },
+    },
   },
 });
+
+setupQueryPersistence(queryClient);
+
+registerMutationHandler('approveRecipe', async ({ recipeId }) =>
+  adminService.approveRecipe(recipeId),
+);
+startMutationQueue(queryClient);
 
 export default function App() {
   const hasOnboarded = useOnboardingStore(state => state.hasOnboarded);
@@ -74,6 +104,27 @@ export default function App() {
       })();
     }
   }, [user?.id]);
+
+  // NetInfo -> react-query onlineManager integration for offline support / refetch-on-reconnect
+  useEffect(() => {
+    // set initial online state
+    NetInfo.fetch().then(state =>
+      onlineManager.setOnline(
+        Boolean(state.isConnected && state.isInternetReachable),
+      ),
+    );
+
+    // subscribe to connectivity changes
+    const unsubscribe = NetInfo.addEventListener(state => {
+      onlineManager.setOnline(
+        Boolean(state.isConnected && state.isInternetReachable),
+      );
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   if (!onboardingLoaded || !initialized) {
     return <ActivityIndicator />;
